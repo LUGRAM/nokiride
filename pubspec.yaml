@@ -1,0 +1,48 @@
+name: nokiride
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  get: ^4.7.3
+  get_storage: ^2.1.1
+  lottie: ^3.3.2
+  cupertino_icons: ^1.0.8
+  share_plus: ^12.0.1
+  image_picker: ^1.2.1
+  image_cropper: ^11.0.0
+  intl: ^0.20.2
+  http: ^1.2.0
+  shared_preferences: ^2.5.4
+  shimmer: ^3.0.0
+  flutter_lints: ^6.0.0
+  google_fonts: ^7.0.2
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+  chewie: ^1.7.4
+  smooth_page_indicator: ^2.0.1  # sert à afficher des indicateurs de page (points, tirets, etc.) animés et personnalisables sous un PageView ou un CarouselSlider.
+  permission_handler: ^12.0.1   # sert à demander des permissions
+  geolocator: ^14.0.2
+  cached_network_image: ^3.4.1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/animations/
+    - assets/images/carousel/
+
