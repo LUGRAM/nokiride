@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
-
 class OnboardingModel {
-  final String title;
-  final String description;
-  final String lottiePath;
-  final String emoji;           // Pour fallback si Lottie pas encore prêt
+  final String title, description, emoji, lottiePath;
   final Color bgColor;
-
-  OnboardingModel({
-    required this.title,
-    required this.description,
-    required this.lottiePath,
-    this.emoji = "",
-    required this.bgColor,
-  });
+  const OnboardingModel({required this.title, required this.description,
+    required this.emoji, required this.lottiePath, required this.bgColor});
 }

@@ -1,28 +1,25 @@
 abstract class Routes {
+  static const splash            = '/';
+  static const onboarding        = '/onboarding';
+  static const login             = '/login';
+  static const otp               = '/otp';
+  static const register          = '/register';
+  static const home              = '/home';
 
-  // Splash & Onboarding
-  static const String splash       = '/splash';
-  static const String onboarding   = '/onboarding';
+  static const trip              = '/trip';
+  static const tripEstimate      = '/trip/estimate';
+  static const tripSearching     = '/trip/searching';
+  static const tripTracking      = '/trip/tracking';
+  static const tripRating        = '/trip/rating';
 
-  // Auth
-  static const String login        = '/login';
-  static const String register     = '/register';
-  static const String otp          = '/otp';
+  static const delivery          = '/delivery';
+  static const deliveryEstimate  = '/delivery/estimate';
+  static const deliverySearching = '/delivery/searching';
+  static const deliveryTracking  = '/delivery/tracking';
 
-  // Main - Navigation principale (Bottom Nav Bar)
-  static const String home         = '/home';      // Page principale avec BottomNav
+  static const market            = '/market';
+  static const marketMerchant    = '/market/merchant';
+  static const marketCart        = '/market/cart';
 
-  // Pages accessibles depuis la Home ou ailleurs
-  static const String search       = '/search';
-  static const String trip         = '/trip';           // Demande + suivi de course
-  static const String delivery     = '/delivery';       // Détails d'une livraison
-  static const String profile      = '/profile';
-
-  // Sous-pages du Trip (recommandé)
-  static const String tripRequest  = '/trip/request';
-  static const String tripTracking = '/trip/tracking';
-  static const String tripCompleted = '/trip/completed';
-
-  // Safety (accessible depuis Trip)
-  static const String safetySettings = '/safety/settings';
+  static const notifications     = '/notifications';
 }

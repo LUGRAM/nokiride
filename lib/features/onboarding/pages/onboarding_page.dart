@@ -189,13 +189,13 @@ class _Footer extends StatelessWidget {
             curve:    Curves.easeInOut,
             child: controller.isLastPage
                 ? Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: AppButton(
-                label:   "J'ai déjà un compte",
-                variant: AppButtonVariant.outline,
-                onTap:   controller.goToLogin,
-              ),
-            )
+                    padding: const EdgeInsets.only(top: 12),
+                    child: AppButton(
+                      label:   "J'ai déjà un compte",
+                      variant: AppButtonVariant.outline,
+                      onTap:   controller.goToLogin,
+                    ),
+                  )
                 : const SizedBox.shrink(),
           )),
         ],

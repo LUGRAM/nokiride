@@ -36,62 +36,6 @@ class PromoFrame {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Frames par défaut
-// ─────────────────────────────────────────────────────────────
-final defaultPromoFrames = [
-  const PromoFrame(
-    tag:         'OFFRE',
-    title:       '1ère course\nofferte',
-    subtitle:    'Code : NOKI2025',
-    cta:         'En profiter',
-    accentColor: AppColors.primaryBlue,
-    icon:        Icons.sports_motorsports_rounded,
-    imageAsset:  'assets/images/carousel/promo_moto.png',
-    imageUrl:    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-  ),
-  const PromoFrame(
-    tag:         'NOUVEAU',
-    title:       'Market disponible\nà Libreville',
-    subtitle:    'Courses livrées en 45 min',
-    cta:         'Découvrir',
-    accentColor: AppColors.serviceMarket,
-    icon:        Icons.shopping_bag_rounded,
-    imageAsset:  'assets/images/carousel/promo_market.png',
-    imageUrl:    'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80',
-  ),
-  const PromoFrame(
-    tag:         'EXPRESS',
-    title:       'Envoi de colis\nsans se déplacer',
-    subtitle:    'Tarif fixe dès 500 F CFA',
-    cta:         'Envoyer',
-    accentColor: AppColors.serviceEnvoi,
-    icon:        Icons.inventory_2_rounded,
-    imageAsset:  'assets/images/carousel/promo_envoi.png',
-    imageUrl:    'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800&q=80',
-  ),
-  const PromoFrame(
-    tag:         'PARRAINAGE',
-    title:       'Invitez un ami\ngagnez 1 000 F',
-    subtitle:    'Crédité dès sa 1ère course',
-    cta:         'Partager',
-    accentColor: AppColors.servicePlan,
-    icon:        Icons.card_giftcard_rounded,
-    imageAsset:  'assets/images/carousel/promo_parrainage.png',
-    imageUrl:    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',
-  ),
-  const PromoFrame(
-    tag:         'SÉCURITÉ',
-    title:       'Bouton SOS\ntoujours actif',
-    subtitle:    'Votre sécurité, notre priorité',
-    cta:         'En savoir plus',
-    accentColor: AppColors.warning,
-    icon:        Icons.shield_rounded,
-    imageAsset:  'assets/images/carousel/promo_securite.png',
-    imageUrl:    'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&q=80',
-  ),
-];
-
-// ─────────────────────────────────────────────────────────────
 // Widget principal
 // ─────────────────────────────────────────────────────────────
 class PromoCarousel extends StatefulWidget {
@@ -119,7 +63,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
   @override
   void initState() {
     super.initState();
-    _frames = widget.frames ?? defaultPromoFrames;
+    _frames = widget.frames ?? [];
     _ctrl   = PageController(viewportFraction: 0.90);
     _startAutoPlay();
   }
@@ -145,6 +89,8 @@ class _PromoCarouselState extends State<PromoCarousel> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_frames.isEmpty) return const SizedBox.shrink();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -184,9 +130,11 @@ class _PromoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Dark  : accent teinté sur fond sombre
+    // Light : blanc avec légère teinte accent — PLUS lisible
     final bgBase = isDark
         ? Color.alphaBlend(frame.accentColor.withOpacity(.13), AppColors.bgDarkSurface)
-        : frame.accentColor.withOpacity(.09);
+        : Colors.white;
     final border = frame.accentColor.withOpacity(.22);
 
     return Padding(
@@ -211,13 +159,13 @@ class _PromoCard extends StatelessWidget {
                 children: [
                   // Image droite ou icône fallback
                   if (frame.hasImage)
-                    _ImagePanel(frame: frame, bgColor: bgBase)
+                    _ImagePanel(frame: frame, isDark: isDark)
                   else
                     _IconPanel(frame: frame),
 
-                  // Dégradé protection texte
+                  // Dégradé — opacité adaptée au thème
                   if (frame.hasImage)
-                    _GradientOverlay(color: bgBase),
+                    _GradientOverlay(color: bgBase, isDark: isDark),
 
                   // Textes gauche
                   Positioned(
@@ -238,49 +186,40 @@ class _PromoCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Image — asset prioritaire, URL en fallback
+// Image
 // ─────────────────────────────────────────────────────────────
 class _ImagePanel extends StatelessWidget {
-  const _ImagePanel({required this.frame, required this.bgColor});
+  const _ImagePanel({required this.frame, required this.isDark});
 
   final PromoFrame frame;
-  final Color      bgColor;
+  final bool       isDark;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Positioned(
       right:  0,
       top:    0,
       bottom: 0,
       width:  175,
-      child: _resolveImage(isDark),
+      child: _resolveImage(),
     );
   }
 
-  Widget _resolveImage(bool isDark) {
-    // 1. Asset local prioritaire
+  Widget _resolveImage() {
     if (frame.imageAsset != null) {
       return Image(
         image:     AssetImage(frame.imageAsset!),
         fit:       BoxFit.cover,
         alignment: Alignment.centerRight,
         errorBuilder: (_, __, ___) =>
-        frame.imageUrl != null
-            ? _networkImage(isDark)
-            : _IconPanel(frame: frame),
+            frame.imageUrl != null ? _networkImage() : _IconPanel(frame: frame),
       );
     }
-
-    // 2. URL réseau
-    if (frame.imageUrl != null) return _networkImage(isDark);
-
-    // 3. Fallback icône
+    if (frame.imageUrl != null) return _networkImage();
     return _IconPanel(frame: frame);
   }
 
-  Widget _networkImage(bool isDark) {
+  Widget _networkImage() {
     final base      = isDark ? const Color(0xFF1C2E42) : const Color(0xFFE8EDF2);
     final highlight = isDark ? const Color(0xFF243650) : const Color(0xFFF5F7FA);
 
@@ -297,6 +236,42 @@ class _ImagePanel extends StatelessWidget {
         child: Container(color: base),
       ),
       errorWidget: (_, __, ___) => _IconPanel(frame: frame),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Dégradé — opacité forte en light pour protéger le texte
+// ─────────────────────────────────────────────────────────────
+class _GradientOverlay extends StatelessWidget {
+  const _GradientOverlay({required this.color, required this.isDark});
+
+  final Color color;
+  final bool  isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    // Light : dégradé blanc très opaque → transparent
+    // Dark  : dégradé couleur accent → transparent
+    final opaqueColor  = isDark ? color            : Colors.white;
+    final stops        = isDark
+        ? const [0.0, 0.50, 0.72, 1.0]
+        : const [0.0, 0.45, 0.68, 1.0];
+    final colors = isDark
+        ? [opaqueColor, opaqueColor, opaqueColor.withOpacity(.55), Colors.transparent]
+        : [opaqueColor, opaqueColor, opaqueColor.withOpacity(.80), Colors.transparent];
+
+    return Positioned.fill(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin:  Alignment.centerLeft,
+            end:    Alignment.centerRight,
+            stops:  stops,
+            colors: colors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -327,37 +302,7 @@ class _IconPanel extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Dégradé protection texte
-// ─────────────────────────────────────────────────────────────
-class _GradientOverlay extends StatelessWidget {
-  const _GradientOverlay({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin:  Alignment.centerLeft,
-            end:    Alignment.centerRight,
-            stops:  const [0.0, 0.50, 0.72, 1.0],
-            colors: [
-              color,
-              color,
-              color.withOpacity(.55),
-              Colors.transparent,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Contenu texte
+// Texte
 // ─────────────────────────────────────────────────────────────
 class _TextContent extends StatelessWidget {
   const _TextContent({required this.frame, required this.isDark});
@@ -367,13 +312,15 @@ class _TextContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC   = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
+    // Light : textes sombres sur fond blanc
+    final titleC = isDark ? AppColors.textDarkPrimary  : AppColors.textLightPrimary;
+    final subC   = isDark ? AppColors.textDarkSub      : AppColors.textLightSub;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment:  MainAxisAlignment.start,
       children: [
+        // Tag
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
           decoration: BoxDecoration(
@@ -382,8 +329,6 @@ class _TextContent extends StatelessWidget {
           ),
           child: Text(
             frame.tag,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize:      9,
               fontWeight:    FontWeight.w800,
@@ -393,6 +338,8 @@ class _TextContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
+
+        // Titre
         Text(
           frame.title,
           maxLines: 2,
@@ -406,6 +353,8 @@ class _TextContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
+
+        // Sous-titre
         Text(
           frame.subtitle,
           maxLines: 1,
@@ -418,6 +367,8 @@ class _TextContent extends StatelessWidget {
           ),
         ),
         const Spacer(),
+
+        // CTA
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -443,7 +394,7 @@ class _TextContent extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Dots indicator
+// Dots
 // ─────────────────────────────────────────────────────────────
 class _DotsIndicator extends StatelessWidget {
   const _DotsIndicator({

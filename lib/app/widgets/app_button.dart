@@ -43,7 +43,7 @@ class AppButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: bgColor,
           foregroundColor: fgColor,
-          disabledBackgroundColor: scheme.primary.withOpacity(.45),
+          disabledBackgroundColor: scheme.primary.withValues(alpha: .45),
           elevation:    0,
           shadowColor:  Colors.transparent,
           shape: RoundedRectangleBorder(
@@ -54,31 +54,31 @@ class AppButton extends StatelessWidget {
         onPressed: loading ? null : onTap,
         child: loading
             ? SizedBox(
-          width:  18,
-          height: 18,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: fgColor,
-          ),
-        )
+                width:  18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: fgColor,
+                ),
+              )
             : Row(
-          mainAxisSize:     MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 18, color: fgColor),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize:   15,
-                color:      fgColor,
+                mainAxisSize:     MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 18, color: fgColor),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize:   15,
+                      color:      fgColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

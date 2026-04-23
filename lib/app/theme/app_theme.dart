@@ -13,7 +13,6 @@ class AppTheme {
     final base = ThemeData.dark();
 
     return base.copyWith(
-      useMaterial3: true,
       brightness: Brightness.dark,
 
       scaffoldBackgroundColor: AppColors.bgDark,
@@ -99,7 +98,6 @@ class AppTheme {
     final base = ThemeData.light();
 
     return base.copyWith(
-      useMaterial3: true,
       brightness: Brightness.light,
 
       scaffoldBackgroundColor: AppColors.bgLight,

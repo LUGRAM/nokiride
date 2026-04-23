@@ -8,10 +8,10 @@ class NokiBottomNavBar extends StatelessWidget {
   const NokiBottomNavBar({super.key});
 
   static const _items = [
-    _NavItemData(icon: Icons.home_filled,            label: 'Accueil'),
-    _NavItemData(icon: Icons.local_shipping_outlined, label: 'Livraisons'),
-    _NavItemData(icon: Icons.compare_arrows_rounded,  label: 'Courses'),
-    _NavItemData(icon: Icons.person_rounded,          label: 'Profil'),
+    _NavItemData(icon: Icons.home_filled,                    label: 'Accueil'),
+    _NavItemData(icon: Icons.receipt_long_rounded,           label: 'Historique'),
+    _NavItemData(icon: Icons.account_balance_wallet_rounded, label: 'Wallet'),
+    _NavItemData(icon: Icons.person_rounded,                 label: 'Profil'),
   ];
 
   @override
@@ -19,7 +19,6 @@ class NokiBottomNavBar extends StatelessWidget {
     final controller = Get.find<HomeController>();
     final isDark     = Theme.of(context).brightness == Brightness.dark;
 
-    // Couleurs dépendant du thème — passées au painter
     final navBg     = isDark ? const Color(0xFF0D1D2E) : AppColors.bgLightSurface;
     final navBorder = isDark
         ? Colors.white.withOpacity(0.04)
@@ -73,9 +72,6 @@ class NokiBottomNavBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Item
-// ─────────────────────────────────────────────────────────────
 class _BottomNavItem extends StatelessWidget {
   const _BottomNavItem({
     required this.icon,
@@ -93,14 +89,8 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dark : fond bleu marine / texte bleu clair
-    // Light : fond vert pâle / texte vert foncé
-    final activeBg   = isDark
-        ? const Color(0xFF1A3A5C)
-        : AppColors.primaryGreenFill;
-    final activeColor = isDark
-        ? AppColors.primaryBlueLight
-        : AppColors.primaryGreenDark;
+    final activeBg    = isDark ? const Color(0xFF1A3A5C) : AppColors.primaryGreenFill;
+    final activeColor = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreenDark;
     final inactiveColor = isDark
         ? Colors.white.withOpacity(0.45)
         : AppColors.textLightMuted;
@@ -120,11 +110,7 @@ class _BottomNavItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size:  22,
-              color: isSelected ? activeColor : inactiveColor,
-            ),
+            Icon(icon, size: 22, color: isSelected ? activeColor : inactiveColor),
             const SizedBox(height: 4),
             Text(
               label,
@@ -143,14 +129,8 @@ class _BottomNavItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Painter — reçoit les couleurs, ne hardcode rien
-// ─────────────────────────────────────────────────────────────
 class _NavBarPainter extends CustomPainter {
-  const _NavBarPainter({
-    required this.bgColor,
-    required this.borderColor,
-  });
+  const _NavBarPainter({required this.bgColor, required this.borderColor});
 
   final Color bgColor;
   final Color borderColor;
@@ -161,31 +141,9 @@ class _NavBarPainter extends CustomPainter {
       Offset.zero & size,
       const Radius.circular(30),
     );
-
-    // Ombre portée
-    canvas.drawShadow(
-      Path()..addRRect(rrect),
-      Colors.black.withOpacity(0.22),
-      14,
-      false,
-    );
-
-    // Fond
-    canvas.drawRRect(
-      rrect,
-      Paint()
-        ..color = bgColor
-        ..style = PaintingStyle.fill,
-    );
-
-    // Bordure subtile
-    canvas.drawRRect(
-      rrect,
-      Paint()
-        ..color       = borderColor
-        ..style       = PaintingStyle.stroke
-        ..strokeWidth = 1,
-    );
+    canvas.drawShadow(Path()..addRRect(rrect), Colors.black.withOpacity(.22), 14, false);
+    canvas.drawRRect(rrect, Paint()..color = bgColor ..style = PaintingStyle.fill);
+    canvas.drawRRect(rrect, Paint()..color = borderColor ..style = PaintingStyle.stroke ..strokeWidth = 1);
   }
 
   @override
@@ -193,9 +151,6 @@ class _NavBarPainter extends CustomPainter {
       old.bgColor != bgColor || old.borderColor != borderColor;
 }
 
-// ─────────────────────────────────────────────────────────────
-// Data
-// ─────────────────────────────────────────────────────────────
 class _NavItemData {
   final IconData icon;
   final String   label;

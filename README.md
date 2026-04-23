@@ -1,16 +1,46 @@
-# nokiride
+# NokiRide 🏍️
 
-A new Flutter project.
+**Mobilité urbaine simplifiée** — Application Flutter de transport et livraison à Libreville, Gabon.
 
-## Getting Started
+## Structure
 
-This project is a starting point for a Flutter application.
+```
+lib/
+├── app/
+│   ├── routes/          Routes + Pages GetX
+│   ├── services/        ThemeService + LocaleService
+│   ├── theme/           AppColors + AppTheme
+│   └── widgets/         AppButton + GradientBackground
+├── core/
+│   ├── network/         AppClient (prêt pour Laravel)
+│   └── storage/         AppStorage
+└── features/
+    ├── splash/           Écran de démarrage
+    ├── onboarding/       3 slides d'introduction
+    ├── auth/             Login (tél+OTP) → Register
+    ├── home/             Dashboard principal
+    ├── trip/             Moto-Taxi complet
+    ├── delivery/         Envoi colis complet
+    ├── market/           Catalogue marchands
+    ├── history/          Historique courses/livraisons
+    ├── wallet/           Portefeuille + recharge
+    ├── profile/          Profil + settings
+    └── notifications/    Centre de notifications
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Démarrage
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Auth (prototype)
+- Code OTP de test : **1234**
+- Numéro : n'importe quel numéro gabonais (+241)
+
+## Thèmes
+- **Blue-Dark** (défaut) / **Light-Green** — toggle dans la navbar home
+
+## Langues
+- 🇫🇷 Français / 🇬🇧 Anglais — switcher dans Profil > Paramètres

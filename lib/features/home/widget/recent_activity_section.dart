@@ -66,7 +66,7 @@ class RecentActivitySection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ..._activities.map(
-                (a) => Padding(
+            (a) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: _ActivityTile(data: a, isDark: isDark),
             ),
@@ -100,7 +100,7 @@ class _ActivityTile extends StatelessWidget {
       child: InkWell(
         onTap:        () {},
         borderRadius: BorderRadius.circular(18),
-        splashColor:  data.iconColor.withOpacity(.08),
+        splashColor:  data.iconColor.withValues(alpha: .08),
         child: Ink(
           padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
@@ -114,7 +114,7 @@ class _ActivityTile extends StatelessWidget {
                 width:  44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color:        data.iconColor.withOpacity(.12),
+                  color:        data.iconColor.withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Icon(data.icon, color: data.iconColor, size: 21),

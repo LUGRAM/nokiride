@@ -1,116 +1,51 @@
 import 'package:get/get.dart';
+import '../../features/auth/bindings/auth_binding.dart';
+import '../../features/auth/page/login_page.dart';
+import '../../features/auth/page/otp_page.dart';
+import '../../features/auth/page/register_page.dart';
+import '../../features/delivery/bindings/delivery_binding.dart';
+import '../../features/delivery/page/delivery_booking_page.dart';
+import '../../features/delivery/page/delivery_estimate_page.dart';
+import '../../features/delivery/page/delivery_searching_page.dart';
+import '../../features/delivery/page/delivery_tracking_page.dart';
+import '../../features/home/bindings/home_binding.dart';
+import '../../features/home/page/home_page.dart';
+import '../../features/market/bindings/market_binding.dart';
+import '../../features/market/page/cart_page.dart';
+import '../../features/market/page/market_page.dart';
+import '../../features/market/page/merchant_page.dart';
+import '../../features/notifications/page/notifications_page.dart';
+import '../../features/onboarding/bindings/onboarding_binding.dart';
+import '../../features/onboarding/pages/onboarding_page.dart';
+import '../../features/splash/pages/splash_page.dart';
+import '../../features/trip/bindings/trip_binding.dart';
+import '../../features/trip/page/trip_booking_page.dart';
+import '../../features/trip/page/trip_estimate_page.dart';
+import '../../features/trip/page/trip_rating_page.dart';
+import '../../features/trip/page/trip_searching_page.dart';
+import '../../features/trip/page/trip_tracking_page.dart';
 import 'app_routes.dart';
 
-// Import des pages
-import '../../features/splash/pages/splash_page.dart';
-import '../../features/onboarding/pages/onboarding_page.dart';
-import '../../features/auth/pages/login_page.dart';
-import '../../features/auth/pages/register_page.dart';
-import '../../features/auth/pages/otp_page.dart';
-
-import '../../features/home/pages/home_page.dart';
-import '../../features/search/pages/search_page.dart';
-import '../../features/trip/pages/trip_request_page.dart';
-import '../../features/trip/pages/trip_tracking_page.dart';
-import '../../features/trip/pages/trip_completed_page.dart';
-import '../../features/delivery/pages/delivery_details_page.dart';
-import '../../features/profile/pages/profile_page.dart';
-import '../../features/safety/pages/safety_settings_page.dart';
-
-// Import des bindings
-import '../../features/home/binding/home_binding.dart';
-import '../../features/onboarding/binding/onboarding_binding.dart';
-import '../../features/trip/binding/trip_binding.dart';
-import '../../features/delivery/binding/delivery_binding.dart';
-import '../../features/search/binding/search_binding.dart';
-import '../../features/profile/binding/profile_binding.dart';
-import '../../features/safety/binding/safety_binding.dart';
-import '../../features/auth/binding/auth_binding.dart';
-
 class AppPages {
-  static final pages = [
-    // Splash
-    GetPage(
-      name: Routes.splash,
-      page: () => const SplashPage(),
-      // binding: SplashBinding(),
-    ),
-
-    // Onboarding
-    GetPage(
-      name: Routes.onboarding,
-      page: () => const OnboardingPage(),
-      binding: OnboardingBinding(),
-    ),
-/*
-    // Auth
-    GetPage(
-      name: Routes.login,
-      page: () => const LoginPage(),
-      binding: AuthBinding(),
-    ),
-    GetPage(
-      name: Routes.register,
-      page: () => const RegisterPage(),
-      binding: AuthBinding(),
-    ),
-    GetPage(
-      name: Routes.otp,
-      page: () => const OtpPage(),
-      binding: AuthBinding(),
-    ),
-*/
-    // ==================== MAIN APP ====================
-    GetPage(
-      name: Routes.home,
-      page: () => const HomePage(),
-      binding: HomeBinding(),
-      transition: Transition.fadeIn,
-    ),
-/*
-    // Search
-    GetPage(
-      name: Routes.search,
-      page: () => const SearchPage(),
-      binding: SearchBinding(),
-    ),
-
-    // Trip Module
-    GetPage(
-      name: Routes.tripRequest,
-      page: () => const TripRequestPage(),
-      binding: TripBinding(),
-    ),
-    GetPage(
-      name: Routes.tripTracking,
-      page: () => const TripTrackingPage(),
-      binding: TripBinding(),
-    ),
-    GetPage(
-      name: Routes.tripCompleted,
-      page: () => const TripCompletedPage(),
-      binding: TripBinding(),
-    ),
-
-    // Delivery
-    GetPage(
-      name: Routes.delivery,
-      page: () => const DeliveryDetailsPage(),
-      binding: DeliveryBinding(),
-    ),
-
-    // Profile
-    GetPage(
-      name: Routes.profile,
-      page: () => const ProfilePage(),
-      binding: ProfileBinding(),
-    ),
-
-    // Safety
-    GetPage(
-      name: Routes.safetySettings,
-      page: () => const SafetySettingsPage(),
-      binding: SafetyBinding(),
-    ),
- */ ];
+  static final routes = [
+    GetPage(name: Routes.splash,            page: () => const SplashPage()),
+    GetPage(name: Routes.onboarding,        page: () => const OnboardingPage(),       binding: OnboardingBinding()),
+    GetPage(name: Routes.login,             page: () => const LoginPage(),            binding: AuthBinding()),
+    GetPage(name: Routes.otp,               page: () => const OtpPage(),              binding: AuthBinding()),
+    GetPage(name: Routes.register,          page: () => const RegisterPage(),         binding: AuthBinding()),
+    GetPage(name: Routes.home,              page: () => const HomePage(),             binding: HomeBinding()),
+    GetPage(name: Routes.trip,              page: () => const TripBookingPage(),      binding: TripBinding()),
+    GetPage(name: Routes.tripEstimate,      page: () => const TripEstimatePage(),     binding: TripBinding()),
+    GetPage(name: Routes.tripSearching,     page: () => const TripSearchingPage(),    binding: TripBinding()),
+    GetPage(name: Routes.tripTracking,      page: () => const TripTrackingPage(),     binding: TripBinding()),
+    GetPage(name: Routes.tripRating,        page: () => const TripRatingPage(),       binding: TripBinding()),
+    GetPage(name: Routes.delivery,          page: () => const DeliveryBookingPage(),  binding: DeliveryBinding()),
+    GetPage(name: Routes.deliveryEstimate,  page: () => const DeliveryEstimatePage(), binding: DeliveryBinding()),
+    GetPage(name: Routes.deliverySearching, page: () => const DeliverySearchingPage(),binding: DeliveryBinding()),
+    GetPage(name: Routes.deliveryTracking,  page: () => const DeliveryTrackingPage(), binding: DeliveryBinding()),
+    GetPage(name: Routes.market,            page: () => const MarketPage(),           binding: MarketBinding()),
+    GetPage(name: Routes.marketMerchant,    page: () => const MerchantPage(),         binding: MarketBinding()),
+    GetPage(name: Routes.marketCart,        page: () => const CartPage(),             binding: MarketBinding()),
+    GetPage(name: Routes.notifications,     page: () => const NotificationsPage()),
+  ];
 }
