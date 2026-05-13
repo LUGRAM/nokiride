@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 
@@ -68,7 +69,13 @@ class _SplashPageState extends State<SplashPage>
                     shape: BoxShape.circle,
                     border: Border.all(color: AppColors.primaryBlue.withOpacity(.30), width: 1.5),
                   ),
-                  child: const Icon(Icons.sports_motorsports_rounded, color: AppColors.primaryBlue, size: 42),
+                  //child: const Icon(Icons.sports_motorsports_rounded, color: AppColors.primaryBlue, size: 42),
+                  child: Lottie.asset(
+                    'assets/animations/halo_soft.json',
+                    width: 200,
+                    height: 200,
+                    repeat: true,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 Text('NokiRide', style: GoogleFonts.inter(

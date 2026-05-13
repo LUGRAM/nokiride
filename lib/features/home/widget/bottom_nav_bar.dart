@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,51 +21,48 @@ class NokiBottomNavBar extends StatelessWidget {
     final controller = Get.find<HomeController>();
     final isDark     = Theme.of(context).brightness == Brightness.dark;
 
-    final navBg     = isDark ? const Color(0xFF0D1D2E) : AppColors.bgLightSurface;
+    // Couleurs Telegram-style
+    final navBg     = isDark
+        ? const Color(0xFF0D1D2E).withOpacity(.92)
+        : Colors.white.withOpacity(.88);
     final navBorder = isDark
-        ? Colors.white.withOpacity(0.04)
-        : AppColors.borderLight;
+        ? Colors.white.withOpacity(.06)
+        : Colors.black.withOpacity(.08);
 
     return Obx(() {
       final selectedIndex = controller.tabIndex.value;
 
-      return Material(
-        color: Colors.transparent,
-        child: Container(
-          height: 82,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color:      Colors.black.withOpacity(isDark ? 0.28 : 0.10),
-                blurRadius: 24,
-                offset:     const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: CustomPaint(
-              painter: _NavBarPainter(
-                bgColor:     navBg,
-                borderColor: navBorder,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Row(
-                  children: List.generate(_items.length, (i) {
-                    return Expanded(
-                      child: _BottomNavItem(
-                        icon:       _items[i].icon,
-                        label:      _items[i].label,
-                        isSelected: i == selectedIndex,
-                        isDark:     isDark,
-                        onTap:      () => controller.changeTabIndex(i),
-                      ),
-                    );
-                  }),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: BackdropFilter(
+          // ── Flou Telegram derrière la navbar ──────────────
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            height: 64,                          // ← plus compact que 82
+            decoration: BoxDecoration(
+              color:        navBg,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: navBorder, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color:      Colors.black.withOpacity(isDark ? .30 : .10),
+                  blurRadius: 20,
+                  offset:     const Offset(0, 8),
                 ),
-              ),
+              ],
+            ),
+            child: Row(
+              children: List.generate(_items.length, (i) {
+                return Expanded(
+                  child: _NavItem(
+                    icon:       _items[i].icon,
+                    label:      _items[i].label,
+                    isSelected: i == selectedIndex,
+                    isDark:     isDark,
+                    onTap:      () => controller.changeTabIndex(i),
+                  ),
+                );
+              }),
             ),
           ),
         ),
@@ -72,8 +71,11 @@ class NokiBottomNavBar extends StatelessWidget {
   }
 }
 
-class _BottomNavItem extends StatelessWidget {
-  const _BottomNavItem({
+// ─────────────────────────────────────────────────────────────
+// Item avec ripple + animation Telegram
+// ─────────────────────────────────────────────────────────────
+class _NavItem extends StatelessWidget {
+  const _NavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
@@ -89,66 +91,91 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeBg    = isDark ? const Color(0xFF1A3A5C) : AppColors.primaryGreenFill;
-    final activeColor = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreenDark;
+    final activeColor   = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreenDark;
     final inactiveColor = isDark
-        ? Colors.white.withOpacity(0.45)
-        : AppColors.textLightMuted;
+        ? Colors.white.withOpacity(.45)
+        : Colors.black.withOpacity(.40);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap:    onTap,
-      child: AnimatedContainer(
-        duration:  const Duration(milliseconds: 220),
-        curve:     Curves.easeOut,
-        margin:    const EdgeInsets.symmetric(horizontal: 4),
-        padding:   const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        decoration: BoxDecoration(
-          color:        isSelected ? activeBg : Colors.transparent,
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 22, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize:   11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color:      isSelected ? activeColor : inactiveColor,
+    // Ripple color = couleur active translucide
+    final rippleColor = activeColor.withOpacity(.12);
+
+    return Material(
+      color:        Colors.transparent,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap:        onTap,
+        borderRadius: BorderRadius.circular(18),
+        // ── Ripple Telegram ────────────────────────────────
+        splashColor:  rippleColor,
+        highlightColor: rippleColor.withOpacity(.06),
+        child: AnimatedContainer(
+          duration:  const Duration(milliseconds: 200),
+          curve:     Curves.easeOut,
+          padding:   const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize:      MainAxisSize.min,
+            children: [
+              // Icône avec indicateur point Telegram
+              Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  AnimatedScale(
+                    scale:    isSelected ? 1.10 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    curve:    Curves.easeOut,
+                    child: Icon(
+                      icon,
+                      size:  22,
+                      color: isSelected ? activeColor : inactiveColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 3),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  fontSize:   10,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color:      isSelected ? activeColor : inactiveColor,
+                  letterSpacing: isSelected ? -.2 : 0,
+                ),
+                child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _NavBarPainter extends CustomPainter {
-  const _NavBarPainter({required this.bgColor, required this.borderColor});
-
-  final Color bgColor;
-  final Color borderColor;
+// ─────────────────────────────────────────────────────────────
+// Barrier non-cliquable sous la navbar
+// À utiliser dans home_page.dart à la place de Positioned simple
+// ─────────────────────────────────────────────────────────────
+class NokiNavBarBarrier extends StatelessWidget {
+  const NokiNavBarBarrier({super.key, required this.child});
+  final Widget child;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      const Radius.circular(30),
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        // Zone basse non-cliquable (absorbe les taps sous la navbar)
+        Positioned(
+          left: 0, right: 0, bottom: 0,
+          height: 90,
+          child: IgnorePointer(
+            ignoring: false,
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+      ],
     );
-    canvas.drawShadow(Path()..addRRect(rrect), Colors.black.withOpacity(.22), 14, false);
-    canvas.drawRRect(rrect, Paint()..color = bgColor ..style = PaintingStyle.fill);
-    canvas.drawRRect(rrect, Paint()..color = borderColor ..style = PaintingStyle.stroke ..strokeWidth = 1);
   }
-
-  @override
-  bool shouldRepaint(_NavBarPainter old) =>
-      old.bgColor != bgColor || old.borderColor != borderColor;
 }
 
 class _NavItemData {

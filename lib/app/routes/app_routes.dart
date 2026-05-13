@@ -21,5 +21,9 @@ abstract class Routes {
   static const marketMerchant    = '/market/merchant';
   static const marketCart        = '/market/cart';
 
+  static const wallet            = '/wallet';
+
+  static const profile            = '/profile';
+
   static const notifications     = '/notifications';
 }

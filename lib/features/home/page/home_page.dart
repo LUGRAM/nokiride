@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:nokiride/features/history/page/history_page.dart';
 
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../profile/page/profile_page.dart';
+import '../../wallet/controller/wallet_controller.dart';
+import '../../wallet/page/wallet_page.dart';
 import '../controller/home_controller.dart';
 import '../widget/bottom_nav_bar.dart';
 import '../widget/home_header.dart';
@@ -18,9 +23,9 @@ class HomePage extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final pages = [
       const _HomeTab(),
-      const _PlaceholderTab(label: 'Livraisons',  icon: Icons.local_shipping_outlined),
-      const _PlaceholderTab(label: 'Courses',     icon: Icons.compare_arrows_rounded),
-      const _PlaceholderTab(label: 'Profil',      icon: Icons.person_rounded),
+      const HistoryPage(),
+      const WalletPage(),
+      const ProfilePage(),
     ];
 
     return Scaffold(
@@ -30,9 +35,17 @@ class HomePage extends GetView<HomeController> {
             index:    controller.tabIndex.value,
             children: pages,
           )),
-          const Positioned(
-            left: 14, right: 14, bottom: 12,
-            child: NokiBottomNavBar(),
+          Positioned(
+            left: 0, right: 0, bottom: 0,
+            height: 96,
+            child: AbsorbPointer(
+              absorbing: true,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Positioned(
+            left: 12, right: 12, bottom: 10,
+            child: const NokiBottomNavBar(),
           ),
         ],
       ),
@@ -48,8 +61,9 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg     = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final isDark   = Theme.of(context).brightness == Brightness.dark;
+    final bg       = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final userName = GetStorage().read<String>('user_name') ?? 'Noki';
 
     return Container(
       color: bg,
@@ -62,10 +76,11 @@ class _HomeTab extends StatelessWidget {
               const SizedBox(height: 6),
 
               // ── Header ──────────────────────────────────
-              const HomeHeader(
-                userName:   'Noki',
+              HomeHeader(
+                userName:   userName,
                 location:   'Libreville, Akanda',
                 notifCount: 3,
+                onNotifTap: () => Get.toNamed(Routes.notifications),
               ),
               const SizedBox(height: 10),
 
@@ -75,6 +90,10 @@ class _HomeTab extends StatelessWidget {
                 onScheduleTap: () => Get.toNamed(Routes.trip),
               ),
               const SizedBox(height: 14),
+
+              // ── NokiPay teaser ──────────────────────────
+              //const _WalletTeaser(),
+              //const SizedBox(height: 14),
 
               // ── Carousel promo ──────────────────────────
               PromoCarousel(
@@ -139,7 +158,7 @@ class _HomeTab extends StatelessWidget {
 
               // ── Activité récente ────────────────────────
               RecentActivitySection(
-                onSeeAll: () {},
+                onSeeAll: () => Get.find<HomeController>().changeTabIndex(1),
               ),
             ],
           ),
@@ -150,65 +169,81 @@ class _HomeTab extends StatelessWidget {
 
   void _handleServiceTap(String id) {
     switch (id) {
-      case 'moto':
-        Get.toNamed(Routes.trip);
-        break;
-      case 'envoi':
-        Get.toNamed(Routes.delivery);
-        break;
-      case 'market':
-        Get.toNamed(Routes.market);
-        break;
-      case 'plan':
-        Get.toNamed(Routes.trip);
-        break;
+      case 'moto':   Get.toNamed(Routes.trip);     break;
+      case 'envoi':  Get.toNamed(Routes.delivery); break;
+      case 'market': Get.toNamed(Routes.market);   break;
+      case 'plan':   Get.toNamed(Routes.trip);     break;
     }
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// PLACEHOLDER TABS
+// WALLET TEASER
 // ─────────────────────────────────────────────────────────────
-class _PlaceholderTab extends StatelessWidget {
-  const _PlaceholderTab({required this.label, required this.icon});
-  final String   label;
-  final IconData icon;
+class _WalletTeaser extends StatelessWidget {
+  const _WalletTeaser();
 
   @override
   Widget build(BuildContext context) {
     final isDark  = Theme.of(context).brightness == Brightness.dark;
-    final bg      = isDark ? AppColors.bgDark      : AppColors.bgLight;
-    final textC   = isDark ? AppColors.textDarkSub  : AppColors.textLightSub;
-    final iconC   = isDark
-        ? AppColors.primaryBlueLight
-        : AppColors.primaryGreen;
+    final wallet  = Get.find<WalletController>();
+    final primary = isDark ? AppColors.primaryBlue  : AppColors.primaryGreen;
+    final cardBg  = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
+    final border  = isDark ? AppColors.borderDark    : AppColors.borderLight;
+    final titleC  = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
+    final subC    = isDark ? AppColors.textDarkSub   : AppColors.textLightSub;
 
-    return Container(
-      color: bg,
-      child: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: iconC, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize:   20,
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? AppColors.textDarkPrimary
-                      : AppColors.textLightPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Bientôt disponible',
-                style: TextStyle(fontSize: 14, color: textC),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () => Get.find<HomeController>().changeTabIndex(2),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color:        cardBg,
+            borderRadius: BorderRadius.circular(20),
+            border:       Border.all(color: border),
           ),
+          child: Row(children: [
+            // Icône wallet
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color:        primary.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(Icons.account_balance_wallet_rounded, color: primary, size: 22),
+            ),
+            const SizedBox(width: 12),
+
+            // Infos balance
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text("NokiPay",
+                style: TextStyle(fontSize: 11.5, color: subC, fontWeight: FontWeight.w600, letterSpacing: .3)),
+              const SizedBox(height: 3),
+              Obx(() => Text(
+                wallet.balanceVisible.value ? wallet.formattedBalance : "•••••• F CFA",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: titleC),
+              )),
+            ]),
+            const Spacer(),
+
+            // Bouton recharger
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                color:        primary.withValues(alpha: .10),
+                borderRadius: BorderRadius.circular(12),
+                border:       Border.all(color: primary.withValues(alpha: .22)),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.add_rounded, color: primary, size: 15),
+                const SizedBox(width: 4),
+                Text("Recharger",
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primary)),
+              ]),
+            ),
+          ]),
         ),
       ),
     );
