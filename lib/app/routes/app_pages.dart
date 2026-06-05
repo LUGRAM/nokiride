@@ -24,6 +24,7 @@ import '../../features/splash/pages/splash_page.dart';
 import '../../features/trip/bindings/trip_binding.dart';
 import '../../features/trip/page/trip_booking_page.dart';
 import '../../features/trip/page/trip_estimate_page.dart';
+import '../../features/trip/page/trip_page.dart';
 import '../../features/trip/page/trip_rating_page.dart';
 import '../../features/trip/page/trip_searching_page.dart';
 import '../../features/trip/page/trip_tracking_page.dart';
@@ -51,7 +52,7 @@ class AppPages {
         page: () => const HomePage(),
         binding: HomeBinding()),
     GetPage(name: Routes.trip,
-        page: () => const TripBookingPage(),
+        page: () => const TripPage(),
         binding: TripBinding()),
     GetPage(name: Routes.tripEstimate,
         page: () => const TripEstimatePage(),

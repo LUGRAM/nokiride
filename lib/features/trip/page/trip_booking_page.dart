@@ -111,7 +111,7 @@ class _BookingSheet extends GetView<TripController> {
             value:        controller.pickup.value?.name,
             dotColor:     primary,
             onTap:        () => _openSearch(context, isPickup: true),
-            onClear:      controller.clearPickup,
+            onClear:      () => controller.clearPickup(),
           )),
 
           // Ligne connecteur
@@ -131,7 +131,7 @@ class _BookingSheet extends GetView<TripController> {
             value:    controller.dropoff.value?.name,
             dotColor: AppColors.success,
             onTap:    () => _openSearch(context, isPickup: false),
-            onClear:  controller.clearDropoff,
+            onClear:  () => controller.clearDropoff(),
           )),
 
           const SizedBox(height: 20),
@@ -151,7 +151,7 @@ class _BookingSheet extends GetView<TripController> {
                   ),
                 ),
                 onPressed: controller.canEstimate
-                    ? controller.estimateTrip
+                    ? () => controller.estimateTrip()
                     : null,
                 child: const Text(
                   'Estimer le prix',

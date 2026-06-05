@@ -12,6 +12,8 @@ import 'app/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
+  await GetStorage().erase(); // Cela vide toute la mémoire locale
+
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

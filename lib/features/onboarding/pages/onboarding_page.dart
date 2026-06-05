@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
@@ -40,7 +41,7 @@ class OnboardingPage extends GetView<OnboardingController> {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Bouton Passer
+// Bouton Passer (Plus discret, mieux intégré)
 // ─────────────────────────────────────────────────────────────
 class _SkipButton extends StatelessWidget {
   const _SkipButton({required this.isDark, required this.onTap});
@@ -55,19 +56,21 @@ class _SkipButton extends StatelessWidget {
     return Align(
       alignment: Alignment.topRight,
       child: Padding(
-        padding: const EdgeInsets.only(top: 12, right: 20),
+        padding: const EdgeInsets.only(top: 10, right: 16),
         child: TextButton(
           onPressed: onTap,
           style: TextButton.styleFrom(
             foregroundColor: color,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            splashFactory: NoSplash.splashFactory, // Évite l'effet de flash gris
           ),
           child: Text(
             'Passer',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               color:      color,
-              fontSize:   15,
-              fontWeight: FontWeight.w600,
+              fontSize:   14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
             ),
           ),
         ),
@@ -77,7 +80,7 @@ class _SkipButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Slide individuelle
+// Slide individuelle (Épurée et Premium)
 // ─────────────────────────────────────────────────────────────
 class _Slide extends StatelessWidget {
   const _Slide({required this.slide, required this.isDark});
@@ -89,56 +92,66 @@ class _Slide extends StatelessWidget {
   Widget build(BuildContext context) {
     final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final descC  = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
+    final cardBg = isDark ? AppColors.bgDarkSurface : Colors.white;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Cercle emoji
+          // Cercle d'illustration Premium
           Container(
-            width:  190,
-            height: 190,
+            width:  180,
+            height: 180,
             decoration: BoxDecoration(
-              color: slide.bgColor.withOpacity(.12),
+              color: isDark ? cardBg.withOpacity(0.6) : AppColors.lightAcidGreen.withOpacity(0.3),
               shape: BoxShape.circle,
               border: Border.all(
-                color: slide.bgColor.withOpacity(.18),
+                color: border.withOpacity(0.5),
                 width: 1.5,
               ),
+              boxShadow: isDark ? [] : [
+                BoxShadow(
+                  color: AppColors.darkGreenBase.withOpacity(0.03),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 slide.emoji,
-                style: const TextStyle(fontSize: 100),
+                style: const TextStyle(fontSize: 85),
               ),
             ),
           ),
 
-          const SizedBox(height: 52),
+          const SizedBox(height: 48),
 
           Text(
             slide.title,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize:      26,
-              fontWeight:    FontWeight.w800,
+              fontWeight:    FontWeight.w900,
               color:         titleC,
-              height:        1.2,
-              letterSpacing: -.4,
+              height:        1.25,
+              letterSpacing: -0.8,
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           Text(
             slide.description,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize:   16,
+            style: GoogleFonts.inter(
+              fontSize:   15,
               color:      descC,
               height:     1.5,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
+              letterSpacing: -0.1,
             ),
           ),
         ],
@@ -148,7 +161,7 @@ class _Slide extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Footer — dots + boutons
+// Footer — dots + boutons relookés
 // ─────────────────────────────────────────────────────────────
 class _Footer extends StatelessWidget {
   const _Footer({required this.controller, required this.isDark});
@@ -158,24 +171,25 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Changement dynamique de l'accent pour les dots actifs
+    final activeDotColor = isDark ? AppColors.neonYellow : AppColors.primary;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Dots
+          // Dots Indicator
           Obx(() => _DotsRow(
-            count:    controller.slides.length,
-            current:  controller.currentPage.value,
-            isDark:   isDark,
-            activeColor: isDark
-                ? AppColors.primaryBlue
-                : AppColors.primaryGreen,
+            count:       controller.slides.length,
+            current:     controller.currentPage.value,
+            isDark:      isDark,
+            activeColor: activeDotColor,
           )),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 36),
 
-          // Bouton principal
+          // Bouton Principal (Suivant / Commencer)
           Obx(() => AppButton(
             label: controller.isLastPage
                 ? 'Commencer avec NokiRide'
@@ -183,19 +197,19 @@ class _Footer extends StatelessWidget {
             onTap: controller.nextPage,
           )),
 
-          // Bouton secondaire — seulement sur la dernière slide
+          // Bouton secondaire (Optionnel en dernière page)
           Obx(() => AnimatedSize(
-            duration: const Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 200),
             curve:    Curves.easeInOut,
             child: controller.isLastPage
                 ? Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: AppButton(
-                      label:   "J'ai déjà un compte",
-                      variant: AppButtonVariant.outline,
-                      onTap:   controller.goToLogin,
-                    ),
-                  )
+              padding: const EdgeInsets.only(top: 14),
+              child: AppButton(
+                label:   "J'ai déjà un compte",
+                variant: AppButtonVariant.outline,
+                onTap:   controller.goToLogin,
+              ),
+            )
                 : const SizedBox.shrink(),
           )),
         ],
@@ -205,7 +219,7 @@ class _Footer extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Dots indicator
+// Dots Indicator (Design Étiré / Pill-shaped modern)
 // ─────────────────────────────────────────────────────────────
 class _DotsRow extends StatelessWidget {
   const _DotsRow({
@@ -223,22 +237,22 @@ class _DotsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inactiveC = isDark
-        ? Colors.white.withOpacity(.18)
-        : Colors.black.withOpacity(.12);
+        ? Colors.white.withOpacity(.15)
+        : AppColors.textLightMuted.withOpacity(.3);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (i) {
         final active = i == current;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 250),
           curve:    Curves.easeInOut,
-          margin:   const EdgeInsets.symmetric(horizontal: 5),
-          height:   8,
-          width:    active ? 28 : 8,
+          margin:   const EdgeInsets.symmetric(horizontal: 4),
+          height:   6,
+          width:    active ? 24 : 6, // Effet pilule étirée moderne
           decoration: BoxDecoration(
             color:        active ? activeColor : inactiveC,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
         );
       }),

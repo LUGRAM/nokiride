@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../model/place_model.dart';
@@ -55,8 +56,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
             const Positioned(
               left:   80,
               top:    160,
-              child: _MapPin(color: AppColors.primaryBlue,
-                             icon:  Icons.radio_button_checked_rounded),
+              child: _MapPin(color: AppColors.emeraldPrimary,
+                             icon:  FontAwesomeIcons.circleDot),
             ),
 
           // Marqueur arrivée
@@ -64,8 +65,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
             const Positioned(
               right: 90,
               top:   280,
-              child: _MapPin(color: AppColors.success,
-                             icon:  Icons.location_on_rounded),
+              child: _MapPin(color: AppColors.neonYellow,
+                             icon:  FontAwesomeIcons.locationDot),
             ),
 
           // Marqueur coursier animé
@@ -80,8 +81,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
                   left: left,
                   top:  top,
                   child: const _MapPin(
-                    color: AppColors.warning,
-                    icon:  Icons.sports_motorsports_rounded,
+                    color: AppColors.emeraldPrimary,
+                    icon:  FontAwesomeIcons.motorcycle,
                     size:  38,
                   ),
                 );
@@ -111,16 +112,14 @@ class _MapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bgColor   = isDark ? const Color(0xFF0A1628) : const Color(0xFFE8EDF2);
+    final bgColor   = isDark ? AppColors.darkGreenBase : AppColors.bgLight;
     final gridColor = isDark
+        ? Colors.white.withOpacity(.02)
+        : Colors.black.withOpacity(.03);
+    final roadColor = isDark
         ? Colors.white.withOpacity(.04)
         : Colors.black.withOpacity(.05);
-    final roadColor = isDark
-        ? Colors.white.withOpacity(.08)
-        : Colors.black.withOpacity(.07);
-    final routeColor = isDark
-        ? AppColors.primaryBlue.withOpacity(.55)
-        : AppColors.primaryBlue.withOpacity(.45);
+    final routeColor = AppColors.emeraldPrimary.withOpacity(0.5);
 
     // Fond
     canvas.drawRect(Offset.zero & size, Paint()..color = bgColor);
@@ -163,16 +162,6 @@ class _MapPainter extends CustomPainter {
         ..strokeCap   = StrokeCap.round,
     );
 
-    // Halo lumineux sur la route
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color       = routeColor.withOpacity(.18)
-        ..strokeWidth = 12
-        ..style       = PaintingStyle.stroke
-        ..strokeCap   = StrokeCap.round,
-    );
-
     // Blocs de bâtiments
     _drawBlock(canvas, size, .05, .05, .18, .28, isDark);
     _drawBlock(canvas, size, .32, .05, .58, .28, isDark);
@@ -191,8 +180,8 @@ class _MapPainter extends CustomPainter {
       ),
       Paint()
         ..color = dark
-            ? Colors.white.withOpacity(.04)
-            : Colors.black.withOpacity(.05),
+            ? Colors.white.withOpacity(.02)
+            : Colors.black.withOpacity(.03),
     );
   }
 
@@ -217,17 +206,17 @@ class _MapPin extends StatelessWidget {
       width:  size,
       height: size,
       decoration: BoxDecoration(
-        color:  color.withOpacity(.18),
+        color:  color.withOpacity(.25),
         shape:  BoxShape.circle,
-        border: Border.all(color: color.withOpacity(.45), width: 1.5),
+        border: Border.all(color: color, width: 2),
         boxShadow: [
           BoxShadow(
-            color:      color.withOpacity(.25),
-            blurRadius: 8,
+            color:      color.withOpacity(.3),
+            blurRadius: 12,
           ),
         ],
       ),
-      child: Icon(icon, color: color, size: size * .5),
+      child: Center(child: FaIcon(icon, color: color, size: size * .45)),
     );
   }
 }
@@ -250,22 +239,22 @@ class _LocationBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color:      Colors.black.withOpacity(.12),
-            blurRadius: 8,
+            color:      Colors.black.withOpacity(.08),
+            blurRadius: 12,
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.place_rounded,
-               color: AppColors.primaryBlue, size: 14),
-          const SizedBox(width: 4),
+          const FaIcon(FontAwesomeIcons.locationDot,
+               color: AppColors.emeraldPrimary, size: 10),
+          const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
               fontSize:   12,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
               color:      textC,
             ),
           ),

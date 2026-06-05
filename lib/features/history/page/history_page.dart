@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../controller/history_controller.dart';
 import '../model/history_model.dart';
@@ -14,7 +16,7 @@ class HistoryPage extends StatelessWidget {
     final bg         = isDark ? AppColors.bgDark : AppColors.bgLight;
     final titleC     = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final subC       = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final primary    = isDark ? AppColors.primaryBlue : AppColors.primaryGreen;
+    final primary    = AppColors.emeraldPrimary;
 
     return Container(
       color: bg,
@@ -26,27 +28,20 @@ class HistoryPage extends StatelessWidget {
             child: Row(children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text("Activités",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: titleC)),
-                const SizedBox(height: 2),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.8)),
+                const SizedBox(height: 4),
                 Text("${controller.trips.length} courses · ${controller.deliveries.length} livraisons",
-                    style: TextStyle(fontSize: 12.5, color: subC, fontWeight: FontWeight.w500)),
+                    style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
               ]),
               const Spacer(),
-              Container(
-                width: 38, height: 38,
-                decoration: BoxDecoration(
-                  color: primary.withValues(alpha: .12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.filter_list_rounded, color: primary, size: 20),
-              ),
+              _HeaderActionBtn(icon: FontAwesomeIcons.sliders, isDark: isDark),
             ]),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // ── Tabs pill toggle ──────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Obx(() => _PillTabs(
               selected: controller.mainTabIndex.value,
               onTap:    (i) => controller.mainTabIndex.value = i,
@@ -54,7 +49,7 @@ class HistoryPage extends StatelessWidget {
               primary:  primary,
             )),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           // ── Contenu ───────────────────────────────────────
           Expanded(
@@ -64,6 +59,28 @@ class HistoryPage extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+}
+
+class _HeaderActionBtn extends StatelessWidget {
+  const _HeaderActionBtn({required this.icon, required this.isDark});
+  final IconData icon;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 42, height: 42,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bgDarkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 1.5),
+        boxShadow: isDark ? [] : [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Center(child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 16)),
     );
   }
 }
@@ -81,16 +98,19 @@ class _PillTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg      = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
+    final bg      = isDark ? AppColors.bgDarkSurface : Colors.white;
     final border  = isDark ? AppColors.borderDark    : AppColors.borderLight;
     final inactC  = isDark ? AppColors.textDarkSub   : AppColors.textLightSub;
     final labels  = ['En cours', 'Historique'];
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: bg, borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
+        color: bg, borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: border, width: 1.5),
+        boxShadow: isDark ? [] : [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
       ),
       child: Row(
         children: List.generate(labels.length, (i) {
@@ -99,25 +119,20 @@ class _PillTabs extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onTap(i),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve:    Curves.easeInOut,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                duration: const Duration(milliseconds: 250),
+                curve:    Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color:        active ? primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: active ? [
-                    BoxShadow(
-                      color:      primary.withValues(alpha: .25),
-                      blurRadius: 8, offset: const Offset(0, 3),
-                    ),
-                  ] : null,
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(labels[i],
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize:   13.5,
-                    fontWeight: active ? FontWeight.w800 : FontWeight.w500,
+                    fontSize:   14,
+                    fontWeight: active ? FontWeight.w900 : FontWeight.w700,
                     color:      active ? Colors.white : inactC,
+                    letterSpacing: active ? -0.2 : 0,
                   ),
                 ),
               ),
@@ -142,53 +157,42 @@ class _EnCoursTab extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          // Icône gradient
           Container(
-            width: 88, height: 88,
+            width: 100, height: 100,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-                colors: [
-                  primary.withValues(alpha: .20),
-                  primary.withValues(alpha: .06),
-                ],
-              ),
-              shape:  BoxShape.circle,
-              border: Border.all(color: primary.withValues(alpha: .18), width: 1.5),
+              color: primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(color: primary.withOpacity(0.15), width: 2),
             ),
-            child: Icon(Icons.directions_bike_rounded, color: primary, size: 40),
+            child: Center(child: FaIcon(FontAwesomeIcons.motorcycle, color: primary, size: 40)),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 28),
           Text("Aucune activité en cours",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: titleC),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.5),
               textAlign: TextAlign.center),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             "Vos courses et livraisons en cours s'afficheront ici en temps réel.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13.5, color: subC, height: 1.55),
+            style: TextStyle(fontSize: 14, color: subC, height: 1.5, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 28),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-            decoration: BoxDecoration(
-              color:        primary,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color:      primary.withValues(alpha: .30),
-                  blurRadius: 14, offset: const Offset(0, 5),
-                ),
-              ],
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              onPressed: () => Get.toNamed(Routes.trip),
+              icon: const FaIcon(FontAwesomeIcons.plus, size: 14, color: Colors.white),
+              label: const Text("Commander une course",
+                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
             ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              const Icon(Icons.add_rounded, color: Colors.white, size: 18),
-              const SizedBox(width: 8),
-              const Text("Commander une course",
-                  style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w700)),
-            ]),
           ),
         ]),
       ),
@@ -212,20 +216,20 @@ class _HistoriqueTab extends StatelessWidget {
     return Column(children: [
       // Sous-onglets
       Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Obx(() => Row(children: [
           _SubTab(
             label:   "Mes Courses",
-            icon:    Icons.sports_motorsports_rounded,
+            icon:    FontAwesomeIcons.motorcycle,
             count:   controller.trips.length,
             active:  controller.histTabIndex.value == 0,
             isDark:  isDark, primary: primary,
             onTap:   () => controller.histTabIndex.value = 0,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           _SubTab(
             label:   "Livraisons",
-            icon:    Icons.inventory_2_rounded,
+            icon:    FontAwesomeIcons.boxOpen,
             count:   controller.deliveries.length,
             active:  controller.histTabIndex.value == 1,
             isDark:  isDark, primary: primary,
@@ -242,7 +246,7 @@ class _HistoriqueTab extends StatelessWidget {
 
           if (grouped.isEmpty) {
             return Center(child: Text("Aucune entrée",
-                style: TextStyle(color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted)));
+                style: TextStyle(color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted, fontWeight: FontWeight.w600)));
           }
 
           final dates = grouped.keys.toList();
@@ -257,20 +261,21 @@ class _HistoriqueTab extends StatelessWidget {
                 children: [
                   // Header de groupe
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
                     child: Row(children: [
                       Container(
-                        width: 6, height: 6,
-                        decoration: BoxDecoration(color: primary, shape: BoxShape.circle),
+                        width: 8, height: 8,
+                        decoration: BoxDecoration(color: AppColors.neonYellow, shape: BoxShape.circle),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 10),
                       Text(date,
                           style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary)),
+                              fontSize: 14, fontWeight: FontWeight.w800,
+                              color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+                              letterSpacing: -0.2)),
                       const Spacer(),
                       Text("${items.length} entrée${items.length > 1 ? 's' : ''}",
-                          style: TextStyle(fontSize: 11.5, color: subC)),
+                          style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
                     ]),
                   ),
                   ...items.map((h) => _HistoryTile(
@@ -279,7 +284,7 @@ class _HistoriqueTab extends StatelessWidget {
                     primary: primary,
                     onTap:   () => Get.to(() => _HistoryDetailPage(item: h)),
                   )),
-                  Divider(height: 1, color: border, indent: 16, endIndent: 16),
+                  const SizedBox(height: 8),
                 ],
               );
             },
@@ -306,7 +311,7 @@ class _SubTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg     = active ? primary : (isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface);
+    final bg     = active ? primary : (isDark ? AppColors.bgDarkSurface : Colors.white);
     final textC  = active ? Colors.white : (isDark ? AppColors.textDarkSub : AppColors.textLightSub);
     final border = active ? primary : (isDark ? AppColors.borderDark : AppColors.borderLight);
 
@@ -314,28 +319,28 @@ class _SubTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: bg, borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: border),
+          color: bg, borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: border, width: 1.5),
           boxShadow: active ? [
-            BoxShadow(color: primary.withValues(alpha: .22), blurRadius: 8, offset: const Offset(0, 3)),
+            BoxShadow(color: primary.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
           ] : null,
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 15, color: textC),
-          const SizedBox(width: 6),
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textC)),
-          const SizedBox(width: 6),
+          FaIcon(icon, size: 14, color: textC),
+          const SizedBox(width: 8),
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: textC)),
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color:        (active ? Colors.white : primary).withValues(alpha: active ? .22 : .12),
-              borderRadius: BorderRadius.circular(8),
+              color:        (active ? Colors.white : primary).withOpacity(active ? 0.2 : 0.1),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Text("$count",
                 style: TextStyle(
-                    fontSize: 10.5, fontWeight: FontWeight.w800,
+                    fontSize: 10, fontWeight: FontWeight.w900,
                     color: active ? Colors.white : primary)),
           ),
         ]),
@@ -355,74 +360,83 @@ class _HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg      = isDark ? AppColors.bgDark : Colors.white;
+    final bg      = isDark ? AppColors.bgDarkSurface : Colors.white;
+    final border  = isDark ? AppColors.borderDark : AppColors.borderLight;
     final titleC  = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC    = isDark ? AppColors.textDarkMuted   : AppColors.textLightSub;
+    final subC    = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
     final statusColor = item.status == HistoryStatus.completed ? AppColors.success
         : item.status == HistoryStatus.cancelled ? AppColors.error : AppColors.warning;
-    final statusLabel = item.status == HistoryStatus.completed ? "Terminé"
-        : item.status == HistoryStatus.cancelled ? "Annulé" : "En cours";
+    final statusLabel = item.status == HistoryStatus.completed ? "TERMINÉ"
+        : item.status == HistoryStatus.cancelled ? "ANNULÉ" : "EN COURS";
     final isTrip = item.type == HistoryType.trip;
 
-    return InkWell(
-      onTap: onTap,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Container(
-        color: bg,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        child: Row(children: [
-          // Avatar service
-          Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              color:  primary.withValues(alpha: .10),
-              shape:  BoxShape.circle,
-              border: Border.all(color: primary.withValues(alpha: .18)),
-            ),
-            child: Icon(
-              isTrip ? Icons.sports_motorsports_rounded : Icons.inventory_2_rounded,
-              color: primary, size: 24,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: border, width: 1.5),
+          boxShadow: isDark ? [] : [
+            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                Container(
+                  width: 52, height: 52,
+                  decoration: BoxDecoration(
+                    color:  primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: FaIcon(
+                      isTrip ? FontAwesomeIcons.motorcycle : FontAwesomeIcons.boxOpen,
+                      color: primary, size: 20,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Expanded(child: Text(item.courierName,
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: titleC, letterSpacing: -0.2),
+                        maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    Text(item.formattedPrice,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: primary, letterSpacing: -0.5)),
+                  ]),
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    Text("${item.formattedDate} · ${item.id}",
+                        style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(statusLabel,
+                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: statusColor, letterSpacing: 0.5)),
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                  _RouteRow(
+                    departure: item.title.split(" → ")[0],
+                    arrival:   item.title.split(" → ").length > 1 ? item.title.split(" → ")[1] : '',
+                    isDark:    isDark,
+                  ),
+                ])),
+              ]),
             ),
           ),
-          const SizedBox(width: 12),
-
-          // Infos
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(item.courierName,
-                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: titleC),
-                  maxLines: 1, overflow: TextOverflow.ellipsis)),
-              // Prix
-              Text(item.formattedPrice,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: primary)),
-            ]),
-            const SizedBox(height: 4),
-            Row(children: [
-              Text("${item.formattedDate} · ${item.id}",
-                  style: TextStyle(fontSize: 11, color: subC)),
-              const Spacer(),
-              // Statut pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color:        statusColor.withValues(alpha: .12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(statusLabel,
-                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: statusColor)),
-              ),
-            ]),
-            const SizedBox(height: 7),
-            // Trajet
-            _RouteRow(
-              departure: item.title.split(" → ")[0],
-              arrival:   item.title.split(" → ").length > 1 ? item.title.split(" → ")[1] : '',
-              isDark:    isDark,
-            ),
-          ])),
-          const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded,
-              color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted),
-        ]),
+        ),
       ),
     );
   }
@@ -438,21 +452,21 @@ class _RouteRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final textC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
     return Row(children: [
-      Container(width: 7, height: 7,
+      Container(width: 6, height: 6,
           decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle)),
-      const SizedBox(width: 5),
+      const SizedBox(width: 8),
       Flexible(child: Text(departure,
-          style: TextStyle(fontSize: 11.5, color: textC, fontWeight: FontWeight.w500),
+          style: TextStyle(fontSize: 12, color: textC, fontWeight: FontWeight.w600),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Icon(Icons.arrow_forward_rounded, size: 11, color: textC),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: FaIcon(FontAwesomeIcons.arrowRight, size: 10, color: textC.withOpacity(0.5)),
       ),
-      Container(width: 7, height: 7,
+      Container(width: 6, height: 6,
           decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle)),
-      const SizedBox(width: 5),
+      const SizedBox(width: 8),
       Flexible(child: Text(arrival,
-          style: TextStyle(fontSize: 11.5, color: textC, fontWeight: FontWeight.w500),
+          style: TextStyle(fontSize: 12, color: textC, fontWeight: FontWeight.w600),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
     ]);
   }
@@ -466,17 +480,17 @@ class _HistoryDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark    = Theme.of(context).brightness == Brightness.dark;
-    final bg        = isDark ? AppColors.bgDark : Colors.white;
-    final cardBg    = isDark ? AppColors.bgDarkSurface : const Color(0xFFF8F9FA);
+    final bg        = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final cardBg    = isDark ? AppColors.bgDarkSurface : Colors.white;
     final border    = isDark ? AppColors.borderDark : AppColors.borderLight;
     final titleC    = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final subC      = isDark ? AppColors.textDarkSub  : AppColors.textLightSub;
-    final primary   = isDark ? AppColors.primaryBlue  : AppColors.primaryGreen;
+    final primary   = AppColors.emeraldPrimary;
 
     final statusColor = item.status == HistoryStatus.completed ? AppColors.success
         : item.status == HistoryStatus.cancelled ? AppColors.error : AppColors.warning;
-    final statusLabel = item.status == HistoryStatus.completed ? "Terminé"
-        : item.status == HistoryStatus.cancelled ? "Annulé" : "En cours";
+    final statusLabel = item.status == HistoryStatus.completed ? "TERMINÉ"
+        : item.status == HistoryStatus.cancelled ? "ANNULÉ" : "EN COURS";
     final typeLabel   = item.type == HistoryType.trip ? "Course" : "Livraison";
 
     return Scaffold(
@@ -485,133 +499,142 @@ class _HistoryDetailPage extends StatelessWidget {
         child: Column(children: [
           // ── AppBar ─────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(children: [
               GestureDetector(
                 onTap: Get.back,
                 child: Container(
-                  width: 38, height: 38,
+                  width: 42, height: 42,
                   decoration: BoxDecoration(
-                    color:        isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface,
-                    borderRadius: BorderRadius.circular(12),
-                    border:       Border.all(color: border),
+                    color:        cardBg,
+                    borderRadius: BorderRadius.circular(14),
+                    border:       Border.all(color: border, width: 1.5),
                   ),
-                  child: Icon(Icons.arrow_back_rounded, color: titleC, size: 20),
+                  child: Center(child: FaIcon(FontAwesomeIcons.arrowLeft, color: titleC, size: 16)),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text("$typeLabel · ${item.id}",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: titleC)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.5)),
+                const SizedBox(height: 2),
                 Text(item.groupDate,
-                    style: TextStyle(fontSize: 12, color: subC)),
+                    style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
               ]),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color:        statusColor.withValues(alpha: .12),
+                  color:        statusColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(statusLabel,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: statusColor)),
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: statusColor, letterSpacing: 0.5)),
               ),
             ]),
           ),
 
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(children: [
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
 
                 // ── Coursier ──────────────────────────────
-                _DetailCard(cardBg: cardBg, border: border, child: Row(children: [
+                _DetailCard(cardBg: cardBg, border: border, isDark: isDark, child: Row(children: [
                   Container(
-                    width: 54, height: 54,
+                    width: 60, height: 60,
                     decoration: BoxDecoration(
-                      color:  primary.withValues(alpha: .12), shape: BoxShape.circle,
-                      border: Border.all(color: primary.withValues(alpha: .22)),
+                      color:  primary.withOpacity(0.1), 
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Icon(Icons.person_rounded, color: primary, size: 26),
+                    child: Center(child: FaIcon(FontAwesomeIcons.userLarge, color: primary, size: 24)),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 16),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(item.courierName,
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: titleC)),
-                    const SizedBox(height: 3),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.2)),
+                    const SizedBox(height: 4),
                     Text(item.courierVehicle,
-                        style: TextStyle(fontSize: 12.5, color: subC)),
-                    const SizedBox(height: 6),
+                        style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color:        AppColors.warning.withValues(alpha: .12),
+                        color:        AppColors.neonYellow.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.star_rounded, color: AppColors.warning, size: 14),
-                        const SizedBox(width: 4),
+                        FaIcon(FontAwesomeIcons.solidStar, color: isDark ? AppColors.neonYellow : AppColors.warning, size: 10),
+                        const SizedBox(width: 6),
                         Text("${item.courierRating}",
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.warning)),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: isDark ? AppColors.neonYellow : AppColors.darkGreenBase)),
                       ]),
                     ),
                   ])),
                 ])),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
                 // ── Trajet ────────────────────────────────
-                _DetailCard(cardBg: cardBg, border: border, child: Column(children: [
+                _DetailCard(cardBg: cardBg, border: border, isDark: isDark, child: Column(children: [
                   _DetailRouteRow(dot: AppColors.success, label: item.title.split(" → ")[0], titleC: titleC),
                   Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Container(width: 2, height: 18, color: border),
+                    padding: const EdgeInsets.only(left: 4.5),
+                    child: Container(width: 1.5, height: 24, color: border),
                   ),
                   _DetailRouteRow(
                     dot: AppColors.error,
                     label: item.title.split(" → ").length > 1 ? item.title.split(" → ")[1] : '',
                     titleC: titleC,
                   ),
-                  Divider(height: 20, color: border),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text("Prix total", style: TextStyle(fontSize: 13, color: subC)),
-                    Text(item.formattedPrice,
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: primary)),
-                  ]),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text("PRIX TOTAL", style: TextStyle(fontSize: 11, color: subC, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
+                      Text(item.formattedPrice,
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primary, letterSpacing: -0.5)),
+                    ]),
+                  ),
                 ])),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
                 // ── Annulation ────────────────────────────
                 if (item.status == HistoryStatus.cancelled)
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color:        AppColors.errorFill,
-                      borderRadius: BorderRadius.circular(16),
-                      border:       Border.all(color: AppColors.error.withValues(alpha: .22)),
+                      color:        AppColors.error.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border:       Border.all(color: AppColors.error.withOpacity(0.2), width: 1.5),
                     ),
-                    child: const Row(children: [
-                      Icon(Icons.cancel_outlined, color: AppColors.error, size: 20),
-                      SizedBox(width: 10),
-                      Text("Annulée · par l'utilisateur",
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.error)),
+                    child: Row(children: [
+                      FaIcon(FontAwesomeIcons.circleXmark, color: AppColors.error, size: 18),
+                      const SizedBox(width: 12),
+                      const Text("ANNULÉE PAR L'UTILISATEUR",
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.error, letterSpacing: 0.5)),
                     ]),
                   ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // ── Support ───────────────────────────────
                 SizedBox(
-                  width: double.infinity, height: 52,
+                  width: double.infinity,
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: titleC,
-                      side:            BorderSide(color: border),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side:            BorderSide(color: border, width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: () {},
-                    icon:  const Icon(Icons.headset_mic_outlined, size: 18),
-                    label: const Text("Un problème ? Contacter le support",
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    icon:  const FaIcon(FontAwesomeIcons.headset, size: 16),
+                    label: const Text("Aide & Support",
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                   ),
                 ),
               ]),
@@ -624,19 +647,23 @@ class _HistoryDetailPage extends StatelessWidget {
 }
 
 class _DetailCard extends StatelessWidget {
-  const _DetailCard({required this.cardBg, required this.border, required this.child});
+  const _DetailCard({required this.cardBg, required this.border, required this.isDark, required this.child});
   final Color  cardBg, border;
+  final bool isDark;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color:        cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border:       Border.all(color: border),
+        borderRadius: BorderRadius.circular(28),
+        border:       Border.all(color: border, width: 1.5),
+        boxShadow: isDark ? [] : [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 12, offset: const Offset(0, 6)),
+        ],
       ),
       child: child,
     );
@@ -653,9 +680,9 @@ class _DetailRouteRow extends StatelessWidget {
     return Row(children: [
       Container(width: 10, height: 10,
           decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
-      const SizedBox(width: 10),
+      const SizedBox(width: 14),
       Expanded(child: Text(label,
-          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: titleC),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: titleC),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
     ]);
   }

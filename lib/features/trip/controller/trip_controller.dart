@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../app/routes/app_routes.dart';
@@ -12,6 +13,8 @@ const double _tarifBase     = 500;   // F CFA fixe au départ
 const double _tarifParKm    = 250;   // F CFA / km
 const double _vitesseKmH    = 25;    // vitesse moyenne coursier
 const int    _tarifMinimum  = 800;   // prix plancher
+
+enum TripStep { destination, selecting, matching, tracking }
 
 /// Lieux prédéfinis à Libreville pour la recherche mock
 const _lieuxLibreville = [
@@ -37,6 +40,10 @@ const _lieuxLibreville = [
 
 class TripController extends GetxController {
 
+  // ─── Flux UX ────────────────────────────────────────────────
+  final Rx<TripStep> currentStep = TripStep.destination.obs;
+  final RxString selectedServiceId = 'eco'.obs; // eco, premium, delivery
+
   // ─── État de la course ──────────────────────────────────────
   final Rx<TripModel?>    currentTrip = Rx<TripModel?>(null);
   final Rx<TripStatus>    status      = TripStatus.idle.obs;
@@ -55,6 +62,66 @@ class TripController extends GetxController {
   // ─── Getters ────────────────────────────────────────────────
   bool get canEstimate => pickup.value != null && dropoff.value != null;
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Par défaut, on met la position actuelle à Akanda pour le mock
+    pickup.value = _lieuxLibreville[0]; 
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Navigation Flux
+  // ─────────────────────────────────────────────────────────────
+  void nextStep() {
+    HapticFeedback.mediumImpact();
+    if (currentStep.value == TripStep.destination) {
+      if (canEstimate) {
+        _calculatePrice();
+        currentStep.value = TripStep.selecting;
+      } else {
+        Get.snackbar("Oups", "Veuillez sélectionner une destination");
+      }
+    } else if (currentStep.value == TripStep.selecting) {
+      currentStep.value = TripStep.matching;
+      confirmTrip();
+    }
+  }
+
+  void prevStep() {
+    if (currentStep.value == TripStep.selecting) currentStep.value = TripStep.destination;
+    else if (currentStep.value == TripStep.matching) currentStep.value = TripStep.selecting;
+    else Get.back();
+  }
+
+  void selectService(String id) {
+    HapticFeedback.lightImpact();
+    selectedServiceId.value = id;
+    _calculatePrice();
+  }
+
+  void _calculatePrice() {
+    if (!canEstimate) return;
+    final dist = pickup.value!.distanceTo(dropoff.value!);
+    double multiplier = selectedServiceId.value == 'premium' ? 1.5 : 1.0;
+    
+    final prix = max(
+      _tarifMinimum,
+      ((_tarifBase + dist * _tarifParKm) * multiplier).round(),
+    );
+    final prixArrondi = ((prix / 50).round() * 50);
+    final duree = max(5, (dist / _vitesseKmH * 60).round());
+
+    currentTrip.value = TripModel(
+      id:               _generateId(),
+      pickup:           pickup.value!,
+      dropoff:          dropoff.value!,
+      distanceKm:       dist,
+      priceFCFA:        prixArrondi,
+      estimatedMinutes: duree,
+      status:           TripStatus.estimating,
+    );
+  }
+
   // ─────────────────────────────────────────────────────────────
   // Recherche de lieu (mock)
   // ─────────────────────────────────────────────────────────────
@@ -64,8 +131,6 @@ class TripController extends GetxController {
       return;
     }
     isSearching.value = true;
-
-    // Simule un délai réseau
     Future.delayed(const Duration(milliseconds: 300), () {
       final q = query.toLowerCase().trim();
       searchResults.value = _lieuxLibreville
@@ -79,90 +144,41 @@ class TripController extends GetxController {
 
   void clearSearch() => searchResults.clear();
 
-  // ─────────────────────────────────────────────────────────────
-  // Sélection d'un lieu
-  // ─────────────────────────────────────────────────────────────
   void selectPickup(PlaceModel place) {
     pickup.value = place;
     searchResults.clear();
+    if (canEstimate) _calculatePrice();
   }
 
   void selectDropoff(PlaceModel place) {
     dropoff.value = place;
     searchResults.clear();
+    if (canEstimate) {
+      nextStep();
+    }
   }
 
   void clearPickup()  => pickup.value  = null;
   void clearDropoff() => dropoff.value = null;
 
-  // ─────────────────────────────────────────────────────────────
-  // Estimation du prix
-  // ─────────────────────────────────────────────────────────────
-  void estimateTrip() {
-    if (!canEstimate) return;
-
-    final dist = pickup.value!.distanceTo(dropoff.value!);
-    final prix = max(
-      _tarifMinimum,
-      (_tarifBase + dist * _tarifParKm).round(),
-    );
-    // Arrondi au 50 F le plus proche
-    final prixArrondi = ((prix / 50).round() * 50);
-
-    final duree = max(5, (dist / _vitesseKmH * 60).round());
-
-    currentTrip.value = TripModel(
-      id:               _generateId(),
-      pickup:           pickup.value!,
-      dropoff:          dropoff.value!,
-      distanceKm:       dist,
-      priceFCFA:        prixArrondi,
-      estimatedMinutes: duree,
-      status:           TripStatus.estimating,
-    );
-
-    Get.toNamed(Routes.tripEstimate);
-  }
+  void estimateTrip() => nextStep();
 
   // ─────────────────────────────────────────────────────────────
   // Confirmation → recherche coursier
   // ─────────────────────────────────────────────────────────────
   void confirmTrip() {
     if (currentTrip.value == null) return;
-
-    currentTrip.value = currentTrip.value!.copyWith(
-      status: TripStatus.searching,
-    );
     status.value = TripStatus.searching;
-
-    Get.toNamed(Routes.tripSearching);
-
-    // Simule la trouvaille d'un coursier après 4–7s
     final delay = 4 + Random().nextInt(4);
     _searchTimer = Timer(Duration(seconds: delay), _assignDriver);
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Coursier trouvé (simulation)
-  // ─────────────────────────────────────────────────────────────
   void _assignDriver() {
-    if (currentTrip.value == null) return;
-
-    currentTrip.value = currentTrip.value!.copyWith(
-      status: TripStatus.assigned,
-    );
     status.value = TripStatus.assigned;
-
-    Get.offNamed(Routes.tripTracking);
+    currentStep.value = TripStep.tracking;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Fin de course
-  // ─────────────────────────────────────────────────────────────
   void completeTrip() {
-    currentTrip.value = currentTrip.value?.copyWith(
-      status: TripStatus.completed,
-    );
     status.value = TripStatus.completed;
     _reset();
     Get.offAllNamed(Routes.home);
@@ -170,21 +186,16 @@ class TripController extends GetxController {
 
   void cancelTrip() {
     _searchTimer?.cancel();
-    currentTrip.value = currentTrip.value?.copyWith(
-      status: TripStatus.cancelled,
-    );
-    status.value = TripStatus.cancelled;
     _reset();
     Get.offAllNamed(Routes.home);
   }
 
   void _reset() {
-    Future.delayed(const Duration(seconds: 1), () {
-      pickup.value       = null;
-      dropoff.value      = null;
-      currentTrip.value  = null;
-      status.value       = TripStatus.idle;
-    });
+    currentStep.value = TripStep.destination;
+    pickup.value = _lieuxLibreville[0];
+    dropoff.value = null;
+    currentTrip.value = null;
+    status.value = TripStatus.idle;
   }
 
   String _generateId() =>

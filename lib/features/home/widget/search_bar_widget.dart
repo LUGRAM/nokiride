@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_colors.dart';
 
 class HomeSearchBar extends StatelessWidget {
@@ -18,63 +19,73 @@ class HomeSearchBar extends StatelessWidget {
     final bg      = isDark ? AppColors.bgDarkSurface   : AppColors.bgLightSurface;
     final border  = isDark ? AppColors.borderDark       : AppColors.borderLight;
     final hintC   = isDark ? AppColors.textDarkMuted    : AppColors.textLightMuted;
-    final dotC    = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreen;
-    final schedBg = isDark ? AppColors.bgDarkElevated   : AppColors.primaryGreenFill;
-    final schedFg = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreenDark;
+    final dotC    = AppColors.emeraldPrimary;
+    final schedFg = AppColors.emeraldPrimary;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
       child: GestureDetector(
         onTap: onSearchTap,
         child: Container(
-          height: 54,
+          height: 56,
           decoration: BoxDecoration(
-            color:        bg,
-            borderRadius: BorderRadius.circular(16),
-            border:       Border.all(color: border, width: 1),
+            color: bg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: border, width: 1.5),
+            boxShadow: isDark
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _PulsingDot(color: dotC),
-              const SizedBox(width: 10),
+              FaIcon(FontAwesomeIcons.magnifyingGlass, color: dotC, size: 18),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Chercher une destination...',
+                  'Où allez-vous ?',
                   style: TextStyle(
-                    color:      hintC,
-                    fontSize:   14,
-                    fontWeight: FontWeight.w500,
+                    color: hintC,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
+              Container(
+                height: 32,
+                width: 1.5,
+                color: border,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+              ),
               GestureDetector(
                 onTap: onScheduleTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color:        schedBg,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.calendar_today_rounded,
-                        size:  13,
-                        color: schedFg,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FaIcon(
+                      FontAwesomeIcons.solidClock,
+                      size: 16,
+                      color: schedFg,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Maintenant',
+                      style: TextStyle(
+                        color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Planifier',
-                        style: TextStyle(
-                          color:      schedFg,
-                          fontSize:   12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 4),
+                    FaIcon(FontAwesomeIcons.chevronDown, size: 12, color: hintC),
+                  ],
                 ),
               ),
             ],

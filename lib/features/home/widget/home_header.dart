@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../../app/services/theme_service.dart';
@@ -22,17 +23,17 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
+    final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
       child: Row(
         children: [
           _Avatar(
             initials: _initials(userName),
-            isDark:   isDark,
-            onTap:    onAvatarTap,
+            isDark: isDark,
+            onTap: onAvatarTap,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -40,78 +41,57 @@ class HomeHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _LocationRow(location: location, isDark: isDark),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
-                  'Bonjour, $userName !',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight:    FontWeight.w800,
-                    letterSpacing: -0.4,
+                  _greetingMessage(userName),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                    fontSize: 20,
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          // ── Toggle thème ───────────────────────────────
-          _ThemeToggleButton(isDark: isDark),
-          const SizedBox(width: 8),
-          // ── Notifications ──────────────────────────────
           _NotifButton(
-            count:  notifCount,
+            count: notifCount,
             isDark: isDark,
-            onTap:  onNotifTap,
+            onTap: onNotifTap,
           ),
         ],
       ),
     );
   }
 
+  String _greetingMessage(String name) {
+    // 1. Nettoyage de l'ID technique (#...)
+    final rawName = name.split('#')[0].trim();
+    
+    // 2. Détermination du salut selon l'heure
+    final hour = DateTime.now().hour;
+    final salute = (hour >= 18 || hour < 5) ? 'Bonsoir' : 'Bonjour';
+
+    // 3. Liste des noms "non-professionnels" ou placeholders à ignorer
+    final placeholders = ['parent', 'noki', 'utilisateur', 'admin', 'test', 'guest', 'client'];
+    
+    if (rawName.isEmpty || placeholders.contains(rawName.toLowerCase())) {
+      return '$salute ! 👋';
+    }
+
+    // 4. Formatage propre (Majuscule pour le prénom)
+    final cleanName = rawName[0].toUpperCase() + rawName.substring(1).toLowerCase();
+    
+    return '$salute, $cleanName 👋';
+  }
+
   String _initials(String name) {
-    final parts = name.trim().split(' ');
+    final cleanName = name.split('#')[0].trim();
+    final parts = cleanName.split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Theme Toggle
-// ─────────────────────────────────────────────────────────────
-class _ThemeToggleButton extends StatelessWidget {
-  const _ThemeToggleButton({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final bg     = isDark ? AppColors.bgDarkElevated : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark      : AppColors.borderLight;
-
-    // Couleur et icône selon thème courant
-    final icon  = isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded;
-    final color = isDark ? AppColors.warning         : AppColors.primaryBlue;
-
-    return Obx(() {
-      // Dépendance réactive sur ThemeService pour re-render si thème change
-      final _ = ThemeService.to.mode;
-
-      return GestureDetector(
-        onTap: ThemeService.to.toggleTheme,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve:    Curves.easeInOut,
-          width:  44,
-          height: 44,
-          decoration: BoxDecoration(
-            color:        bg,
-            borderRadius: BorderRadius.circular(14),
-            border:       Border.all(color: border, width: 1),
-          ),
-          child: Icon(icon, size: 20, color: color),
-        ),
-      );
-    });
+    return cleanName.substring(0, cleanName.length >= 2 ? 2 : 1).toUpperCase();
   }
 }
 
@@ -133,7 +113,7 @@ class _Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg     = isDark ? AppColors.bgDarkElevated   : AppColors.primaryGreenFill;
     final border = isDark ? AppColors.borderDark        : AppColors.borderLight;
-    final fg     = isDark ? AppColors.primaryBlueLight  : AppColors.primaryGreenDark;
+    final fg     = isDark ? AppColors.neonYellow        : AppColors.emeraldPrimary;
 
     return GestureDetector(
       onTap: onTap,
@@ -173,20 +153,20 @@ class _LocationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDark ? AppColors.textDarkMuted    : AppColors.textLightMuted;
-    final pin   = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreen;
+    final pin   = AppColors.emeraldPrimary;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.location_on_rounded, size: 12, color: pin),
-        const SizedBox(width: 3),
+        FaIcon(FontAwesomeIcons.locationDot, size: 10, color: pin),
+        const SizedBox(width: 6),
         Flexible(
           child: Text(
             location,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize:   12,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color:      color,
             ),
           ),
@@ -229,10 +209,12 @@ class _NotifButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               border:       Border.all(color: border, width: 1),
             ),
-            child: Icon(
-              Icons.notifications_none_rounded,
-              size:  22,
-              color: fg,
+            child: Center(
+              child: FaIcon(
+                FontAwesomeIcons.bell,
+                size:  18,
+                color: fg,
+              ),
             ),
           ),
           if (count > 0)

@@ -21,8 +21,8 @@ class _SplashPageState extends State<SplashPage>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
-    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
     _ctrl.forward();
     Future.delayed(const Duration(seconds: 3), _redirect);
   }
@@ -33,6 +33,7 @@ class _SplashPageState extends State<SplashPage>
     final box = GetStorage();
     final token = box.read('auth_token');
     final hasSeenOnboarding = box.read('hasSeenOnboarding') ?? false;
+
     if (token != null && token.toString().trim().isNotEmpty) {
       Get.offAllNamed(Routes.home);
     } else if (hasSeenOnboarding) {
@@ -43,17 +44,24 @@ class _SplashPageState extends State<SplashPage>
   }
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgDark, // Assure un fallback de couleur uni
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [Color(0xFF0B1220), Color(0xFF111827)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.bgDark,          // Vert Sombre Profond (#06231D)
+              AppColors.bgDarkElevated,  // Teinte de transition (#124036)
+            ],
           ),
         ),
         child: FadeTransition(
@@ -62,29 +70,57 @@ class _SplashPageState extends State<SplashPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // ── Conteneur d'animation Premium ──
                 Container(
-                  width: 88, height: 88,
+                  width: 96, height: 96,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(.15),
+                    color: AppColors.bgDarkSurface.withOpacity(0.4),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.primaryBlue.withOpacity(.30), width: 1.5),
+                    border: Border.all(
+                      color: AppColors.borderDark.withOpacity(0.6),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.darkGreenBase.withOpacity(0.5),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  //child: const Icon(Icons.sports_motorsports_rounded, color: AppColors.primaryBlue, size: 42),
-                  child: Lottie.asset(
-                    'assets/animations/halo_soft.json',
-                    width: 200,
-                    height: 200,
-                    repeat: true,
+                  child: Center(
+                    child: Lottie.asset(
+                      'assets/animations/halo_soft.json',
+                      width: 200,
+                      height: 200,
+                      repeat: true,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 28),
-                Text('NokiRide', style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.6,
-                )),
-                const SizedBox(height: 8),
-                Text('Mobilité urbaine simplifiée', style: GoogleFonts.inter(
-                  color: AppColors.textDarkSub, fontSize: 15, fontWeight: FontWeight.w500,
-                )),
+                const SizedBox(height: 32),
+
+                // ── Nom de la Marque ──
+                Text(
+                  'NokiRide',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textDarkPrimary, // OffWhite (#FFFDEE)
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.0,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // ── Slogan ──
+                Text(
+                  'Mobilité urbaine simplifiée',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textDarkSub, // Vert adouci à 70%
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
               ],
             ),
           ),

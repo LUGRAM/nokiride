@@ -312,81 +312,76 @@ class _TextContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Light : textes sombres sur fond blanc
-    final titleC = isDark ? AppColors.textDarkPrimary  : AppColors.textLightPrimary;
-    final subC   = isDark ? AppColors.textDarkSub      : AppColors.textLightSub;
+    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
+    final subC   = isDark ? AppColors.textDarkSub.withOpacity(0.7) : AppColors.textLightSub;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment:  MainAxisAlignment.start,
+      mainAxisAlignment:  MainAxisAlignment.center,
       children: [
-        // Tag
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color:        frame.accentColor.withOpacity(.18),
-            borderRadius: BorderRadius.circular(7),
+            color: frame.accentColor.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             frame.tag,
             style: TextStyle(
-              fontSize:      9,
-              fontWeight:    FontWeight.w800,
-              color:         frame.accentColor,
-              letterSpacing: .5,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: frame.accentColor,
+              letterSpacing: 0.5,
             ),
           ),
         ),
-        const SizedBox(height: 6),
-
-        // Titre
+        const SizedBox(height: 10),
         Text(
           frame.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize:      16,
-            fontWeight:    FontWeight.w800,
-            color:         titleC,
-            height:        1.12,
-            letterSpacing: -.2,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            color: titleC,
+            height: 1.1,
+            letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 4),
-
-        // Sous-titre
+        const SizedBox(height: 6),
         Text(
           frame.subtitle,
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize:   11.5,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
-            color:      subC,
-            height:     1.15,
+            color: subC,
+            height: 1.2,
           ),
         ),
-        const Spacer(),
-
-        // CTA
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                frame.cta,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize:   12,
-                  fontWeight: FontWeight.w700,
-                  color:      frame.accentColor,
-                ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.neonYellow,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.neonYellow.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
+            ],
+          ),
+          child: Text(
+            frame.cta,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              color: AppColors.darkGreenBase,
             ),
-            const SizedBox(width: 3),
-            Icon(Icons.arrow_forward_rounded, size: 12, color: frame.accentColor),
-          ],
+          ),
         ),
       ],
     );

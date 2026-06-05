@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -9,11 +10,11 @@ import '../controller/home_controller.dart';
 class NokiBottomNavBar extends StatelessWidget {
   const NokiBottomNavBar({super.key});
 
-  static const _items = [
-    _NavItemData(icon: Icons.home_filled,                    label: 'Accueil'),
-    _NavItemData(icon: Icons.receipt_long_rounded,           label: 'Historique'),
-    _NavItemData(icon: Icons.account_balance_wallet_rounded, label: 'Wallet'),
-    _NavItemData(icon: Icons.person_rounded,                 label: 'Profil'),
+  static final _items = [
+    _NavItemData(icon: FontAwesomeIcons.house,               label: 'Accueil'),
+    _NavItemData(icon: FontAwesomeIcons.clockRotateLeft,     label: 'Historique'),
+    _NavItemData(icon: FontAwesomeIcons.wallet,              label: 'Wallet'),
+    _NavItemData(icon: FontAwesomeIcons.user,                label: 'Profil'),
   ];
 
   @override
@@ -21,33 +22,31 @@ class NokiBottomNavBar extends StatelessWidget {
     final controller = Get.find<HomeController>();
     final isDark     = Theme.of(context).brightness == Brightness.dark;
 
-    // Couleurs Telegram-style
     final navBg     = isDark
-        ? const Color(0xFF0D1D2E).withOpacity(.92)
-        : Colors.white.withOpacity(.88);
+        ? AppColors.bgDark.withOpacity(.95)
+        : AppColors.bgLightSurface.withOpacity(.90);
     final navBorder = isDark
-        ? Colors.white.withOpacity(.06)
-        : Colors.black.withOpacity(.08);
+        ? AppColors.borderDark
+        : AppColors.borderLight;
 
     return Obx(() {
       final selectedIndex = controller.tabIndex.value;
 
       return ClipRRect(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(28),
         child: BackdropFilter(
-          // ── Flou Telegram derrière la navbar ──────────────
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
-            height: 64,                          // ← plus compact que 82
+            height: 68,
             decoration: BoxDecoration(
               color:        navBg,
-              borderRadius: BorderRadius.circular(26),
-              border: Border.all(color: navBorder, width: 1),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: navBorder, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color:      Colors.black.withOpacity(isDark ? .30 : .10),
-                  blurRadius: 20,
-                  offset:     const Offset(0, 8),
+                  color:      Colors.black.withOpacity(isDark ? .40 : .08),
+                  blurRadius: 25,
+                  offset:     const Offset(0, 10),
                 ),
               ],
             ),
@@ -91,57 +90,51 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor   = isDark ? AppColors.primaryBlueLight : AppColors.primaryGreenDark;
+    final activeColor   = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
     final inactiveColor = isDark
-        ? Colors.white.withOpacity(.45)
-        : Colors.black.withOpacity(.40);
+        ? AppColors.textDarkMuted
+        : AppColors.textLightMuted;
 
-    // Ripple color = couleur active translucide
-    final rippleColor = activeColor.withOpacity(.12);
+    final rippleColor = activeColor.withOpacity(.10);
 
     return Material(
       color:        Colors.transparent,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap:        onTap,
-        borderRadius: BorderRadius.circular(18),
-        // ── Ripple Telegram ────────────────────────────────
+        borderRadius: BorderRadius.circular(20),
         splashColor:  rippleColor,
-        highlightColor: rippleColor.withOpacity(.06),
+        highlightColor: rippleColor.withOpacity(.05),
         child: AnimatedContainer(
-          duration:  const Duration(milliseconds: 200),
-          curve:     Curves.easeOut,
-          padding:   const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+          duration:  const Duration(milliseconds: 250),
+          curve:     Curves.easeOutCubic,
+          padding:   const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize:      MainAxisSize.min,
             children: [
-              // Icône avec indicateur point Telegram
-              Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  AnimatedScale(
-                    scale:    isSelected ? 1.10 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    curve:    Curves.easeOut,
-                    child: Icon(
-                      icon,
-                      size:  22,
-                      color: isSelected ? activeColor : inactiveColor,
-                    ),
+              AnimatedScale(
+                scale:    isSelected ? 1.15 : 1.0,
+                duration: const Duration(milliseconds: 250),
+                curve:    Curves.easeOutBack,
+                child: Center(
+                  child: FaIcon(
+                    icon,
+                    size:  20,
+                    color: isSelected ? activeColor : inactiveColor,
                   ),
-                ],
-              ),
-              const SizedBox(height: 3),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(
-                  fontSize:   10,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color:      isSelected ? activeColor : inactiveColor,
-                  letterSpacing: isSelected ? -.2 : 0,
                 ),
-                child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(height: 4),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 250),
+                style: TextStyle(
+                  fontSize:   11,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  color:      isSelected ? activeColor : inactiveColor,
+                  letterSpacing: isSelected ? -0.3 : 0,
+                ),
+                child: Text(label, maxLines: 1),
               ),
             ],
           ),

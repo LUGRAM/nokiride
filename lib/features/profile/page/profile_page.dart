@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import '../../../app/services/theme_service.dart';
 import '../../../app/theme/app_colors.dart';
@@ -11,7 +12,7 @@ class ProfilePage extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.bgDark : AppColors.bgLight;
-    final primary = isDark ? AppColors.primaryBlue : AppColors.primaryGreen;
+    final primary = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
     final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
 
     return Container(
@@ -34,18 +35,19 @@ class ProfilePage extends GetView<ProfileController> {
               const SizedBox(height: 10),
               _SettingsCard(isDark: isDark, children: [
                 _SettingsTile(
-                  icon: Icons.dark_mode_rounded,
+                  icon: FontAwesomeIcons.moon,
                   label: "Thème sombre",
                   isDark: isDark,
                   trailing: Obx(() => Switch(
                     value: ThemeService.to.isDark,
                     onChanged: (_) => controller.toggleTheme(),
-                    activeThumbColor: primary,
+                    activeColor: AppColors.neonYellow,
+                    activeTrackColor: AppColors.emeraldPrimary.withOpacity(0.5),
                   )),
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
-                  icon: Icons.language_rounded,
+                  icon: FontAwesomeIcons.globe,
                   label: "Langue",
                   isDark: isDark,
                   trailing: Obx(() => GestureDetector(
@@ -63,25 +65,25 @@ class ProfilePage extends GetView<ProfileController> {
               const SizedBox(height: 10),
               _SettingsCard(isDark: isDark, children: [
                 _SettingsTile(
-                  icon: Icons.notifications_outlined,
+                  icon: FontAwesomeIcons.bell,
                   label: "Notifications",
                   isDark: isDark, onTap: () {},
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
-                  icon: Icons.shield_outlined,
+                  icon: FontAwesomeIcons.shieldHalved,
                   label: "Confidentialité",
                   isDark: isDark, onTap: () {},
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
-                  icon: Icons.help_outline_rounded,
+                  icon: FontAwesomeIcons.circleQuestion,
                   label: "Aide & Support",
                   isDark: isDark, onTap: () {},
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
-                  icon: Icons.star_outline_rounded,
+                  icon: FontAwesomeIcons.star,
                   label: "Évaluer l'application",
                   isDark: isDark, onTap: () {},
                 ),
@@ -96,12 +98,12 @@ class ProfilePage extends GetView<ProfileController> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: .08),
+                    color: AppColors.error.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.error.withValues(alpha: .25)),
+                    border: Border.all(color: AppColors.error.withOpacity(0.25)),
                   ),
                   child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
+                    FaIcon(FontAwesomeIcons.rightFromBracket, color: AppColors.error, size: 18),
                     const SizedBox(width: 10),
                     const Text("Se déconnecter",
                         style: TextStyle(
@@ -117,7 +119,7 @@ class ProfilePage extends GetView<ProfileController> {
                   style: TextStyle(fontSize: 12, color: subC)),
               const SizedBox(height: 4),
               Text("Made with ♥ in Libreville",
-                  style: TextStyle(fontSize: 11, color: subC.withValues(alpha: .6))),
+                  style: TextStyle(fontSize: 11, color: subC.withOpacity(0.6))),
             ],
           ),
         ),
@@ -153,15 +155,14 @@ class _ProfileHeaderCard extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            gradient: isDark
-                ? const LinearGradient(
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    colors: [Color(0xFF0E2E8A), Color(0xFF07101E)],
-                  )
-                : const LinearGradient(
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    colors: [Color(0xFF00C44F), Color(0xFF009B3E)],
-                  ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.emeraldPrimary,
+                AppColors.darkGreenBase,
+              ],
+            ),
           ),
           child: Align(
             alignment: Alignment.topRight,
@@ -172,15 +173,15 @@ class _ProfileHeaderCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .18),
+                    color: Colors.white.withOpacity(0.18),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.edit_outlined, color: Colors.white.withValues(alpha: .9), size: 13),
-                    const SizedBox(width: 5),
+                    FaIcon(FontAwesomeIcons.penToSquare, color: Colors.white.withOpacity(0.9), size: 12),
+                    const SizedBox(width: 6),
                     Text("Modifier",
                         style: TextStyle(
-                            color: Colors.white.withValues(alpha: .9),
+                            color: Colors.white.withOpacity(0.9),
                             fontSize: 12, fontWeight: FontWeight.w700)),
                   ]),
                 ),
@@ -196,27 +197,30 @@ class _ProfileHeaderCard extends StatelessWidget {
             Container(
               width: 76, height: 76,
               decoration: BoxDecoration(
-                color: primary.withValues(alpha: .12),
+                color: primary.withOpacity(0.12),
                 shape: BoxShape.circle,
                 border: Border.all(color: cardBg, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: primary.withValues(alpha: .20),
+                    color: primary.withOpacity(0.20),
                     blurRadius: 16, offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Icon(Icons.person_rounded, color: primary, size: 36),
+              child: Center(child: FaIcon(FontAwesomeIcons.user, color: primary, size: 28)),
             ),
             const SizedBox(height: 10),
-            Obx(() => Text(controller.userName.value,
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: titleC))),
+            Obx(() {
+              final name = controller.userName.value.split('#')[0].trim();
+              return Text(name.isEmpty ? "Utilisateur" : name,
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: titleC));
+            }),
             const SizedBox(height: 4),
             Obx(() => Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.phone_outlined, color: subC, size: 13),
-              const SizedBox(width: 4),
+              FaIcon(FontAwesomeIcons.phone, color: subC, size: 12),
+              const SizedBox(width: 6),
               Text(controller.userPhone.value,
-                  style: TextStyle(fontSize: 13, color: subC)),
+                  style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
             ])),
             const SizedBox(height: 16),
           ]),
@@ -361,21 +365,21 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final iconC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final iconBg = iconC.withValues(alpha: .10);
+    final iconBg = iconC.withOpacity(0.10);
 
     return ListTile(
       onTap: onTap,
       leading: Container(
         width: 36, height: 36,
         decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
-        child: Icon(icon, color: iconC, size: 19),
+        child: Center(child: FaIcon(icon, color: iconC, size: 16)),
       ),
       title: Text(label,
           style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: textC)),
       trailing: trailing ??
           (onTap != null
-              ? Icon(Icons.chevron_right_rounded,
-                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted)
+              ? FaIcon(FontAwesomeIcons.chevronRight,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted, size: 14)
               : null),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
       minLeadingWidth: 36,
@@ -391,19 +395,27 @@ class _LangBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary.withOpacity(0.1);
+    final textC = isDark ? AppColors.darkGreenBase : AppColors.emeraldPrimary;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: primary.withValues(alpha: .12),
+        color: bg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: primary.withValues(alpha: .25)),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(isFrench ? "🇫🇷" : "🇬🇧", style: const TextStyle(fontSize: 14)),
-        const SizedBox(width: 5),
-        Text(isFrench ? "FR" : "EN",
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: primary)),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(isFrench ? "🇫🇷" : "🇬🇧", style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 5),
+          Text(
+            isFrench ? "FR" : "EN",
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textC),
+          ),
+        ],
+      ),
     );
   }
 }

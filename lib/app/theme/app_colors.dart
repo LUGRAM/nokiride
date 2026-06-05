@@ -1,146 +1,80 @@
 import 'package:flutter/material.dart';
 
-/// Palette NokiRide — double thème Blue-Dark / Light-Green
-/// Aucune couleur legacy. Chaque token a un rôle sémantique précis.
+/// Palette NokiRide — Thème Premium Organic (Vert Sombre & Jaune Acide)
 class AppColors {
-
   AppColors._();
 
   // ════════════════════════════════════════════════
-  // BLUE-DARK THEME
+  // BASE COLORS (NOUVELLE PALETTE)
   // ════════════════════════════════════════════════
-
-  /// Fond de page principal
-  static const Color bgDark         = Color(0xFF07101E);
-
-  /// Surfaces (cards, inputs)
-  static const Color bgDarkSurface  = Color(0xFF0D1826);
-
-  /// Cards élevées / sections
-  static const Color bgDarkElevated = Color(0xFF152336);
-
-  /// Bottom nav background
-  static const Color bgDarkNav      = Color(0xFF0D1D2E);
-
-  // ─── Accent Blue-Dark ────────────────────────
-  /// CTA principal (boutons, actions primaires)
-  static const Color primaryBlue      = Color(0xFF1B7BFF);
-
-  /// Textes et icônes actifs sur fond dark
-  static const Color primaryBlueLight = Color(0xFF56AEFF);
-
-  /// Halo / fill derrière icône bleue
-  static const Color primaryBlueFill  = Color(0x261B7BFF); // 15%
-
-  // ─── Accent Green (dark) ─────────────────────
-  /// Succès, validation, driver online
-  static const Color accentGreenDark  = Color(0xFF00C44F);
-
-  /// Fill vert sur fond dark
-  static const Color accentGreenFill  = Color(0x1F00C44F); // 12%
-
-  // ─── Textes Dark ─────────────────────────────
-  static const Color textDarkPrimary  = Color(0xFFFFFFFF);
-  static const Color textDarkSub      = Color(0x8FFFFFFF); // 56%
-  static const Color textDarkMuted    = Color(0x59FFFFFF); // 35%
-
-  // ─── Borders Dark ────────────────────────────
-  static const Color borderDark       = Color(0xFF1A3349);
-  static const Color borderDarkSubtle = Color(0xFF0F2030); // très subtil
+  
+  // Verts profonds
+  static const Color darkGreenBase    = Color(0xFF06231D); // Fond Dark
+  static const Color darkGreenSurface = Color(0xFF0C342C); // Cartes Dark / Texte Light
+  static const Color emeraldPrimary   = Color(0xFF1f9b61); // Couleur de marque  // ou 1f9b61 / 076653
+  
+  // Accents
+  static const Color neonYellow       = Color(0xFFE3EF26); // Accent Punchy
+  static const Color lightAcidGreen   = Color(0xFFD0FFE3); // Fond accent léger
+  
+  // Neutres
+  static const Color offWhite         = Color(0xFFFFFDEE); // Fond Light / Texte sur Dark
+  static const Color greyMuted        = Color(0xFF9AA3AF);
 
   // ════════════════════════════════════════════════
-  // LIGHT-GREEN THEME
+  // DARK THEME (Premium Organic)
   // ════════════════════════════════════════════════
+  static const Color bgDark         = darkGreenBase;
+  static const Color bgDarkSurface  = darkGreenSurface;
+  static const Color bgDarkElevated = Color(0xFF124036);
+  static const Color borderDark       = Color(0xFF1A453B);
 
-  /// Fond de page
-  static const Color bgLight          = Color(0xFFF0F3F6);
-
-  /// Surfaces / cards
-  static const Color bgLightSurface   = Color(0xFFFFFFFF);
-
-  /// Input background
-  static const Color bgLightInput     = Color(0xFFEEF2F7);
-
-  // ─── Accent Green-Light ──────────────────────
-  /// CTA principal light theme
-  static const Color primaryGreen     = Color(0xFF00C44F);
-
-  /// Textes / icônes actifs light
-  static const Color primaryGreenDark = Color(0xFF009B3E);
-
-  /// Fill vert light
-  static const Color primaryGreenFill = Color(0x2600C44F); // 15%
-
-  // ─── Accent Blue (light) ─────────────────────
-  /// Actions secondaires, info
-  static const Color accentBlueLight  = Color(0xFF1B7BFF);
-
-  /// Fill bleu light
-  static const Color accentBlueFill   = Color(0x1F1B7BFF); // 12%
-
-  // ─── Textes Light ────────────────────────────
-  static const Color textLightPrimary = Color(0xFF0D1826);
-  static const Color textLightSub     = Color(0xFF6B7A8D);
-  static const Color textLightMuted   = Color(0xFF9AA3AF);
-
-  // ─── Borders Light ───────────────────────────
-  static const Color borderLight      = Color(0xFFE0E6EE);
-  static const Color borderLightStrong= Color(0xFFCDD5DF);
+  static const Color textDarkPrimary  = offWhite;
+  static const Color textDarkSub      = Color(0xB3FFFDEE); // 70%
+  static const Color textDarkMuted    = Color(0x66FFFDEE); // 40%
 
   // ════════════════════════════════════════════════
-  // SÉMANTIQUE — partagé entre les deux thèmes
+  // LIGHT THEME (Clean Organic)
   // ════════════════════════════════════════════════
+  static const Color bgLight          = Color(0xFFF7F9F2); // Un peu plus frais que le pur blanc
+  static const Color bgLightSurface   = offWhite;
+  static const Color bgLightInput     = Color(0xFFE8ECD7);
+  static const Color borderLight      = lightAcidGreen;
 
-  static const Color success        = Color(0xFF00C44F);
-  static const Color successFill    = Color(0x1F00C44F);
-
-  static const Color warning        = Color(0xFFFF9500);
-  static const Color warningFill    = Color(0x1FFF9500);
-
-  static const Color error          = Color(0xFFFF3B30);
-  static const Color errorFill      = Color(0x1FFF3B30);
-
-  static const Color info           = Color(0xFF1B7BFF);
-  static const Color infoFill       = Color(0x1F1B7BFF);
-
-  // ─── Services (couleurs identitaires) ────────
-  static const Color serviceMoto    = Color(0xFF1B7BFF); // bleu
-  static const Color serviceEnvoi   = Color(0xFF00C44F); // vert
-  static const Color serviceMarket  = Color(0xFFFF9500); // orange
-  static const Color servicePlan    = Color(0xFFA855F7); // violet
+  static const Color textLightPrimary = darkGreenBase;
+  static const Color textLightSub     = Color(0xFF4A5D59);
+  static const Color textLightMuted   = Color(0xFF8B9A97);
 
   // ════════════════════════════════════════════════
-  // ALIAS DE COMPATIBILITÉ — anciens tokens
-  // À supprimer progressivement au fil des refontes
+  // SÉMANTIQUE & SERVICES
   // ════════════════════════════════════════════════
+  static const Color primary        = emeraldPrimary;
+  static const Color accent         = neonYellow;
+  
+  static const Color success        = Color(0xFF27AE60);
+  static const Color warning        = Color(0xFFF2994A);
+  static const Color error          = Color(0xFFEB5757);
 
-  /// @deprecated → AppColors.primaryBlue
-  static const Color primary          = primaryBlue;
+  static const Color serviceMoto    = emeraldPrimary;
+  static const Color serviceEnvoi   = Color(0xFF2D9CDB);
+  static const Color serviceMarket  = Color(0xFFF2C94C);
+  static const Color servicePlan    = Color(0xFF9B51E0);
+  
+  // ════════════════════════════════════════════════
+  // ALIAS DE COMPATIBILITÉ & SÉMANTIQUE DYNAMIQUE
+  // ════════════════════════════════════════════════
+  static const Color infoFill       = Color(0x1A076653); // emeraldPrimary avec alpha
+  static const Color successFill    = Color(0x1A27AE60);
+  static const Color warningFill    = Color(0x1AF2994A);
+  static const Color errorFill      = Color(0x1AEB5757);
 
-  /// @deprecated → AppColors.primaryBlueLight
-  static const Color primaryLight     = primaryBlueLight;
+  static const Color accentBlueLight = emeraldPrimary; 
+  static const Color accentBlueFill  = infoFill;
 
-  /// @deprecated → AppColors.bgDark
-  static const Color backgroundDark   = bgDark;
-
-  /// @deprecated → AppColors.bgDarkSurface
-  static const Color backgroundSecondary = bgDarkSurface;
-
-  /// @deprecated → AppColors.bgDarkElevated
-  static const Color surface          = bgDarkElevated;
-
-  /// @deprecated → AppColors.textDarkPrimary
-  static const Color textPrimary      = textDarkPrimary;
-
-  /// @deprecated → AppColors.textDarkSub
-  static const Color textSecondary    = textDarkSub;
-
-  /// @deprecated → AppColors.textDarkMuted
-  static const Color textMuted        = textDarkMuted;
-
-  /// @deprecated → AppColors.borderDark
-  static const Color border           = borderDark;
-
-  /// @deprecated → AppColors.accentGreenDark
-  static const Color successGreen     = accentGreenDark;
+  // Compatibilité Legacy
+  static const Color primaryBlue      = emeraldPrimary;
+  static const Color primaryBlueLight = Color(0xFF4DB6A3);
+  static const Color primaryGreen     = emeraldPrimary;
+  static const Color primaryGreenDark = Color(0xFF044D3E);
+  static const Color primaryGreenFill = Color(0x1A076653);
 }

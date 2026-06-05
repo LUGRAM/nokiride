@@ -256,7 +256,7 @@ class _DriverSheet extends GetView<TripController> {
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              onPressed: controller.completeTrip,
+              onPressed: () => controller.completeTrip(),
               child: const Text(
                 'Course terminée',
                 style: TextStyle(
