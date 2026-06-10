@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 
@@ -56,11 +55,11 @@ class _SplashPageState extends State<SplashPage>
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
             colors: [
-              AppColors.bgDark,          // Vert Sombre Profond (#06231D)
-              AppColors.bgDarkElevated,  // Teinte de transition (#124036)
+              AppColors.bgDarkElevated,
+              AppColors.emeraldPrimary
             ],
           ),
         ),
@@ -71,7 +70,7 @@ class _SplashPageState extends State<SplashPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ── Conteneur d'animation Premium ──
-                Container(
+                /*Container(
                   width: 96, height: 96,
                   decoration: BoxDecoration(
                     color: AppColors.bgDarkSurface.withOpacity(0.4),
@@ -96,30 +95,33 @@ class _SplashPageState extends State<SplashPage>
                       repeat: true,
                     ),
                   ),
-                ),
+                ),*/
                 const SizedBox(height: 32),
 
                 // ── Nom de la Marque ──
                 Text(
                   'NokiRide',
                   style: GoogleFonts.inter(
-                    color: AppColors.textDarkPrimary, // OffWhite (#FFFDEE)
+                    color: Color(0xffFFFDEE),
+                    //color: AppColors.textDarkPrimary, // OffWhite (#FFFDEE)
                     fontSize: 36,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1.0,
+                    textBaseline: TextBaseline.alphabetic,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 10),
-
                 // ── Slogan ──
                 Text(
                   'Mobilité urbaine simplifiée',
                   style: GoogleFonts.inter(
-                    color: AppColors.textDarkSub, // Vert adouci à 70%
+                    color: AppColors.textDarkPrimary, // Vert adouci à 70%
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

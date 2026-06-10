@@ -31,60 +31,59 @@ class ProfilePage extends GetView<ProfileController> {
               const SizedBox(height: 20),
 
               // ── Préférences ───────────────────────────────
-              _SectionLabel(label: "Préférences", isDark: isDark),
+              _SectionLabel(label: "settings".tr, isDark: isDark),
               const SizedBox(height: 10),
               _SettingsCard(isDark: isDark, children: [
                 _SettingsTile(
                   icon: FontAwesomeIcons.moon,
-                  label: "Thème sombre",
+                  label: "theme".tr,
                   isDark: isDark,
                   trailing: Obx(() => Switch(
                     value: ThemeService.to.isDark,
                     onChanged: (_) => controller.toggleTheme(),
                     activeColor: AppColors.neonYellow,
-                    activeTrackColor: AppColors.emeraldPrimary.withOpacity(0.5),
+                    activeTrackColor: AppColors.emeraldPrimary.withValues(alpha: 0.5),
                   )),
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
                   icon: FontAwesomeIcons.globe,
-                  label: "Langue",
+                  label: "language".tr,
                   isDark: isDark,
-                  trailing: Obx(() => GestureDetector(
-                    onTap: controller.toggleLocale,
-                    child: _LangBadge(
+                  onTap: controller.toggleLocale,
+                  trailing: Obx(() => _LangBadge(
                         isFrench: controller.isFrench, primary: primary),
-                  )),
+                  ),
                 ),
               ]),
 
               const SizedBox(height: 12),
 
               // ── Compte ────────────────────────────────────
-              _SectionLabel(label: "Compte", isDark: isDark),
+              _SectionLabel(label: "account".tr, isDark: isDark),
               const SizedBox(height: 10),
               _SettingsCard(isDark: isDark, children: [
                 _SettingsTile(
                   icon: FontAwesomeIcons.bell,
-                  label: "Notifications",
-                  isDark: isDark, onTap: () {},
+                  label: "notifications".tr,
+                  isDark: isDark, onTap: () => Get.toNamed('/notifications'),
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
                   icon: FontAwesomeIcons.shieldHalved,
-                  label: "Confidentialité",
+                  label: "privacy".tr,
                   isDark: isDark, onTap: () {},
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
                   icon: FontAwesomeIcons.circleQuestion,
-                  label: "Aide & Support",
+                  label: "help".tr,
                   isDark: isDark, onTap: () {},
                 ),
                 _Divider(isDark: isDark),
                 _SettingsTile(
                   icon: FontAwesomeIcons.star,
-                  label: "Évaluer l'application",
+                  label: "rate_app".tr,
                   isDark: isDark, onTap: () {},
                 ),
               ]),
@@ -98,15 +97,15 @@ class ProfilePage extends GetView<ProfileController> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.08),
+                    color: AppColors.error.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.error.withOpacity(0.25)),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
                   ),
                   child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    FaIcon(FontAwesomeIcons.rightFromBracket, color: AppColors.error, size: 18),
+                    const FaIcon(FontAwesomeIcons.rightFromBracket, color: AppColors.error, size: 18),
                     const SizedBox(width: 10),
-                    const Text("Se déconnecter",
-                        style: TextStyle(
+                    Text("logout".tr,
+                        style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.error)),
                   ]),
                 ),
@@ -119,7 +118,7 @@ class ProfilePage extends GetView<ProfileController> {
                   style: TextStyle(fontSize: 12, color: subC)),
               const SizedBox(height: 4),
               Text("Made with ♥ in Libreville",
-                  style: TextStyle(fontSize: 11, color: subC.withOpacity(0.6))),
+                  style: TextStyle(fontSize: 11, color: subC.withValues(alpha: 0.6))),
             ],
           ),
         ),
@@ -155,7 +154,7 @@ class _ProfileHeaderCard extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
@@ -173,15 +172,15 @@ class _ProfileHeaderCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
+                    color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    FaIcon(FontAwesomeIcons.penToSquare, color: Colors.white.withOpacity(0.9), size: 12),
+                    FaIcon(FontAwesomeIcons.penToSquare, color: Colors.white.withValues(alpha: 0.9), size: 12),
                     const SizedBox(width: 6),
-                    Text("Modifier",
+                    Text("edit".tr,
                         style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 12, fontWeight: FontWeight.w700)),
                   ]),
                 ),
@@ -197,12 +196,12 @@ class _ProfileHeaderCard extends StatelessWidget {
             Container(
               width: 76, height: 76,
               decoration: BoxDecoration(
-                color: primary.withOpacity(0.12),
+                color: primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
                 border: Border.all(color: cardBg, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: primary.withOpacity(0.20),
+                    color: primary.withValues(alpha: 0.20),
                     blurRadius: 16, offset: const Offset(0, 4),
                   ),
                 ],
@@ -212,7 +211,7 @@ class _ProfileHeaderCard extends StatelessWidget {
             const SizedBox(height: 10),
             Obx(() {
               final name = controller.userName.value.split('#')[0].trim();
-              return Text(name.isEmpty ? "Utilisateur" : name,
+              return Text(name.isEmpty ? "user".tr : name,
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: titleC));
             }),
             const SizedBox(height: 4),
@@ -254,19 +253,19 @@ class _StatsStrip extends StatelessWidget {
       child: Row(children: [
         _StatItem(
           value: "${controller.totalTrips}",
-          label: "Courses",
+          label: "rides".tr,
           titleC: titleC, subC: subC, primary: primary,
         ),
         _StatDivider(isDark: isDark),
         _StatItem(
           value: controller.totalSpent,
-          label: "Dépenses",
+          label: "expenses".tr,
           titleC: titleC, subC: subC, primary: primary,
         ),
         _StatDivider(isDark: isDark),
         _StatItem(
           value: controller.memberSince,
-          label: "Membre depuis",
+          label: "member_since".tr,
           titleC: titleC, subC: subC, primary: primary,
         ),
       ]),
@@ -365,7 +364,7 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final iconC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final iconBg = iconC.withOpacity(0.10);
+    final iconBg = iconC.withValues(alpha: 0.10);
 
     return ListTile(
       onTap: onTap,
@@ -396,7 +395,7 @@ class _LangBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary.withOpacity(0.1);
+    final bg = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary.withValues(alpha: 0.1);
     final textC = isDark ? AppColors.darkGreenBase : AppColors.emeraldPrimary;
 
     return Container(

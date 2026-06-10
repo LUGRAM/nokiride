@@ -24,6 +24,7 @@ dependencies:
   intl_phone_field: ^3.2.0
 
   # Images
+  flutter_svg: ^2.0.10+1
   cached_network_image: ^3.4.1
   image_picker: ^1.2.1
   image_cropper: ^11.0.0

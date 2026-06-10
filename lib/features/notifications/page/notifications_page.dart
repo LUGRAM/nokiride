@@ -28,7 +28,7 @@ class NotificationsPage extends StatelessWidget {
             child: Row(children: [
               GestureDetector(onTap: Get.back, child: Icon(Icons.arrow_back_rounded, color: titleC)),
               const SizedBox(width: 14),
-              Text("Notifications", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: titleC)),
+              Text("notifications".tr, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: titleC)),
             ]),
           ),
           Expanded(
@@ -68,14 +68,14 @@ class _NotifTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: item.isRead ? bg : color.withOpacity(.05),
+        color: item.isRead ? bg : color.withValues(alpha: .05),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: item.isRead ? border : color.withOpacity(.20)),
+        border: Border.all(color: item.isRead ? border : color.withValues(alpha: .20)),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
           width: 40, height: 40,
-          decoration: BoxDecoration(color: color.withOpacity(.12), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)),
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 12),

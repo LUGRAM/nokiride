@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 
 class _ServiceItem {
   final String   id;
-  final String   label;
-  final String   sublabel;
+  final String   labelKey;
+  final String   sublabelKey;
   final String   emoji;
   final IconData icon;
   final Color    color;
@@ -14,8 +15,8 @@ class _ServiceItem {
 
   const _ServiceItem({
     required this.id,
-    required this.label,
-    required this.sublabel,
+    required this.labelKey,
+    required this.sublabelKey,
     required this.emoji,
     required this.icon,
     required this.color,
@@ -26,22 +27,22 @@ class _ServiceItem {
 
 final _services = [
   const _ServiceItem(
-    id: 'moto', label: 'Moto-Taxi', sublabel: 'Course rapide',
+    id: 'moto', labelKey: 'moto_taxi', sublabelKey: 'moto_sub',
     emoji: '🏍️', icon: FontAwesomeIcons.motorcycle,
     color: AppColors.serviceMoto, isFeatured: true,
   ),
   const _ServiceItem(
-    id: 'envoi', label: 'Envoi colis', sublabel: 'A → B sans vous',
+    id: 'envoi', labelKey: 'delivery', sublabelKey: 'delivery_sub',
     emoji: '📦', icon: FontAwesomeIcons.boxOpen,
     color: AppColors.serviceEnvoi, isFeatured: true,
   ),
   const _ServiceItem(
-    id: 'market', label: 'Market', sublabel: 'Courses livrées',
+    id: 'market', labelKey: 'market', sublabelKey: 'market_sub',
     emoji: '🛒', icon: FontAwesomeIcons.basketShopping,
     color: AppColors.serviceMarket, isNew: true,
   ),
   const _ServiceItem(
-    id: 'plan', label: 'Planifier', sublabel: 'Résa. avancée',
+    id: 'plan', labelKey: 'schedule', sublabelKey: 'schedule_sub',
     emoji: '📅', icon: FontAwesomeIcons.calendarCheck,
     color: AppColors.servicePlan,
   ),
@@ -64,7 +65,7 @@ class ServiceGridSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Nos services',
+                'our_services'.tr,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -130,7 +131,7 @@ class _ServiceCard extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: AppColors.emeraldPrimary.withOpacity(0.04),
+                  color: AppColors.emeraldPrimary.withValues(alpha: 0.04),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -152,7 +153,7 @@ class _ServiceCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.emeraldPrimary.withOpacity(isDark ? 0.15 : 0.08),
+                        color: AppColors.emeraldPrimary.withValues(alpha: isDark ? 0.15 : 0.08),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
@@ -168,7 +169,7 @@ class _ServiceCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  item.label,
+                  item.labelKey.tr,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -178,7 +179,7 @@ class _ServiceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  item.sublabel,
+                  item.sublabelKey.tr,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

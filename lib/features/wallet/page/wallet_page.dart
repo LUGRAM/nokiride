@@ -23,7 +23,7 @@ class WalletPage extends GetView<WalletController> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: Row(children: [
-                Text("Mon Wallet",
+                Text("my_wallet".tr,
                     style: TextStyle(
                       fontSize: 24, 
                       fontWeight: FontWeight.w900, 
@@ -57,10 +57,10 @@ class WalletPage extends GetView<WalletController> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(children: [
-                Text("Transactions récentes",
+                Text("recent_transactions".tr,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: titleC)),
                 const Spacer(),
-                Text("Voir tout",
+                Text("see_all".tr,
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.emeraldPrimary)),
               ]),
             ),
@@ -97,7 +97,7 @@ class _CircleBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 1.5),
           boxShadow: isDark ? [] : [
-            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
           ],
         ),
         child: Center(child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 18)),
@@ -130,7 +130,7 @@ class _BalanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: AppColors.emeraldPrimary.withOpacity(isDark ? 0.4 : 0.2),
+            color: AppColors.emeraldPrimary.withValues(alpha: isDark ? 0.4 : 0.2),
             blurRadius: 25,
             offset: const Offset(0, 12),
           ),
@@ -147,22 +147,22 @@ class _BalanceCard extends StatelessWidget {
               child: Container(
                 width: 38, height: 38,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Obx(() => Center(child: FaIcon(
                   ctrl.balanceVisible.value
                       ? FontAwesomeIcons.eye
                       : FontAwesomeIcons.eyeSlash,
-                  color: Colors.white.withOpacity(0.9), size: 16,
+                  color: Colors.white.withValues(alpha: 0.9), size: 16,
                 ))),
               ),
             ),
           ]),
           const SizedBox(height: 24),
-          Text("Solde disponible",
+          Text("available_balance".tr,
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
           const SizedBox(height: 8),
           Obx(() => AnimatedSwitcher(
@@ -182,13 +182,13 @@ class _BalanceCard extends StatelessWidget {
             const SizedBox(width: 6),
             Text("7821",
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 2.0)),
             const Spacer(),
             Container(
               width: 44, height: 28,
               decoration: BoxDecoration(
-                color: AppColors.neonYellow.withOpacity(0.2),
+                color: AppColors.neonYellow.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(child: FaIcon(FontAwesomeIcons.rss,
@@ -207,16 +207,16 @@ class _NokiPayBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(children: [
         FaIcon(FontAwesomeIcons.wallet,
-            color: Colors.white.withOpacity(0.9), size: 12),
+            color: Colors.white.withValues(alpha: 0.9), size: 12),
         const SizedBox(width: 8),
         Text("NokiPay",
             style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 fontSize: 11.5, fontWeight: FontWeight.w800, letterSpacing: .6)),
       ]),
     );
@@ -233,7 +233,7 @@ class _CardDots extends StatelessWidget {
             width: 5, height: 5,
             margin: const EdgeInsets.only(right: 3),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.45),
+              color: Colors.white.withValues(alpha: 0.45),
               shape: BoxShape.circle,
             ),
           )),
@@ -249,24 +249,24 @@ class _QuickActionsRow extends StatelessWidget {
   final bool isDark;
   final WalletController ctrl;
 
-  static final List<(dynamic, String)> _actions = [
-    (FontAwesomeIcons.plus, "Recharger"),
-    (FontAwesomeIcons.paperPlane, "Envoyer"),
-    (FontAwesomeIcons.clockRotateLeft, "Historique"),
-    (FontAwesomeIcons.qrcode, "Scanner"),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final cardBg = isDark ? AppColors.bgDarkSurface : Colors.white;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
+    final List<(dynamic, String)> actions = [
+      (FontAwesomeIcons.plus, "recharge".tr),
+      (FontAwesomeIcons.paperPlane, "send".tr),
+      (FontAwesomeIcons.clockRotateLeft, "history".tr),
+      (FontAwesomeIcons.qrcode, "scan".tr),
+    ];
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: _actions.map((a) {
+      children: actions.map((a) {
         final (icon, label) = a;
-        final isRecharge = label == "Recharger";
+        final isRecharge = label == "recharge".tr;
 
         return GestureDetector(
           onTap: isRecharge ? () => _showRechargeSheet(context) : () {},
@@ -279,7 +279,7 @@ class _QuickActionsRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: border, width: 1.5),
                 boxShadow: isDark ? [] : [
-                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
                 ],
               ),
               child: Center(child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 24)),
@@ -336,10 +336,10 @@ class _RechargeSheet extends StatelessWidget {
             decoration: BoxDecoration(color: border, borderRadius: BorderRadius.circular(10)),
           )),
           const SizedBox(height: 24),
-          Text("Recharger le wallet",
+          Text("recharge_wallet".tr,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.5)),
           const SizedBox(height: 6),
-          Text("Choisissez un montant à ajouter",
+          Text("choose_recharge_amount".tr,
               style: TextStyle(fontSize: 14, color: subC, fontWeight: FontWeight.w500)),
           const SizedBox(height: 24),
           Wrap(
@@ -351,9 +351,9 @@ class _RechargeSheet extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
                   decoration: BoxDecoration(
-                    color: primary.withOpacity(0.1),
+                    color: primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: primary.withOpacity(0.2), width: 1.5),
+                    border: Border.all(color: primary.withValues(alpha: 0.2), width: 1.5),
                   ),
                   child: Text(label,
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: primary)),
@@ -365,18 +365,18 @@ class _RechargeSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight.withOpacity(0.5), 
+              color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight.withValues(alpha: 0.5), 
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: border, width: 1.5),
             ),
             child: Row(children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: primary.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: primary.withValues(alpha: 0.1), shape: BoxShape.circle),
                 child: FaIcon(FontAwesomeIcons.pen, color: primary, size: 16),
               ),
               const SizedBox(width: 14),
-              Text("Montant personnalisé",
+              Text("custom_amount".tr,
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: titleC)),
               const Spacer(),
               FaIcon(FontAwesomeIcons.chevronRight, color: subC, size: 16),
@@ -403,13 +403,13 @@ class _MonthlyStats extends StatelessWidget {
       Expanded(child: _MiniStatCard(
         isDark: isDark, cardBg: cardBg, border: border, titleC: titleC, subC: subC,
         icon: FontAwesomeIcons.arrowDown, color: AppColors.success,
-        label: "Reçu ce mois", value: "+15 000 F",
+        label: "received_this_month".tr, value: "+15 000 F",
       )),
       const SizedBox(width: 12),
       Expanded(child: _MiniStatCard(
         isDark: isDark, cardBg: cardBg, border: border, titleC: titleC, subC: subC,
         icon: FontAwesomeIcons.arrowUp, color: AppColors.error,
-        label: "Dépensé ce mois", value: "-4 700 F",
+        label: "spent_this_month".tr, value: "-4 700 F",
       )),
     ]);
   }
@@ -438,7 +438,7 @@ class _MiniStatCard extends StatelessWidget {
         Container(
           width: 36, height: 36,
           decoration: BoxDecoration(
-              color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+              color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
           child: Center(child: FaIcon(icon, color: color, size: 16)),
         ),
         const SizedBox(height: 12),
@@ -470,14 +470,14 @@ class _TxTile extends StatelessWidget {
         color: bg, borderRadius: BorderRadius.circular(22),
         border: Border.all(color: border, width: 1.5),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(children: [
         Container(
           width: 48, height: 48,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
+            color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Center(child: FaIcon(
@@ -501,8 +501,8 @@ class _TxTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text(isCredit ? "CRÉDIT" : "DÉBIT",
+              color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+            child: Text(isCredit ? "credit".tr : "debit".tr,
                 style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: color, letterSpacing: 0.5)),
           ),
         ]),

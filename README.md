@@ -40,7 +40,7 @@ flutter run
 - Numéro : n'importe quel numéro gabonais (+241)
 
 ## Thèmes
-- **Blue-Dark** (défaut) / **Light-Green** — toggle dans la navbar home
+- **Green-Dark** (défaut) / **Light-Green** — toggle dans la navbar home
 
 ## Langues
 - 🇫🇷 Français / 🇬🇧 Anglais — switcher dans Profil > Paramètres

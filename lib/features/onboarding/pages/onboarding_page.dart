@@ -1,261 +1,382 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
 import '../controller/onboarding_controller.dart';
+
 import '../model/onboarding_model.dart';
 
-class OnboardingPage extends GetView<OnboardingController> {
+class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
+
+  @override
+  State<OnboardingPage> createState() => _OnboardingPageState();
+}
+
+class _OnboardingPageState extends State<OnboardingPage> {
+  final controller = Get.find<OnboardingController>();
+  late PageController _pageController;
+  final RxDouble _currentPageValue = 0.0.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      initialPage: controller.currentPage.value,
+      viewportFraction: 0.88, // Meilleur effet visuel
+    );
+    _pageController.addListener(() {
+      _currentPageValue.value = _pageController.page ?? 0.0;
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg     = isDark ? AppColors.bgDark : AppColors.bgLight;
+
+    final backgroundGradient = isDark
+        ? const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFF0C342C), Color(0xFF06231D)],
+    )
+        : const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFFFFDEE), Color(0xFFE2FBCE)],
+    );
 
     return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _SkipButton(isDark: isDark, onTap: controller.skip),
-            Expanded(
-              child: PageView.builder(
-                controller:    controller.pageController,
-                onPageChanged: controller.onPageChanged,
-                itemCount:     controller.slides.length,
-                itemBuilder:   (_, i) => _Slide(
-                  slide:  controller.slides[i],
-                  isDark: isDark,
-                ),
-              ),
-            ),
-            _Footer(controller: controller, isDark: isDark),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Bouton Passer (Plus discret, mieux intégré)
-// ─────────────────────────────────────────────────────────────
-class _SkipButton extends StatelessWidget {
-  const _SkipButton({required this.isDark, required this.onTap});
-
-  final bool         isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-
-    return Align(
-      alignment: Alignment.topRight,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 10, right: 16),
-        child: TextButton(
-          onPressed: onTap,
-          style: TextButton.styleFrom(
-            foregroundColor: color,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            splashFactory: NoSplash.splashFactory, // Évite l'effet de flash gris
-          ),
-          child: Text(
-            'Passer',
-            style: GoogleFonts.inter(
-              color:      color,
-              fontSize:   14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Slide individuelle (Épurée et Premium)
-// ─────────────────────────────────────────────────────────────
-class _Slide extends StatelessWidget {
-  const _Slide({required this.slide, required this.isDark});
-
-  final OnboardingModel slide;
-  final bool            isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final descC  = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
-    final cardBg = isDark ? AppColors.bgDarkSurface : Colors.white;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          // Cercle d'illustration Premium
-          Container(
-            width:  180,
-            height: 180,
-            decoration: BoxDecoration(
-              color: isDark ? cardBg.withOpacity(0.6) : AppColors.lightAcidGreen.withOpacity(0.3),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: border.withOpacity(0.5),
-                width: 1.5,
-              ),
-              boxShadow: isDark ? [] : [
-                BoxShadow(
-                  color: AppColors.darkGreenBase.withOpacity(0.03),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+          // Fond dégradé
+          Container(decoration: BoxDecoration(gradient: backgroundGradient)),
+
+          // Formes lumineuses en arrière-plan
+          Positioned(
+            top: -60,
+            left: -80,
+            child: _GlassSphere(
+              size: 260,
+              color: isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+              opacity: isDark ? 0.22 : 0.35,
+            ),
+          ),
+          Positioned(
+            bottom: 80,
+            right: -100,
+            child: _GlassSphere(
+              size: 340,
+              color: isDark ? AppColors.emeraldPrimary : const Color(0xFF076653),
+              opacity: isDark ? 0.28 : 0.18,
+            ),
+          ),
+
+          // Un seul BackdropFilter global (beaucoup plus performant)
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+              child: const SizedBox.shrink(),
+            ),
+          ),
+
+          // Interface principale
+          SafeArea(
+            child: Column(
+              children: [
+                // Bouton Skip
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12, right: 20),
+                    child: TextButton(
+                      onPressed: controller.skip,
+                      style: TextButton.styleFrom(
+                        splashFactory: NoSplash.splashFactory,
+                        foregroundColor: isDark
+                            ? AppColors.textDarkSub
+                            : AppColors.textLightSub,
+                      ),
+                      child: Text(
+                        'skip'.tr,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // PageView des cartes
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: controller.onPageChanged,
+                    itemCount: controller.slides.length,
+                    clipBehavior: Clip.none,
+                    itemBuilder: (context, index) {
+                      final slide = controller.slides[index];
+                      return Obx(() {
+                        final position = _currentPageValue.value - index;
+                        final scale = (1 - (position.abs() * 0.15)).clamp(0.85, 1.0);
+                        final translate = position * 18.0;
+
+                        return Transform(
+                          transform: Matrix4.identity()
+                            ..scale(scale, scale)
+                            ..translate(translate, 0.0),
+                          alignment: Alignment.center,
+                          child: _OnboardingCard(
+                            slide: slide,
+                            isDark: isDark,
+                            isActive: position.abs() < 0.4,
+                          ),
+                        );
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Dots améliorés
+                Obx(() => _buildDots()),
+
+                const SizedBox(height: 32),
+
+                // Boutons d'action
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  child: Obx(() => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppButton(
+                        label: controller.isLastPage ? 'start'.tr : 'next'.tr,
+                        onTap: () {
+                          if (!controller.isLastPage && _pageController.hasClients) {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeInOutCubic,
+                            );
+                          } else {
+                            controller.nextPage();
+                          }
+                        },
+                      ),
+                      if (controller.isLastPage) ...[
+                        const SizedBox(height: 12),
+                        AppButton(
+                          label: "have_account".tr,
+                          variant: AppButtonVariant.outline,
+                          onTap: controller.goToLogin,
+                        ),
+                      ],
+                    ],
+                  )),
                 ),
               ],
             ),
-            child: Center(
-              child: Text(
-                slide.emoji,
-                style: const TextStyle(fontSize: 85),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 48),
-
-          Text(
-            slide.title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize:      26,
-              fontWeight:    FontWeight.w900,
-              color:         titleC,
-              height:        1.25,
-              letterSpacing: -0.8,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          Text(
-            slide.description,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize:   15,
-              color:      descC,
-              height:     1.5,
-              fontWeight: FontWeight.w500,
-              letterSpacing: -0.1,
-            ),
           ),
         ],
       ),
     );
   }
-}
 
-// ─────────────────────────────────────────────────────────────
-// Footer — dots + boutons relookés
-// ─────────────────────────────────────────────────────────────
-class _Footer extends StatelessWidget {
-  const _Footer({required this.controller, required this.isDark});
-
-  final OnboardingController controller;
-  final bool                 isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    // Changement dynamique de l'accent pour les dots actifs
-    final activeDotColor = isDark ? AppColors.neonYellow : AppColors.primary;
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Dots Indicator
-          Obx(() => _DotsRow(
-            count:       controller.slides.length,
-            current:     controller.currentPage.value,
-            isDark:      isDark,
-            activeColor: activeDotColor,
-          )),
-
-          const SizedBox(height: 36),
-
-          // Bouton Principal (Suivant / Commencer)
-          Obx(() => AppButton(
-            label: controller.isLastPage
-                ? 'Commencer avec NokiRide'
-                : 'Suivant',
-            onTap: controller.nextPage,
-          )),
-
-          // Bouton secondaire (Optionnel en dernière page)
-          Obx(() => AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve:    Curves.easeInOut,
-            child: controller.isLastPage
-                ? Padding(
-              padding: const EdgeInsets.only(top: 14),
-              child: AppButton(
-                label:   "J'ai déjà un compte",
-                variant: AppButtonVariant.outline,
-                onTap:   controller.goToLogin,
-              ),
-            )
-                : const SizedBox.shrink(),
-          )),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Dots Indicator (Design Étiré / Pill-shaped modern)
-// ─────────────────────────────────────────────────────────────
-class _DotsRow extends StatelessWidget {
-  const _DotsRow({
-    required this.count,
-    required this.current,
-    required this.isDark,
-    required this.activeColor,
-  });
-
-  final int   count;
-  final int   current;
-  final bool  isDark;
-  final Color activeColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final inactiveC = isDark
-        ? Colors.white.withOpacity(.15)
-        : AppColors.textLightMuted.withOpacity(.3);
-
+  Widget _buildDots() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(count, (i) {
-        final active = i == current;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve:    Curves.easeInOut,
-          margin:   const EdgeInsets.symmetric(horizontal: 4),
-          height:   6,
-          width:    active ? 24 : 6, // Effet pilule étirée moderne
-          decoration: BoxDecoration(
-            color:        active ? activeColor : inactiveC,
-            borderRadius: BorderRadius.circular(10),
+      children: List.generate(
+        controller.slides.length,
+            (i) {
+          final delta = (_currentPageValue.value - i).abs();
+          final factor = (1.0 - delta).clamp(0.0, 1.0);
+
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            height: 7,
+            width: 7 + (22 * factor),
+            decoration: BoxDecoration(
+              color: Color.lerp(
+                isDark ? Colors.white.withOpacity(0.2) : AppColors.textLightSub.withOpacity(0.3),
+                isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+                factor,
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Sphère lumineuse en arrière-plan
+// ─────────────────────────────────────────────────────────────
+class _GlassSphere extends StatelessWidget {
+  final double size;
+  final Color color;
+  final double opacity;
+
+  const _GlassSphere({
+    required this.size,
+    required this.color,
+    required this.opacity,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withOpacity(opacity),
+            Colors.transparent,
+          ],
+          stops: const [0.3, 1.0],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Carte Onboarding (Glassmorphism amélioré)
+// ─────────────────────────────────────────────────────────────
+class _OnboardingCard extends StatelessWidget {
+  final OnboardingSlide slide;
+  final bool isDark;
+  final bool isActive;
+
+  const _OnboardingCard({
+    required this.slide,
+    required this.isDark,
+    required this.isActive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cardBg = isDark
+        ? Colors.black.withOpacity(isActive ? 0.42 : 0.22)
+        : Colors.white.withOpacity(isActive ? 0.78 : 0.55);
+
+    final borderColor = isDark
+        ? Colors.white.withOpacity(isActive ? 0.18 : 0.08)
+        : Colors.white.withOpacity(isActive ? 0.65 : 0.35);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 36),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: borderColor, width: 1.4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isActive ? 0.18 : 0.06),
+            blurRadius: isActive ? 40 : 20,
+            offset: Offset(0, isActive ? 20 : 8),
           ),
-        );
-      }),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(isDark ? 0.08 : 0.25),
+            Colors.white.withOpacity(0.02),
+          ],
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Column(
+            children: [
+              // Zone illustration
+              Expanded(
+                flex: 5,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.07)
+                        : const Color(0xFFE2FBCE).withOpacity(0.45),
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: Center(
+                    child: AnimatedScale(
+                      scale: isActive ? 1.08 : 0.88,
+                      duration: const Duration(milliseconds: 280),
+                      child: slide.iconBuilder?.call(context) ??
+                          Text(
+                            "📱", // fallback
+                            style: const TextStyle(fontSize: 110),
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 36),
+
+              // Textes
+              Expanded(
+                flex: 4,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      slide.title.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w900,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textLightPrimary,
+                        letterSpacing: 0.9,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      slide.description,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        height: 1.5,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? AppColors.textDarkSub
+                            : AppColors.textLightSub,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

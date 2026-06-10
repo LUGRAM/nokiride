@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-class OnboardingModel {
-  final String title, description, emoji, lottiePath;
-  final Color bgColor;
-  const OnboardingModel({required this.title, required this.description,
-    required this.emoji, required this.lottiePath, required this.bgColor});
+
+class OnboardingSlide {
+  final String title;
+  final String description;
+  final Widget Function(BuildContext context)? iconBuilder;
+
+  const OnboardingSlide({
+    required this.title,
+    required this.description,
+    this.iconBuilder,
+  });
 }

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_button.dart';
+import '../../../app/widgets/gradient_background.dart';
 import '../controller/auth_controller.dart';
 
 class OtpPage extends GetView<AuthController> {
@@ -10,10 +12,9 @@ class OtpPage extends GetView<AuthController> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.bgDark : AppColors.bgLight;
-
-    // Changement d'accent : Jaune Acide électrisant en Dark mode pour les composants OTP
+    
     final accentColor = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
     final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
     final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
@@ -35,136 +36,138 @@ class OtpPage extends GetView<AuthController> {
       ),
     );
 
-    return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bouton Retour Flottant Épuré
-              GestureDetector(
-                onTap: Get.back,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: inputBg.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.arrow_back_rounded, color: titleC, size: 22),
-                ),
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: titleC),
+            onPressed: () => Get.back(),
+          ),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              height: size.height - MediaQuery.of(context).padding.top - kToolbarHeight - 20,
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.08,
+                vertical: size.height * 0.02,
               ),
-              const SizedBox(height: 36),
-
-              Text(
-                "Vérification",
-                style: GoogleFonts.inter(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: titleC,
-                  letterSpacing: -0.6,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Obx(() => Text(
-                "Code envoyé au +241 ${controller.phone.value}",
-                style: GoogleFonts.inter(fontSize: 14, color: subC, fontWeight: FontWeight.w500),
-              )),
-              const SizedBox(height: 16),
-
-              // Badge de Code de Test Organique
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: accentColor.withOpacity(0.2), width: 1),
-                ),
-                child: Text(
-                  "Code de test : 1234",
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: accentColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 44),
-
-              // Saisie du Code PIN (Pinput)
-              Center(
-                child: Pinput(
-                  length: 4,
-                  defaultPinTheme: defaultPinTheme,
-                  focusedPinTheme: defaultPinTheme.copyWith(
-                    decoration: defaultPinTheme.decoration!.copyWith(
-                      border: Border.all(color: accentColor, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: accentColor.withOpacity(0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.emeraldPrimary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.mark_email_read_rounded,
+                      color: AppColors.emeraldPrimary,
+                      size: 32,
                     ),
                   ),
-                  onCompleted: (v) {
-                    controller.setOtp(v);
-                    controller.verifyOtp();
-                  },
-                ),
-              ),
-              const SizedBox(height: 40),
-
-              // Bouton de Vérification
-              Obx(() => SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.emeraldPrimary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0,
+                  const SizedBox(height: 24),
+                  Text(
+                    "otp_title".tr,
+                    style: GoogleFonts.inter(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: titleC,
+                      letterSpacing: -1.2,
+                    ),
                   ),
-                  onPressed: controller.isLoading.value ? null : controller.verifyOtp,
-                  child: controller.isLoading.value
-                      ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                  )
-                      : Text(
-                    "Vérifier",
+                  const SizedBox(height: 8),
+                  Obx(() => Text(
+                    "${'code_sent_to'.tr} ${controller.phone.value}",
                     style: GoogleFonts.inter(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.textDarkPrimary : Colors.white,
-                      letterSpacing: -0.2,
+                      color: subC,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
                     ),
-                  ),
-                ),
-              )),
-              const SizedBox(height: 24),
+                  )),
+                  
+                  const SizedBox(height: 16),
 
-              // Renvoyer le Code
-              Center(
-                child: TextButton(
-                  onPressed: controller.sendOtp,
-                  style: TextButton.styleFrom(
-                    splashFactory: NoSplash.splashFactory,
-                  ),
-                  child: Text(
-                    "Renvoyer le code",
-                    style: GoogleFonts.inter(
-                      color: accentColor,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                  // Badge de Code de Test
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 1),
+                    ),
+                    child: Text(
+                      "test_code_hint".tr,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: accentColor,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
+                  
+                  const Spacer(),
+
+                  // Saisie du Code PIN (Pinput)
+                  Center(
+                    child: Pinput(
+                      length: 4,
+                      defaultPinTheme: defaultPinTheme,
+                      focusedPinTheme: defaultPinTheme.copyWith(
+                        decoration: defaultPinTheme.decoration!.copyWith(
+                          border: Border.all(color: accentColor, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accentColor.withValues(alpha: 0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                      ),
+                      onCompleted: (v) {
+                        controller.setOtp(v);
+                        controller.verifyOtp();
+                      },
+                    ),
+                  ),
+                  
+                  const Spacer(),
+
+                  // Bouton de Vérification
+                  Obx(() => AppButton(
+                    label: controller.isLoading.value ? "verifying".tr : "verify_btn".tr,
+                    loading: controller.isLoading.value,
+                    onTap: controller.verifyOtp,
+                  )),
+
+                  const SizedBox(height: 24),
+
+                  // Renvoyer le Code
+                  Center(
+                    child: TextButton(
+                      onPressed: controller.isLoading.value ? null : controller.sendOtp,
+                      child: Text(
+                        "resend_code".tr,
+                        style: GoogleFonts.inter(
+                          color: accentColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const Spacer(flex: 2),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

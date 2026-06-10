@@ -27,10 +27,10 @@ class HistoryPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
             child: Row(children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("Activités",
+                Text("activities".tr,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.8)),
                 const SizedBox(height: 4),
-                Text("${controller.trips.length} courses · ${controller.deliveries.length} livraisons",
+                Text("${controller.trips.length} ${'rides_count'.tr} · ${controller.deliveries.length} ${'deliveries_count'.tr}",
                     style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
               ]),
               const Spacer(),
@@ -77,7 +77,7 @@ class _HeaderActionBtn extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 1.5),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
         ],
       ),
       child: Center(child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 16)),
@@ -101,7 +101,7 @@ class _PillTabs extends StatelessWidget {
     final bg      = isDark ? AppColors.bgDarkSurface : Colors.white;
     final border  = isDark ? AppColors.borderDark    : AppColors.borderLight;
     final inactC  = isDark ? AppColors.textDarkSub   : AppColors.textLightSub;
-    final labels  = ['En cours', 'Historique'];
+    final labels  = ['ongoing'.tr, 'history'.tr];
 
     return Container(
       padding: const EdgeInsets.all(6),
@@ -109,7 +109,7 @@ class _PillTabs extends StatelessWidget {
         color: bg, borderRadius: BorderRadius.circular(20),
         border: Border.all(color: border, width: 1.5),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -162,19 +162,19 @@ class _EnCoursTab extends StatelessWidget {
           Container(
             width: 100, height: 100,
             decoration: BoxDecoration(
-              color: primary.withOpacity(0.1),
+              color: primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: primary.withOpacity(0.15), width: 2),
+              border: Border.all(color: primary.withValues(alpha: 0.15), width: 2),
             ),
             child: Center(child: FaIcon(FontAwesomeIcons.motorcycle, color: primary, size: 40)),
           ),
           const SizedBox(height: 28),
-          Text("Aucune activité en cours",
+          Text("no_ongoing_activity".tr,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.5),
               textAlign: TextAlign.center),
           const SizedBox(height: 12),
           Text(
-            "Vos courses et livraisons en cours s'afficheront ici en temps réel.",
+            "no_ongoing_subtitle".tr,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: subC, height: 1.5, fontWeight: FontWeight.w500),
           ),
@@ -190,8 +190,8 @@ class _EnCoursTab extends StatelessWidget {
               ),
               onPressed: () => Get.toNamed(Routes.trip),
               icon: const FaIcon(FontAwesomeIcons.plus, size: 14, color: Colors.white),
-              label: const Text("Commander une course",
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+              label: Text("book_ride".tr,
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
             ),
           ),
         ]),
@@ -211,7 +211,6 @@ class _HistoriqueTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subC   = isDark ? AppColors.textDarkSub  : AppColors.textLightSub;
-    final border = isDark ? AppColors.borderDark   : AppColors.borderLight;
 
     return Column(children: [
       // Sous-onglets
@@ -219,7 +218,7 @@ class _HistoriqueTab extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Obx(() => Row(children: [
           _SubTab(
-            label:   "Mes Courses",
+            label:   "my_rides".tr,
             icon:    FontAwesomeIcons.motorcycle,
             count:   controller.trips.length,
             active:  controller.histTabIndex.value == 0,
@@ -228,7 +227,7 @@ class _HistoriqueTab extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           _SubTab(
-            label:   "Livraisons",
+            label:   "deliveries".tr,
             icon:    FontAwesomeIcons.boxOpen,
             count:   controller.deliveries.length,
             active:  controller.histTabIndex.value == 1,
@@ -245,7 +244,7 @@ class _HistoriqueTab extends StatelessWidget {
               : controller.groupedDeliveries;
 
           if (grouped.isEmpty) {
-            return Center(child: Text("Aucune entrée",
+            return Center(child: Text("no_entries".tr,
                 style: TextStyle(color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted, fontWeight: FontWeight.w600)));
           }
 
@@ -265,7 +264,7 @@ class _HistoriqueTab extends StatelessWidget {
                     child: Row(children: [
                       Container(
                         width: 8, height: 8,
-                        decoration: BoxDecoration(color: AppColors.neonYellow, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(color: AppColors.neonYellow, shape: BoxShape.circle),
                       ),
                       const SizedBox(width: 10),
                       Text(date,
@@ -274,7 +273,7 @@ class _HistoriqueTab extends StatelessWidget {
                               color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
                               letterSpacing: -0.2)),
                       const Spacer(),
-                      Text("${items.length} entrée${items.length > 1 ? 's' : ''}",
+                      Text("${items.length} ${'entry'.tr}${items.length > 1 ? 's' : ''}",
                           style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
                     ]),
                   ),
@@ -324,7 +323,7 @@ class _SubTab extends StatelessWidget {
           color: bg, borderRadius: BorderRadius.circular(16),
           border: Border.all(color: border, width: 1.5),
           boxShadow: active ? [
-            BoxShadow(color: primary.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: primary.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
           ] : null,
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -335,7 +334,7 @@ class _SubTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color:        (active ? Colors.white : primary).withOpacity(active ? 0.2 : 0.1),
+              color:        (active ? Colors.white : primary).withValues(alpha: active ? 0.2 : 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text("$count",
@@ -366,8 +365,8 @@ class _HistoryTile extends StatelessWidget {
     final subC    = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
     final statusColor = item.status == HistoryStatus.completed ? AppColors.success
         : item.status == HistoryStatus.cancelled ? AppColors.error : AppColors.warning;
-    final statusLabel = item.status == HistoryStatus.completed ? "TERMINÉ"
-        : item.status == HistoryStatus.cancelled ? "ANNULÉ" : "EN COURS";
+    final statusLabel = item.status == HistoryStatus.completed ? "completed".tr
+        : item.status == HistoryStatus.cancelled ? "cancelled".tr : "ongoing_caps".tr;
     final isTrip = item.type == HistoryType.trip;
 
     return Padding(
@@ -378,7 +377,7 @@ class _HistoryTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: border, width: 1.5),
           boxShadow: isDark ? [] : [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Material(
@@ -392,7 +391,7 @@ class _HistoryTile extends StatelessWidget {
                 Container(
                   width: 52, height: 52,
                   decoration: BoxDecoration(
-                    color:  primary.withOpacity(0.1),
+                    color:  primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
@@ -419,7 +418,7 @@ class _HistoryTile extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(statusLabel,
@@ -460,7 +459,7 @@ class _RouteRow extends StatelessWidget {
           maxLines: 1, overflow: TextOverflow.ellipsis)),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: FaIcon(FontAwesomeIcons.arrowRight, size: 10, color: textC.withOpacity(0.5)),
+        child: FaIcon(FontAwesomeIcons.arrowRight, size: 10, color: textC.withValues(alpha: 0.5)),
       ),
       Container(width: 6, height: 6,
           decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle)),
@@ -489,9 +488,9 @@ class _HistoryDetailPage extends StatelessWidget {
 
     final statusColor = item.status == HistoryStatus.completed ? AppColors.success
         : item.status == HistoryStatus.cancelled ? AppColors.error : AppColors.warning;
-    final statusLabel = item.status == HistoryStatus.completed ? "TERMINÉ"
-        : item.status == HistoryStatus.cancelled ? "ANNULÉ" : "EN COURS";
-    final typeLabel   = item.type == HistoryType.trip ? "Course" : "Livraison";
+    final statusLabel = item.status == HistoryStatus.completed ? "completed".tr
+        : item.status == HistoryStatus.cancelled ? "cancelled".tr : "ongoing_caps".tr;
+    final typeLabel   = item.type == HistoryType.trip ? "moto_taxi".tr : "delivery".tr;
 
     return Scaffold(
       backgroundColor: bg,
@@ -525,7 +524,7 @@ class _HistoryDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color:        statusColor.withOpacity(0.1),
+                  color:        statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(statusLabel,
@@ -545,7 +544,7 @@ class _HistoryDetailPage extends StatelessWidget {
                   Container(
                     width: 60, height: 60,
                     decoration: BoxDecoration(
-                      color:  primary.withOpacity(0.1), 
+                      color:  primary.withValues(alpha: 0.1), 
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Center(child: FaIcon(FontAwesomeIcons.userLarge, color: primary, size: 24)),
@@ -561,7 +560,7 @@ class _HistoryDetailPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color:        AppColors.neonYellow.withOpacity(0.2),
+                        color:        AppColors.neonYellow.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -595,7 +594,7 @@ class _HistoryDetailPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text("PRIX TOTAL", style: TextStyle(fontSize: 11, color: subC, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
+                      Text("total_price".tr, style: TextStyle(fontSize: 11, color: subC, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
                       Text(item.formattedPrice,
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primary, letterSpacing: -0.5)),
                     ]),
@@ -608,15 +607,15 @@ class _HistoryDetailPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color:        AppColors.error.withOpacity(0.08),
+                      color:        AppColors.error.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
-                      border:       Border.all(color: AppColors.error.withOpacity(0.2), width: 1.5),
+                      border:       Border.all(color: AppColors.error.withValues(alpha: 0.2), width: 1.5),
                     ),
                     child: Row(children: [
-                      FaIcon(FontAwesomeIcons.circleXmark, color: AppColors.error, size: 18),
+                      const FaIcon(FontAwesomeIcons.circleXmark, color: AppColors.error, size: 18),
                       const SizedBox(width: 12),
-                      const Text("ANNULÉE PAR L'UTILISATEUR",
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.error, letterSpacing: 0.5)),
+                      Text("cancelled_by_user".tr,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.error, letterSpacing: 0.5)),
                     ]),
                   ),
                 const SizedBox(height: 24),
@@ -633,8 +632,8 @@ class _HistoryDetailPage extends StatelessWidget {
                     ),
                     onPressed: () {},
                     icon:  const FaIcon(FontAwesomeIcons.headset, size: 16),
-                    label: const Text("Aide & Support",
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                    label: Text("help".tr,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                   ),
                 ),
               ]),
@@ -662,7 +661,7 @@ class _DetailCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         border:       Border.all(color: border, width: 1.5),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 12, offset: const Offset(0, 6)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 12, offset: const Offset(0, 6)),
         ],
       ),
       child: child,

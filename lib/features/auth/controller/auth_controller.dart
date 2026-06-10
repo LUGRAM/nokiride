@@ -15,6 +15,20 @@ class AuthController extends GetxController {
   void setOtp(String v) => otp.value = v;
   void setName(String v) => name.value = v;
 
+  Future<bool> login(String phoneVal, String password) async {
+    if (phoneVal.isEmpty || password.isEmpty) return false;
+    
+    isLoading.value = true;
+    // Simulation d'appel API
+    await Future.delayed(const Duration(seconds: 2));
+    isLoading.value = false;
+
+    // Simulation de succès (on accepte tout pour le moment)
+    _box.write('auth_token', 'mock_token_$phoneVal');
+    _box.write('user_phone', phoneVal);
+    return true;
+  }
+
   Future<void> sendOtp() async {
     if (phone.value.length < 8) return;
     isLoading.value = true;
@@ -30,13 +44,8 @@ class AuthController extends GetxController {
     await Future.delayed(const Duration(seconds: 1));
     isLoading.value = false;
     if (otp.value == _mockOtp) {
-      final isNew = _box.read('user_name') == null;
-      if (isNew) {
-        Get.toNamed(Routes.register);
-      } else {
-        _box.write('auth_token', 'mock_token_${phone.value}');
-        Get.offAllNamed(Routes.home);
-      }
+      // Si le code est bon, on finalise l'inscription
+      register();
     } else {
       Get.snackbar('Erreur', 'Code incorrect. Essayez 1234', snackPosition: SnackPosition.BOTTOM);
     }

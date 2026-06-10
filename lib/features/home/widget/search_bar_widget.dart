@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 
 class HomeSearchBar extends StatelessWidget {
@@ -49,7 +50,7 @@ class HomeSearchBar extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Où allez-vous ?',
+                  'where_to'.tr,
                   style: TextStyle(
                     color: hintC,
                     fontSize: 15,
@@ -76,7 +77,7 @@ class HomeSearchBar extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Maintenant',
+                      'now'.tr,
                       style: TextStyle(
                         color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
                         fontSize: 13,

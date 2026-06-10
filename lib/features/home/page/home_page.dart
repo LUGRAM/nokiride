@@ -6,7 +6,6 @@ import 'package:nokiride/features/history/page/history_page.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../profile/page/profile_page.dart';
-import '../../wallet/controller/wallet_controller.dart';
 import '../../wallet/page/wallet_page.dart';
 import '../controller/home_controller.dart';
 import '../widget/bottom_nav_bar.dart';
@@ -44,7 +43,7 @@ class HomePage extends GetView<HomeController> {
             ),
           ),
           Positioned(
-            left: 12, right: 12, bottom: 10,
+            left: 12, right: 12, bottom: 15,
             child: const NokiBottomNavBar(),
           ),
         ],
@@ -61,8 +60,9 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark   = Theme.of(context).brightness == Brightness.dark;
-    final bg       = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final isLight   = Theme.of(context).brightness == Brightness.light;
+    final bg       = isLight ? AppColors.bgLight : AppColors.bgDark;
+
     final userName = GetStorage().read<String>('user_name') ?? 'Noki';
 
     return Container(
@@ -78,7 +78,7 @@ class _HomeTab extends StatelessWidget {
               // ── Header ──────────────────────────────────
               HomeHeader(
                 userName:   userName,
-                location:   'Libreville, Akanda',
+                location:   'location'.tr,
                 notifCount: 3,
                 onNotifTap: () => Get.toNamed(Routes.notifications),
               ),
@@ -95,30 +95,30 @@ class _HomeTab extends StatelessWidget {
               PromoCarousel(
                 frames: [
                   PromoFrame(
-                    tag:         'OFFRE',
-                    title:       '1ère course\nofferte',
-                    subtitle:    'Code : NOKI2025',
-                    cta:         'En profiter',
+                    tag:         'promo_1_tag'.tr,
+                    title:       'promo_1_title'.tr,
+                    subtitle:    'promo_1_subtitle'.tr,
+                    cta:         'promo_1_cta'.tr,
                     accentColor: AppColors.emeraldPrimary,
                     icon:        Icons.sports_motorsports_rounded,
                     imageUrl:    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
                     onTap:       () => Get.toNamed(Routes.trip),
                   ),
                   PromoFrame(
-                    tag:         'NOUVEAU',
-                    title:       'Market disponible\nà Libreville',
-                    subtitle:    'Courses livrées en 45 min',
-                    cta:         'Découvrir',
+                    tag:         'promo_2_tag'.tr,
+                    title:       'promo_2_title'.tr,
+                    subtitle:    'promo_2_subtitle'.tr,
+                    cta:         'promo_2_cta'.tr,
                     accentColor: AppColors.serviceMarket,
                     icon:        Icons.shopping_bag_rounded,
                     imageUrl:    'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80',
                     onTap:       () => Get.toNamed(Routes.market),
                   ),
                   PromoFrame(
-                    tag:         'EXPRESS',
-                    title:       'Envoi de colis\nsans se déplacer',
-                    subtitle:    'Tarif fixe dès 500 F CFA',
-                    cta:         'Envoyer',
+                    tag:         'promo_3_tag'.tr,
+                    title:       'promo_3_title'.tr,
+                    subtitle:    'promo_3_subtitle'.tr,
+                    cta:         'promo_3_cta'.tr,
                     accentColor: AppColors.serviceEnvoi,
                     icon:        Icons.inventory_2_rounded,
                     imageUrl:    'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800&q=80',

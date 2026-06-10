@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../controller/trip_controller.dart';
-import '../model/place_model.dart';
 import '../widget/mini_map_widget.dart';
 import '../widget/address_search_sheet.dart';
 
@@ -38,7 +37,7 @@ class TripBookingPage extends GetView<TripController> {
                     _BackButton(isDark: isDark),
                     const SizedBox(width: 12),
                     Text(
-                      'Nouvelle course',
+                      'new_ride'.tr,
                       style: TextStyle(
                         fontSize:   18,
                         fontWeight: FontWeight.w800,
@@ -84,7 +83,7 @@ class _BookingSheet extends GetView<TripController> {
         border: Border(top: BorderSide(color: border, width: 1)),
         boxShadow: [
           BoxShadow(
-            color:      Colors.black.withOpacity(.12),
+            color:      Colors.black.withValues(alpha: .12),
             blurRadius: 24,
             offset:     const Offset(0, -8),
           ),
@@ -107,7 +106,7 @@ class _BookingSheet extends GetView<TripController> {
           // Champ départ
           Obx(() => _AddressField(
             isDark:       isDark,
-            hint:         "Point d'enlèvement",
+            hint:         "pickup_point".tr,
             value:        controller.pickup.value?.name,
             dotColor:     primary,
             onTap:        () => _openSearch(context, isPickup: true),
@@ -127,7 +126,7 @@ class _BookingSheet extends GetView<TripController> {
           // Champ destination
           Obx(() => _AddressField(
             isDark:   isDark,
-            hint:     'Destination',
+            hint:     'destination'.tr,
             value:    controller.dropoff.value?.name,
             dotColor: AppColors.success,
             onTap:    () => _openSearch(context, isPickup: false),
@@ -153,9 +152,9 @@ class _BookingSheet extends GetView<TripController> {
                 onPressed: controller.canEstimate
                     ? () => controller.estimateTrip()
                     : null,
-                child: const Text(
-                  'Estimer le prix',
-                  style: TextStyle(
+                child: Text(
+                  'estimate'.tr,
+                  style: const TextStyle(
                     fontSize:   15,
                     fontWeight: FontWeight.w700,
                     color:      Colors.white,
@@ -230,7 +229,7 @@ class _AddressField extends StatelessWidget {
             Container(
               width: 10, height: 10,
               decoration: BoxDecoration(
-                color: filled ? dotColor : dotColor.withOpacity(.4),
+                color: filled ? dotColor : dotColor.withValues(alpha: .4),
                 shape: BoxShape.circle,
               ),
             ),
@@ -282,7 +281,7 @@ class _BackButton extends StatelessWidget {
           shape:        BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color:      Colors.black.withOpacity(.10),
+              color:      Colors.black.withValues(alpha: .10),
               blurRadius: 8,
             ),
           ],

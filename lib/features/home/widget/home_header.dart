@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../../../app/services/theme_service.dart';
 import '../../../app/theme/app_colors.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -70,7 +69,7 @@ class HomeHeader extends StatelessWidget {
     
     // 2. Détermination du salut selon l'heure
     final hour = DateTime.now().hour;
-    final salute = (hour >= 18 || hour < 5) ? 'Bonsoir' : 'Bonjour';
+    final salute = (hour >= 18 || hour < 5) ? 'good_evening'.tr : 'hello'.tr;
 
     // 3. Liste des noms "non-professionnels" ou placeholders à ignorer
     final placeholders = ['parent', 'noki', 'utilisateur', 'admin', 'test', 'guest', 'client'];
