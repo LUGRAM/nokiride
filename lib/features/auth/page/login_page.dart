@@ -8,6 +8,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
 import '../../../app/widgets/app_text_field.dart';
 import '../../../app/widgets/gradient_background.dart';
+import '../../../app/widgets/quick_help_menu.dart';
 import '../controller/auth_controller.dart';
 
 class LoginPage extends StatefulWidget {
@@ -79,6 +80,10 @@ class _LoginPageState extends State<LoginPage> {
                 key: _formKey,
                 child: Column(
                   children: [
+                    const Align(
+                      alignment: Alignment.topRight,
+                      child: QuickHelpMenu(),
+                    ),
                     const Spacer(flex: 2),
                     
                     // En-tête avec Logo ou Texte

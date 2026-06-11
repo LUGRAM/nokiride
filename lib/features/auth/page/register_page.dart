@@ -8,6 +8,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
 import '../../../app/widgets/app_text_field.dart';
 import '../../../app/widgets/gradient_background.dart';
+import '../../../app/widgets/quick_help_menu.dart';
 import '../controller/auth_controller.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -79,7 +80,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    const SizedBox(height: 40),
+                    const Align(
+                      alignment: Alignment.topRight,
+                      child: QuickHelpMenu(),
+                    ),
+                    const SizedBox(height: 10),
                     
                     // En-tête
                     Align(

@@ -49,18 +49,17 @@ class _SosButton extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.dialog(
         AlertDialog(
-          title: const Text('Urgence SOS'),
-          content: const Text(
-              'Votre position sera partagée avec nos équipes de sécurité.'),
+          title: Text('sos_title'.tr),
+          content: Text('sos_body'.tr),
           actions: [
             TextButton(
               onPressed: Get.back,
-              child: const Text('Annuler'),
+              child: Text('cancel'.tr),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: AppColors.error),
               onPressed: Get.back,
-              child: const Text('Confirmer SOS'),
+              child: Text('confirm_sos'.tr),
             ),
           ],
         ),
@@ -72,16 +71,16 @@ class _SosButton extends StatelessWidget {
           shape:     BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color:      AppColors.error.withOpacity(.40),
+              color:      AppColors.error.withValues(alpha: .40),
               blurRadius: 12,
               offset:     const Offset(0, 4),
             ),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: Text(
-            'SOS',
-            style: TextStyle(
+            'sos'.tr,
+            style: const TextStyle(
               color:      Colors.white,
               fontSize:   13,
               fontWeight: FontWeight.w800,
@@ -114,7 +113,7 @@ class _DriverSheet extends GetView<TripController> {
         border:       Border(top: BorderSide(color: border)),
         boxShadow: [
           BoxShadow(
-            color:      Colors.black.withOpacity(.12),
+            color:      Colors.black.withValues(alpha: .12),
             blurRadius: 20,
             offset:     const Offset(0, -6),
           ),
@@ -140,14 +139,14 @@ class _DriverSheet extends GetView<TripController> {
               Container(
                 width: 8, height: 8,
                 margin: const EdgeInsets.only(right: 8),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.success,
                   shape: BoxShape.circle,
                 ),
               ),
               Text(
-                'Coursier en route',
-                style: TextStyle(
+                'driver_on_way'.tr,
+                style: const TextStyle(
                   fontSize:   13,
                   fontWeight: FontWeight.w600,
                   color:      AppColors.success,
@@ -164,9 +163,9 @@ class _DriverSheet extends GetView<TripController> {
               Container(
                 width: 52, height: 52,
                 decoration: BoxDecoration(
-                  color:  primary.withOpacity(.12),
+                  color:  primary.withValues(alpha: .12),
                   shape:  BoxShape.circle,
-                  border: Border.all(color: primary.withOpacity(.25)),
+                  border: Border.all(color: primary.withValues(alpha: .25)),
                 ),
                 child: Icon(
                   Icons.person_rounded,
@@ -198,7 +197,7 @@ class _DriverSheet extends GetView<TripController> {
               // Note
               Column(
                 children: [
-                  Icon(Icons.star_rounded, color: AppColors.warning, size: 18),
+                  const Icon(Icons.star_rounded, color: AppColors.warning, size: 18),
                   Text(
                     '4.8',
                     style: TextStyle(
@@ -257,9 +256,9 @@ class _DriverSheet extends GetView<TripController> {
                 ),
               ),
               onPressed: () => controller.completeTrip(),
-              child: const Text(
-                'Course terminée',
-                style: TextStyle(
+              child: Text(
+                'trip_completed'.tr,
+                style: const TextStyle(
                   fontSize:   15,
                   fontWeight: FontWeight.w700,
                   color:      Colors.white,

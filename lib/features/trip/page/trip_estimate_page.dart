@@ -67,7 +67,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Text(
-            'Estimation de la course',
+            'trip_estimate_title'.tr,
             style: TextStyle(
               fontSize:   18,
               fontWeight: FontWeight.w800,
@@ -108,7 +108,7 @@ class _PriceCard extends GetView<TripController> {
           Icon(Icons.sports_motorsports_rounded, color: primary, size: 40),
           const SizedBox(height: 14),
           Text(
-            'Moto-Taxi Standard',
+            'moto_taxi_standard'.tr,
             style: TextStyle(
               fontSize:   14,
               fontWeight: FontWeight.w600,
@@ -310,8 +310,7 @@ class _TarifInfoCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Prix calculé : 500 F CFA de base + 250 F CFA/km. '
-              'Tarif minimum 800 F CFA.',
+              'trip_pricing_info'.tr,
               style: TextStyle(
                 fontSize:   12,
                 color:      color,
@@ -357,9 +356,9 @@ class _BottomActions extends GetView<TripController> {
                 ),
               ),
               onPressed: controller.confirmTrip,
-              child: const Text(
-                'Confirmer la course',
-                style: TextStyle(
+              child: Text(
+                'confirm_trip'.tr,
+                style: const TextStyle(
                   fontSize:   15,
                   fontWeight: FontWeight.w700,
                   color:      Colors.white,
@@ -382,9 +381,9 @@ class _BottomActions extends GetView<TripController> {
                 ),
               ),
               onPressed: Get.back,
-              child: const Text(
-                'Modifier',
-                style: TextStyle(
+              child: Text(
+                'edit'.tr,
+                style: const TextStyle(
                   fontSize:   14,
                   fontWeight: FontWeight.w600,
                 ),

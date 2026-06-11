@@ -220,8 +220,8 @@ class _ImagePanel extends StatelessWidget {
   }
 
   Widget _networkImage() {
-    final base      = isDark ? const Color(0xFF1C2E42) : const Color(0xFFE8EDF2);
-    final highlight = isDark ? const Color(0xFF243650) : const Color(0xFFF5F7FA);
+    final base      = isDark ? AppColors.bgDarkSurface : const Color(0xFFE8EDF2);
+    final highlight = isDark ? AppColors.bgDarkElevated : const Color(0xFFF5F7FA);
 
     return CachedNetworkImage(
       imageUrl:        frame.imageUrl!,

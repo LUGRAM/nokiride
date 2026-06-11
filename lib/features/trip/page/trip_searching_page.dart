@@ -25,8 +25,8 @@ class TripSearchingPage extends GetView<TripController> {
                 child: TextButton(
                   onPressed: controller.cancelTrip,
                   child: Text(
-                    'Annuler',
-                    style: TextStyle(
+                    'cancel'.tr,
+                    style: const TextStyle(
                       color:      AppColors.error,
                       fontWeight: FontWeight.w600,
                     ),
@@ -40,7 +40,7 @@ class TripSearchingPage extends GetView<TripController> {
               const SizedBox(height: 40),
 
               Text(
-                'Recherche d\'un coursier...',
+                'searching_driver'.tr,
                 style: TextStyle(
                   fontSize:   22,
                   fontWeight: FontWeight.w800,
@@ -51,7 +51,7 @@ class TripSearchingPage extends GetView<TripController> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Un coursier sera assigné dans quelques secondes.',
+                'finding_best_driver'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize:   14,
@@ -131,7 +131,7 @@ class _PulseAnimationState extends State<_PulseAnimation>
                 child: Container(
                   width: 120, height: 120,
                   decoration: BoxDecoration(
-                    color:  widget.color.withOpacity(.25),
+                    color:  widget.color.withValues(alpha: .25),
                     shape:  BoxShape.circle,
                   ),
                 ),
@@ -141,7 +141,7 @@ class _PulseAnimationState extends State<_PulseAnimation>
           Container(
             width: 80, height: 80,
             decoration: BoxDecoration(
-              color:  widget.color.withOpacity(.15),
+              color:  widget.color.withValues(alpha: .15),
               shape:  BoxShape.circle,
               border: Border.all(color: widget.color, width: 2),
             ),

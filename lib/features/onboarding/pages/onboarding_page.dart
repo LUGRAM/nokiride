@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
+import '../../../app/widgets/quick_help_menu.dart';
 import '../controller/onboarding_controller.dart';
 
 import '../model/onboarding_model.dart';
@@ -49,12 +50,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
         ? const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFF0C342C), Color(0xFF06231D)],
+      colors: [AppColors.bgDarkSurface, AppColors.bgDark],
     )
         : const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFFFFDEE), Color(0xFFE2FBCE)],
+      colors: [AppColors.bgLightSurface, AppColors.bgLight],
     );
 
     return Scaffold(
@@ -95,27 +96,30 @@ class _OnboardingPageState extends State<OnboardingPage> {
           SafeArea(
             child: Column(
               children: [
-                // Bouton Skip
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12, right: 20),
-                    child: TextButton(
-                      onPressed: controller.skip,
-                      style: TextButton.styleFrom(
-                        splashFactory: NoSplash.splashFactory,
-                        foregroundColor: isDark
-                            ? AppColors.textDarkSub
-                            : AppColors.textLightSub,
-                      ),
-                      child: Text(
-                        'skip'.tr,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
+                // Bouton Skip & Help
+                Padding(
+                  padding: const EdgeInsets.only(top: 12, right: 20, left: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const QuickHelpMenu(),
+                      TextButton(
+                        onPressed: controller.skip,
+                        style: TextButton.styleFrom(
+                          splashFactory: NoSplash.splashFactory,
+                          foregroundColor: isDark
+                              ? AppColors.textDarkSub
+                              : AppColors.textLightSub,
+                        ),
+                        child: Text(
+                          'skip'.tr,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
 
@@ -319,7 +323,7 @@ class _OnboardingCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.white.withOpacity(0.07)
-                        : const Color(0xFFE2FBCE).withOpacity(0.45),
+                        : AppColors.emeraldPrimary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(26),
                   ),
                   child: Center(

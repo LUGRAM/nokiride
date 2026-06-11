@@ -92,7 +92,7 @@ class AppTheme {
   }
 
   // ─────────────────────────────────────────────
-  // LIGHT — Clean Organic (Off White)
+  // LIGHT — Clean Slate (Slate & Off White)
   // ─────────────────────────────────────────────
   static ThemeData get light {
     final base = ThemeData.light();
