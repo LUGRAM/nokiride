@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../app/services/theme_service.dart';
 import '../../../app/theme/app_colors.dart';
@@ -10,425 +10,453 @@ class ProfilePage extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.bgDark : AppColors.bgLight;
-    final primary = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
+    return Obx(() {
+      final isDark = ThemeService.to.isDark;
 
-    return Container(
-      color: bg,
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
-          child: Column(
-            children: [
-              // ── Profile header card ───────────────────────
-              _ProfileHeaderCard(isDark: isDark, primary: primary, controller: controller),
-              const SizedBox(height: 14),
+      // Utilisation des alias dynamiques de AppColors
+      final Color colorBg            = AppColors.background(context);
+      final Color colorSurface       = AppColors.surface(context);
+      final Color colorSlate         = AppColors.accent(context);
+      final Color colorBorder        = AppColors.divider(context);
+      final Color colorTextPrimary   = AppColors.textPrimary(context);
+      final Color colorTextSecondary = AppColors.textSub(context);
+      final Color colorError         = AppColors.error;
 
-              // ── Stats strip ───────────────────────────────
-              _StatsStrip(isDark: isDark, primary: primary, controller: controller),
-              const SizedBox(height: 20),
-
-              // ── Préférences ───────────────────────────────
-              _SectionLabel(label: "settings".tr, isDark: isDark),
-              const SizedBox(height: 10),
-              _SettingsCard(isDark: isDark, children: [
-                _SettingsTile(
-                  icon: FontAwesomeIcons.moon,
-                  label: "theme".tr,
-                  isDark: isDark,
-                  trailing: Obx(() => Switch(
-                    value: ThemeService.to.isDark,
-                    onChanged: (_) => controller.toggleTheme(),
-                    activeColor: AppColors.neonYellow,
-                    activeTrackColor: AppColors.emeraldPrimary.withValues(alpha: 0.5),
-                  )),
-                ),
-                _Divider(isDark: isDark),
-                _SettingsTile(
-                  icon: FontAwesomeIcons.globe,
-                  label: "language".tr,
-                  isDark: isDark,
-                  onTap: controller.toggleLocale,
-                  trailing: Obx(() => _LangBadge(
-                        isFrench: controller.isFrench, primary: primary),
-                  ),
-                ),
-              ]),
-
-              const SizedBox(height: 12),
-
-              // ── Compte ────────────────────────────────────
-              _SectionLabel(label: "account".tr, isDark: isDark),
-              const SizedBox(height: 10),
-              _SettingsCard(isDark: isDark, children: [
-                _SettingsTile(
-                  icon: FontAwesomeIcons.bell,
-                  label: "notifications".tr,
-                  isDark: isDark, onTap: () => Get.toNamed('/notifications'),
-                ),
-                _Divider(isDark: isDark),
-                _SettingsTile(
-                  icon: FontAwesomeIcons.shieldHalved,
-                  label: "privacy".tr,
-                  isDark: isDark, onTap: () {},
-                ),
-                _Divider(isDark: isDark),
-                _SettingsTile(
-                  icon: FontAwesomeIcons.circleQuestion,
-                  label: "help".tr,
-                  isDark: isDark, onTap: () {},
-                ),
-                _Divider(isDark: isDark),
-                _SettingsTile(
-                  icon: FontAwesomeIcons.star,
-                  label: "rate_app".tr,
-                  isDark: isDark, onTap: () {},
-                ),
-              ]),
-
-              const SizedBox(height: 20),
-
-              // ── Déconnexion ───────────────────────────────
-              GestureDetector(
-                onTap: controller.logout,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
-                  ),
-                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    const FaIcon(FontAwesomeIcons.rightFromBracket, color: AppColors.error, size: 18),
-                    const SizedBox(width: 10),
-                    Text("logout".tr,
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.error)),
-                  ]),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ── Version ───────────────────────────────────
-              Text("NokiRide v1.0.0",
-                  style: TextStyle(fontSize: 12, color: subC)),
-              const SizedBox(height: 4),
-              Text("Made with ♥ in Libreville",
-                  style: TextStyle(fontSize: 11, color: subC.withValues(alpha: 0.6))),
-            ],
-          ),
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          statusBarColor: Colors.transparent,
         ),
-      ),
-    );
-  }
-}
+        child: Scaffold(
+          backgroundColor: colorBg,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
 
-// ── Carte header profil ─────────────────────────────────────────
-class _ProfileHeaderCard extends StatelessWidget {
-  const _ProfileHeaderCard(
-      {required this.isDark, required this.primary, required this.controller});
-  final bool isDark;
-  final Color primary;
-  final ProfileController controller;
+                  // 1. En-tête Profil
+                  _buildHeader(colorSurface, colorBorder, colorSlate, colorTextPrimary, colorTextSecondary),
 
-  @override
-  Widget build(BuildContext context) {
-    final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
+                  const SizedBox(height: 24),
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: border),
-      ),
-      child: Column(children: [
-        // Gradient banner
-        Container(
-          height: 80,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.emeraldPrimary,
-                AppColors.darkGreenBase,
-              ],
-            ),
-          ),
-          child: Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: GestureDetector(
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
+                  // 2. Bloc Statistiques
+                  _buildStatsStrip(colorSurface, colorBorder, colorTextPrimary, colorTextSecondary),
+
+                  const SizedBox(height: 24),
+
+                  // 3. Section 1 : GESTION DU COMPTE
+                  _buildSectionTitle("GESTION DU COMPTE", colorTextSecondary),
+                  _buildGroupedBlock(
+                    [
+                      _buildTile(
+                        icon: Icons.person_outline_rounded,
+                        label: "Informations personnelles",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildTile(
+                        icon: Icons.notifications_none_rounded,
+                        label: "notifications".tr,
+                        onTap: () => Get.toNamed('/notifications'),
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildTile(
+                        icon: Icons.payment_rounded,
+                        label: "Moyens de paiement",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                    ],
+                    colorSurface: colorSurface,
+                    colorBorder: colorBorder,
                   ),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    FaIcon(FontAwesomeIcons.penToSquare, color: Colors.white.withValues(alpha: 0.9), size: 12),
-                    const SizedBox(width: 6),
-                    Text("edit".tr,
-                        style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 12, fontWeight: FontWeight.w700)),
-                  ]),
-                ),
-              ),
-            ),
-          ),
-        ),
 
-        // Avatar + infos
-        Transform.translate(
-          offset: const Offset(0, -38),
-          child: Column(children: [
-            Container(
-              width: 76, height: 76,
-              decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-                border: Border.all(color: cardBg, width: 4),
-                boxShadow: [
-                  BoxShadow(
-                    color: primary.withValues(alpha: 0.20),
-                    blurRadius: 16, offset: const Offset(0, 4),
+                  const SizedBox(height: 20),
+
+                  // 4. Section 2 : ACTIVITÉ & FIDÉLITÉ
+                  _buildSectionTitle("ACTIVITÉ & FIDÉLITÉ", colorTextSecondary),
+                  _buildGroupedBlock(
+                    [
+                      _buildTile(
+                        icon: Icons.history_rounded,
+                        label: "Historique des courses & Factures",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildTile(
+                        icon: Icons.stars_rounded,
+                        label: "Mon statut & Points privilèges",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildReferralCard(isDark, colorSlate, colorTextPrimary, colorTextSecondary, colorBg),
+                    ],
+                    colorSurface: colorSurface,
+                    colorBorder: colorBorder,
                   ),
+
+                  const SizedBox(height: 20),
+
+                  // 5. Section 3 : PRÉFÉRENCES
+                  _buildSectionTitle("PRÉFÉRENCES", colorTextSecondary),
+                  _buildGroupedBlock(
+                    [
+                      _buildTile(
+                        icon: Icons.dark_mode_outlined,
+                        label: "Thème Sombre",
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                        trailing: SizedBox(
+                          height: 20,
+                          child: Switch(
+                            value: isDark,
+                            onChanged: (_) => controller.toggleTheme(),
+                            activeColor: colorSlate,
+                            inactiveThumbColor: isDark ? const Color(0xFF8696A0) : null,
+                            inactiveTrackColor: isDark ? const Color(0xFF222C32) : null,
+                          ),
+                        ),
+                      ),
+                      _buildTile(
+                        icon: Icons.language_rounded,
+                        label: "Langue de l'application",
+                        onTap: controller.toggleLocale,
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF222C32) : colorSlate.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: colorSlate.withOpacity(0.2)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(controller.isFrench ? "🇫🇷" : "🇬🇧", style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Text(
+                                controller.isFrench ? "FR" : "EN",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : colorSlate,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      _buildTile(
+                        icon: Icons.notifications_none_rounded,
+                        label: "Gestion des alertes & Promos",
+                        onTap: () => Get.toNamed('/notifications'),
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildTile(
+                        icon: Icons.speed_rounded,
+                        label: "Mode économie de data",
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                        trailing: SizedBox(
+                          height: 20,
+                          child: Switch(
+                            value: false,
+                            onChanged: (v) {},
+                            activeColor: colorSlate,
+                            inactiveThumbColor: isDark ? const Color(0xFF8696A0) : null,
+                            inactiveTrackColor: isDark ? const Color(0xFF222C32) : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                    colorSurface: colorSurface,
+                    colorBorder: colorBorder,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 6. Section 4 : SUPPORT & LÉGAL
+                  _buildSectionTitle("SUPPORT & LÉGAL", colorTextSecondary),
+                  _buildGroupedBlock(
+                    [
+                      _buildTile(
+                        icon: Icons.help_outline_rounded,
+                        label: "Centre d'aide & FAQ",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildTile(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        label: "Contacter le support",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF102A22) : const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            "En ligne",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? colorSlate : const Color(0xFF2E7D32),
+                            ),
+                          ),
+                        ),
+                      ),
+                      _buildTile(
+                        icon: Icons.description_outlined,
+                        label: "Conditions Générales & CGU",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                      _buildTile(
+                        icon: Icons.star_outline_rounded,
+                        label: "Évaluer l'application",
+                        onTap: () {},
+                        colorSlate: colorSlate,
+                        colorTextPrimary: colorTextPrimary,
+                        colorTextSecondary: colorTextSecondary,
+                      ),
+                    ],
+                    colorSurface: colorSurface,
+                    colorBorder: colorBorder,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // 7. Déconnexion
+                  TextButton.icon(
+                    onPressed: controller.logout,
+                    style: TextButton.styleFrom(foregroundColor: colorError),
+                    icon: const Icon(Icons.logout_rounded, size: 18),
+                    label: Text("logout".tr, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                  ),
+
+                  const SizedBox(height: 24),
+                  Text("NokiRide v1.0.0", style: TextStyle(fontSize: 11, color: colorTextSecondary.withOpacity(0.4))),
+                  const SizedBox(height: 120),
                 ],
               ),
-              child: Center(child: FaIcon(FontAwesomeIcons.user, color: primary, size: 28)),
             ),
-            const SizedBox(height: 10),
-            Obx(() {
-              final name = controller.userName.value.split('#')[0].trim();
-              return Text(name.isEmpty ? "user".tr : name,
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: titleC));
-            }),
-            const SizedBox(height: 4),
-            Obx(() => Row(mainAxisSize: MainAxisSize.min, children: [
-              FaIcon(FontAwesomeIcons.phone, color: subC, size: 12),
-              const SizedBox(width: 6),
-              Text(controller.userPhone.value,
-                  style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
-            ])),
-            const SizedBox(height: 16),
-          ]),
+          ),
         ),
-      ]),
+      );
+    });
+  }
+
+  Widget _buildHeader(
+    Color colorSurface,
+    Color colorBorder,
+    Color colorSlate,
+    Color colorTextPrimary,
+    Color colorTextSecondary,
+  ) {
+    return Column(
+      children: [
+        Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            color: colorSurface,
+            shape: BoxShape.circle,
+            border: Border.all(color: colorBorder, width: 2),
+          ),
+          child: Center(
+            child: Icon(Icons.person_rounded, size: 48, color: colorTextSecondary),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Obx(() {
+          final name = controller.userName.value.split('#')[0].trim();
+          return Text(
+            name.isEmpty ? "Utilisateur" : name,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: colorTextPrimary, letterSpacing: -0.5),
+          );
+        }),
+        const SizedBox(height: 4),
+        Obx(() => Text(
+          controller.userPhone.value,
+          style: TextStyle(fontSize: 14, color: colorTextSecondary, fontWeight: FontWeight.w500),
+        )),
+      ],
     );
   }
-}
 
-// ── Bande de stats ──────────────────────────────────────────────
-class _StatsStrip extends StatelessWidget {
-  const _StatsStrip(
-      {required this.isDark, required this.primary, required this.controller});
-  final bool isDark;
-  final Color primary;
-  final ProfileController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-
+  Widget _buildStatsStrip(
+    Color colorSurface,
+    Color colorBorder,
+    Color colorTextPrimary,
+    Color colorTextSecondary,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: cardBg, borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: border),
-      ),
-      child: Row(children: [
-        _StatItem(
-          value: "${controller.totalTrips}",
-          label: "rides".tr,
-          titleC: titleC, subC: subC, primary: primary,
-        ),
-        _StatDivider(isDark: isDark),
-        _StatItem(
-          value: controller.totalSpent,
-          label: "expenses".tr,
-          titleC: titleC, subC: subC, primary: primary,
-        ),
-        _StatDivider(isDark: isDark),
-        _StatItem(
-          value: controller.memberSince,
-          label: "member_since".tr,
-          titleC: titleC, subC: subC, primary: primary,
-        ),
-      ]),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  const _StatItem(
-      {required this.value, required this.label,
-       required this.titleC, required this.subC, required this.primary});
-  final String value, label;
-  final Color titleC, subC, primary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(children: [
-        Text(value,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: titleC)),
-        const SizedBox(height: 3),
-        Text(label,
-            style: TextStyle(fontSize: 11, color: subC, fontWeight: FontWeight.w500),
-            textAlign: TextAlign.center),
-      ]),
-    );
-  }
-}
-
-class _StatDivider extends StatelessWidget {
-  const _StatDivider({required this.isDark});
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1, height: 36,
-      color: isDark ? AppColors.borderDark : AppColors.borderLight,
-    );
-  }
-}
-
-// ── Label de section ────────────────────────────────────────────
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.label, required this.isDark});
-  final String label;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(label.toUpperCase(),
-          style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w700,
-              color: subC, letterSpacing: .8)),
-    );
-  }
-}
-
-// ── Card paramètres ─────────────────────────────────────────────
-class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.isDark, required this.children});
-  final bool isDark;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg, borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
-// ── Tile paramètre ──────────────────────────────────────────────
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
-    required this.icon, required this.label, required this.isDark,
-    this.trailing, this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final bool isDark;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final iconC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final iconBg = iconC.withValues(alpha: 0.10);
-
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
-        child: Center(child: FaIcon(icon, color: iconC, size: 16)),
-      ),
-      title: Text(label,
-          style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: textC)),
-      trailing: trailing ??
-          (onTap != null
-              ? FaIcon(FontAwesomeIcons.chevronRight,
-                  color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted, size: 14)
-              : null),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-      minLeadingWidth: 36,
-    );
-  }
-}
-
-// ── Badge langue ────────────────────────────────────────────────
-class _LangBadge extends StatelessWidget {
-  const _LangBadge({required this.isFrench, required this.primary});
-  final bool isFrench;
-  final Color primary;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary.withValues(alpha: 0.1);
-    final textC = isDark ? AppColors.darkGreenBase : AppColors.emeraldPrimary;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
+        color: colorSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorBorder),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(isFrench ? "🇫🇷" : "🇬🇧", style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 5),
-          Text(
-            isFrench ? "FR" : "EN",
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textC),
-          ),
+          _buildStatItem("${controller.totalTrips}", "Courses", colorTextPrimary, colorTextSecondary),
+          _buildVerticalDivider(colorBorder),
+          _buildStatItem(controller.totalSpent, "Dépenses", colorTextPrimary, colorTextSecondary),
+          _buildVerticalDivider(colorBorder),
+          _buildStatItem(controller.memberSince, "Depuis", colorTextPrimary, colorTextSecondary),
         ],
       ),
     );
   }
-}
 
-// ── Divider ─────────────────────────────────────────────────────
-class _Divider extends StatelessWidget {
-  const _Divider({required this.isDark});
-  final bool isDark;
+  Widget _buildStatItem(String value, String label, Color colorTextPrimary, Color colorTextSecondary) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: colorTextPrimary)),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: colorTextSecondary)),
+        ],
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Divider(
-        height: 1,
-        color: isDark ? AppColors.borderDark : AppColors.borderLight,
-        indent: 66);
+  Widget _buildVerticalDivider(Color colorBorder) {
+    return Container(width: 1, height: 24, color: colorBorder);
+  }
+
+  Widget _buildSectionTitle(String title, Color colorTextSecondary) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: colorTextSecondary, letterSpacing: 1.1),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGroupedBlock(List<Widget> tiles, {required Color colorSurface, required Color colorBorder}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colorSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorBorder),
+      ),
+      child: Column(
+        children: List.generate(tiles.length, (index) {
+          return Column(
+            children: [
+              tiles[index],
+              if (index < tiles.length - 1)
+                Divider(height: 0.5, thickness: 0.5, color: colorBorder, indent: 52),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildTile({
+    required IconData icon,
+    required String label,
+    VoidCallback? onTap,
+    Widget? trailing,
+    required Color colorSlate,
+    required Color colorTextPrimary,
+    required Color colorTextSecondary,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: colorSlate.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, size: 18, color: colorSlate),
+      ),
+      title: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colorTextPrimary)),
+      trailing: trailing ?? Icon(Icons.chevron_right_rounded, size: 18, color: colorTextSecondary),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+    );
+  }
+
+  Widget _buildReferralCard(
+    bool isDark,
+    Color colorSlate,
+    Color colorTextPrimary,
+    Color colorTextSecondary,
+    Color colorBg,
+  ) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF102A22) : const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.card_giftcard_rounded, color: isDark ? colorSlate : const Color(0xFF2E7D32), size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Gagnez des réductions !",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: colorTextPrimary, height: 1.2),
+                ),
+                Text(
+                  "Invitez vos proches sur l'application.",
+                  style: TextStyle(fontSize: 11, color: colorTextSecondary, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.share_rounded, size: 12, color: isDark ? colorBg : Colors.white),
+            label: Text("Partager", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? colorBg : Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? colorSlate : const Color(0xFF1E3A2F),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              minimumSize: const Size(0, 32),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

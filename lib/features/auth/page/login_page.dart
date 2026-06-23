@@ -55,10 +55,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
+    final titleC = AppColors.textPrimary(context);
+    final subC = AppColors.textSub(context);
     final hintStyle = GoogleFonts.inter(
       color: subC.withValues(alpha: 0.4),
       fontSize: 14,
@@ -95,12 +94,12 @@ class _LoginPageState extends State<LoginPage> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.emeraldPrimary.withValues(alpha: 0.1),
+                              color: AppColors.accent(context).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.directions_bike_rounded,
-                              color: AppColors.emeraldPrimary,
+                              color: AppColors.accent(context),
                               size: 32,
                             ),
                           ),
@@ -143,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: titleC,
                         fontWeight: FontWeight.w600,
                       ),
-                      cursorColor: AppColors.emeraldPrimary,
+                      cursorColor: AppColors.accent(context),
                       decoration: InputDecoration(
                         hintText: "phone_hint".tr,
                         hintStyle: hintStyle,
@@ -174,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           "forgot_password".tr,
                           style: GoogleFonts.inter(
-                            color: AppColors.emeraldPrimary,
+                            color: AppColors.accent(context),
                             fontWeight: FontWeight.w700,
                             fontSize: 13,
                           ),
@@ -206,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                           TextSpan(
                             text: "register_btn".tr,
                             style: GoogleFonts.inter(
-                              color: isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+                              color: AppColors.accent(context),
                               fontWeight: FontWeight.w800,
                             ),
                             recognizer: TapGestureRecognizer()

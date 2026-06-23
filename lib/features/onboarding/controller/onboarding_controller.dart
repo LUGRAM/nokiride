@@ -12,17 +12,17 @@ class OnboardingController extends GetxController {
     OnboardingSlide(
       title: 'Noki noki !',
       description: 'Commandez une moto-taxi en quelques secondes avec une simplicité déconcertante.',
-      iconBuilder: (context) => _TelegramStyleIcon(isDark: Theme.of(context).brightness == Brightness.dark),
+      iconBuilder: (context) => const _TelegramStyleIcon(),
     ),
     OnboardingSlide(
       title: 'Suivi en temps réel',
       description: 'Suivez votre coursier en direct sur la carte et restez informé à chaque étape.',
-      iconBuilder: (context) => _WhatsAppStyleIcon(isDark: Theme.of(context).brightness == Brightness.dark),
+      iconBuilder: (context) => const _WhatsAppStyleIcon(),
     ),
     OnboardingSlide(
       title: 'Sécurité & Livraison',
       description: 'Bouton SOS, code de sécurité unique et livraison express pour votre tranquillité.',
-      iconBuilder: (context) => _ShieldStyleIcon(isDark: Theme.of(context).brightness == Brightness.dark),
+      iconBuilder: (context) => const _ShieldStyleIcon(),
     ),
   ];
 
@@ -55,11 +55,11 @@ class OnboardingController extends GetxController {
 // ─────────────────────────────────────────────────────────────
 
 class _TelegramStyleIcon extends StatelessWidget {
-  final bool isDark;
-  const _TelegramStyleIcon({required this.isDark});
+  const _TelegramStyleIcon();
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 140,
       height: 140,
@@ -69,13 +69,13 @@ class _TelegramStyleIcon extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            isDark ? AppColors.emeraldPrimary : const Color(0xFF33A9D2),
+            AppColors.accent(context),
             isDark ? const Color(0xFF076653) : const Color(0xFF2886A7),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? AppColors.emeraldPrimary : const Color(0xFF33A9D2)).withOpacity(0.4),
+            color: AppColors.accent(context).withOpacity(0.4),
             blurRadius: 25,
             offset: const Offset(0, 10),
           ),
@@ -93,11 +93,11 @@ class _TelegramStyleIcon extends StatelessWidget {
 }
 
 class _WhatsAppStyleIcon extends StatelessWidget {
-  final bool isDark;
-  const _WhatsAppStyleIcon({required this.isDark});
+  const _WhatsAppStyleIcon();
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 140,
       height: 140,
@@ -124,7 +124,7 @@ class _WhatsAppStyleIcon extends StatelessWidget {
             top: 45,
             child: Icon(
               Icons.location_on_rounded,
-              color: isDark ? AppColors.neonYellow : Colors.white.withOpacity(0.9),
+              color: isDark ? AppColors.accent(context) : Colors.white.withOpacity(0.9),
               size: 30,
             ),
           ),
@@ -135,8 +135,7 @@ class _WhatsAppStyleIcon extends StatelessWidget {
 }
 
 class _ShieldStyleIcon extends StatelessWidget {
-  final bool isDark;
-  const _ShieldStyleIcon({required this.isDark});
+  const _ShieldStyleIcon();
 
   @override
   Widget build(BuildContext context) {
@@ -145,16 +144,16 @@ class _ShieldStyleIcon extends StatelessWidget {
       height: 140,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isDark ? AppColors.bgDarkElevated : Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark ? AppColors.bgDarkElevated : Colors.white,
         border: Border.all(
-          color: isDark ? AppColors.neonYellow.withOpacity(0.5) : AppColors.emeraldPrimary.withOpacity(0.5),
+          color: AppColors.accent(context).withOpacity(0.5),
           width: 2,
         ),
       ),
       child: Center(
         child: Icon(
           Icons.verified_user_rounded,
-          color: isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+          color: AppColors.accent(context),
           size: 80,
         ),
       ),

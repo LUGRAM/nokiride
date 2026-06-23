@@ -1,6 +1,8 @@
 // lib/app/widgets/app_text_field.dart
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class AppTextField extends StatefulWidget {
   final String hint;
   final IconData icon;
@@ -54,6 +56,23 @@ class _AppTextFieldState extends State<AppTextField> {
         hintText: widget.hint,
         hintStyle: widget.hintStyle,
         counterText: "", // Masque le compteur par défaut
+        errorStyle: const TextStyle(fontSize: 11, height: 0.8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
         suffixIcon: widget.obscure
             ? IconButton(
                 icon: Icon(

@@ -18,7 +18,7 @@ class ThemeService extends GetxService {
   final _box = GetStorage();
 
   // Valeur réactive
-  final _mode = ThemeMode.dark.obs;
+  final _mode = ThemeMode.light.obs;
   ThemeMode get mode  => _mode.value;
   bool      get isDark => _mode.value == ThemeMode.dark;
 
@@ -30,7 +30,7 @@ class ThemeService extends GetxService {
 
   void _load() {
     final saved = _box.read<String>(_key);
-    _mode.value = saved == 'light' ? ThemeMode.light : ThemeMode.dark;
+    _mode.value = saved == 'dark' ? ThemeMode.dark : ThemeMode.light;
     _apply();
   }
 

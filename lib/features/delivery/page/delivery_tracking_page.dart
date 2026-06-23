@@ -82,11 +82,11 @@ class _CourierSheet extends GetView<DeliveryController> {
     return Container(
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         border:       Border(top: BorderSide(color: border)),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(.12), blurRadius: 20, offset: const Offset(0, -6))],
       ),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -174,11 +174,11 @@ class _CourierSheet extends GetView<DeliveryController> {
 
           const SizedBox(height: 18),
           SizedBox(
-            width: double.infinity, height: 50,
+            width: double.infinity, height: 48,
             child: FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.success,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: controller.completeDelivery,
               child: const Text('Livraison confirmée',

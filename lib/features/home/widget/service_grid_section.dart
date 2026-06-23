@@ -67,24 +67,24 @@ class ServiceGridSection extends StatelessWidget {
               Text(
                 'our_services'.tr,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+                  letterSpacing: 1.1,
+                  color: AppColors.textSub(context),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _services.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.42,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.85,
             ),
             itemBuilder: (context, index) {
               final item = _services[index];
@@ -114,108 +114,72 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkMuted : AppColors.textLightMuted;
+    final bg = AppColors.surface(context);
+    final border = AppColors.divider(context);
+    final titleC = AppColors.textPrimary(context);
+    final subC = AppColors.textSub(context);
+    final accent = AppColors.accent(context);
 
     return Container(
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: border,
-          width: 1.5,
+          width: 0.5,
         ),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: AppColors.emeraldPrimary.withValues(alpha: 0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.emeraldPrimary.withValues(alpha: isDark ? 0.15 : 0.08),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(
-                        child: FaIcon(
-                          item.icon,
-                          color: AppColors.emeraldPrimary,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                    if (item.isNew) _NewBadge(color: AppColors.neonYellow),
-                  ],
-                ),
-                const Spacer(),
-                Text(
-                  item.labelKey.tr,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: titleC,
-                    letterSpacing: -0.4,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: accent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: FaIcon(
+                    item.icon,
+                    color: accent,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  item.sublabelKey.tr,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: subC,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        item.labelKey.tr,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: titleC,
+                        ),
+                      ),
+                      Text(
+                        item.sublabelKey.tr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: subC,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NewBadge extends StatelessWidget {
-  const _NewBadge({required this.color});
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
-        'NEW',
-        style: TextStyle(
-          color: AppColors.darkGreenBase,
-          fontSize: 9,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.5,
         ),
       ),
     );

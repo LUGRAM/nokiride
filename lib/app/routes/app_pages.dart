@@ -22,7 +22,6 @@ import '../../features/profile/bindings/profile_binding.dart';
 import '../../features/profile/page/profile_page.dart';
 import '../../features/splash/pages/splash_page.dart';
 import '../../features/trip/bindings/trip_binding.dart';
-import '../../features/trip/page/trip_booking_page.dart';
 import '../../features/trip/page/trip_estimate_page.dart';
 import '../../features/trip/page/trip_page.dart';
 import '../../features/trip/page/trip_rating_page.dart';

@@ -63,10 +63,49 @@ class _PromoCarouselState extends State<PromoCarousel> {
   @override
   void initState() {
     super.initState();
-    _frames = widget.frames ?? [];
+    _frames = widget.frames ?? _defaultFrames;
     _ctrl   = PageController(viewportFraction: 0.90);
     _startAutoPlay();
   }
+
+  static final List<PromoFrame> _defaultFrames = [
+    const PromoFrame(
+      tag: 'OFFRE SPÉCIALE',
+      title: 'Votre 1ère course à -50%',
+      subtitle: 'Profitez de notre offre de bienvenue dès maintenant !',
+      cta: 'En profiter',
+      accentColor: AppColors.accentDark,
+      icon: Icons.local_offer_rounded,
+      imageUrl: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=800',
+    ),
+    const PromoFrame(
+      tag: 'NOUVEAUTÉ',
+      title: 'Livraison express disponible',
+      subtitle: 'Envoyez vos colis en un clin d\'œil avec NokiRide.',
+      cta: 'Essayer',
+      accentColor: AppColors.serviceEnvoi,
+      icon: Icons.delivery_dining_rounded,
+      imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=800',
+    ),
+    const PromoFrame(
+      tag: 'NOUVEAUTÉ',
+      title: 'Faites vos courses en ligne',
+      subtitle: 'Le marché Noki est désormais disponible à Libreville.',
+      cta: 'Découvrir',
+      accentColor: AppColors.serviceMarket,
+      icon: Icons.shopping_basket_rounded,
+      imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800',
+    ),
+    const PromoFrame(
+      tag: 'FIDÉLITÉ',
+      title: 'Gagnez des réductions',
+      subtitle: 'Parrainez vos proches et gagnez des courses gratuites.',
+      cta: 'Parrainer',
+      accentColor: AppColors.accentDark,
+      icon: Icons.card_giftcard_rounded,
+      imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800',
+    ),
+  ];
 
   void _startAutoPlay() {
     _timer = Timer.periodic(widget.autoPlayDuration, (_) {
@@ -88,8 +127,6 @@ class _PromoCarouselState extends State<PromoCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     if (_frames.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -103,7 +140,6 @@ class _PromoCarouselState extends State<PromoCarousel> {
             onPageChanged: (i) => setState(() => _current = i),
             itemBuilder:   (_, i) => _PromoCard(
               frame:  _frames[i],
-              isDark: isDark,
             ),
           ),
         ),
@@ -111,7 +147,6 @@ class _PromoCarouselState extends State<PromoCarousel> {
         _DotsIndicator(
           count:       _frames.length,
           current:     _current,
-          isDark:      isDark,
           activeColor: _frames[_current].accentColor,
         ),
       ],
@@ -123,49 +158,49 @@ class _PromoCarouselState extends State<PromoCarousel> {
 // Card
 // ─────────────────────────────────────────────────────────────
 class _PromoCard extends StatelessWidget {
-  const _PromoCard({required this.frame, required this.isDark});
+  const _PromoCard({required this.frame});
 
   final PromoFrame frame;
-  final bool       isDark;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     // Dark  : accent teinté sur fond sombre
     // Light : blanc avec légère teinte accent — PLUS lisible
     final bgBase = isDark
-        ? Color.alphaBlend(frame.accentColor.withOpacity(.13), AppColors.bgDarkSurface)
-        : Colors.white;
+        ? Color.alphaBlend(frame.accentColor.withOpacity(.13), AppColors.surface(context))
+        : AppColors.surface(context);
     final border = frame.accentColor.withOpacity(.22);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Material(
         color:        Colors.transparent,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap:        frame.onTap,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(12),
           splashColor:  frame.accentColor.withOpacity(.08),
           child: Ink(
             decoration: BoxDecoration(
               color:        bgBase,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(12),
               border:       Border.all(color: border, width: 1),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(12),
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   // Image droite ou icône fallback
                   if (frame.hasImage)
-                    _ImagePanel(frame: frame, isDark: isDark)
+                    _ImagePanel(frame: frame)
                   else
                     _IconPanel(frame: frame),
 
                   // Dégradé — opacité adaptée au thème
                   if (frame.hasImage)
-                    _GradientOverlay(color: bgBase, isDark: isDark),
+                    _GradientOverlay(color: bgBase),
 
                   // Textes gauche
                   Positioned(
@@ -173,7 +208,7 @@ class _PromoCard extends StatelessWidget {
                     top:    14,
                     bottom: 14,
                     width:  185,
-                    child: _TextContent(frame: frame, isDark: isDark),
+                    child: _TextContent(frame: frame),
                   ),
                 ],
               ),
@@ -189,10 +224,9 @@ class _PromoCard extends StatelessWidget {
 // Image
 // ─────────────────────────────────────────────────────────────
 class _ImagePanel extends StatelessWidget {
-  const _ImagePanel({required this.frame, required this.isDark});
+  const _ImagePanel({required this.frame});
 
   final PromoFrame frame;
-  final bool       isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -201,27 +235,32 @@ class _ImagePanel extends StatelessWidget {
       top:    0,
       bottom: 0,
       width:  175,
-      child: _resolveImage(),
+      child: _resolveImage(context),
     );
   }
 
-  Widget _resolveImage() {
+  Widget _resolveImage(BuildContext context) {
     if (frame.imageAsset != null) {
       return Image(
         image:     AssetImage(frame.imageAsset!),
         fit:       BoxFit.cover,
         alignment: Alignment.centerRight,
         errorBuilder: (_, __, ___) =>
-            frame.imageUrl != null ? _networkImage() : _IconPanel(frame: frame),
+            frame.imageUrl != null ? _networkImage(context) : _IconPanel(frame: frame),
       );
     }
-    if (frame.imageUrl != null) return _networkImage();
+    if (frame.imageUrl != null) return _networkImage(context);
     return _IconPanel(frame: frame);
   }
 
-  Widget _networkImage() {
-    final base      = isDark ? AppColors.bgDarkSurface : const Color(0xFFE8EDF2);
-    final highlight = isDark ? AppColors.bgDarkElevated : const Color(0xFFF5F7FA);
+  Widget _networkImage(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base      = isDark
+        ? Color.alphaBlend(frame.accentColor.withOpacity(.13), AppColors.surface(context))
+        : AppColors.surface(context);
+    final highlight = isDark
+        ? Color.alphaBlend(Colors.white.withOpacity(.12), base)
+        : const Color(0xFFF5F7FA);
 
     return CachedNetworkImage(
       imageUrl:        frame.imageUrl!,
@@ -244,16 +283,16 @@ class _ImagePanel extends StatelessWidget {
 // Dégradé — opacité forte en light pour protéger le texte
 // ─────────────────────────────────────────────────────────────
 class _GradientOverlay extends StatelessWidget {
-  const _GradientOverlay({required this.color, required this.isDark});
+  const _GradientOverlay({required this.color});
 
   final Color color;
-  final bool  isDark;
 
   @override
   Widget build(BuildContext context) {
-    // Light : dégradé blanc très opaque → transparent
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Light : dégradé surface très opaque → transparent
     // Dark  : dégradé couleur accent → transparent
-    final opaqueColor  = isDark ? color            : Colors.white;
+    final opaqueColor  = isDark ? color : AppColors.surface(context);
     final stops        = isDark
         ? const [0.0, 0.50, 0.72, 1.0]
         : const [0.0, 0.45, 0.68, 1.0];
@@ -305,70 +344,69 @@ class _IconPanel extends StatelessWidget {
 // Texte
 // ─────────────────────────────────────────────────────────────
 class _TextContent extends StatelessWidget {
-  const _TextContent({required this.frame, required this.isDark});
+  const _TextContent({required this.frame});
 
   final PromoFrame frame;
-  final bool       isDark;
 
   @override
   Widget build(BuildContext context) {
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC   = isDark ? AppColors.textDarkSub.withOpacity(0.7) : AppColors.textLightSub;
+    final titleC = AppColors.textPrimary(context);
+    final subC   = AppColors.textSub(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment:  MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: frame.accentColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             frame.tag,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: FontWeight.w900,
               color: frame.accentColor,
               letterSpacing: 0.5,
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         Text(
           frame.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 17,
             fontWeight: FontWeight.w900,
             color: titleC,
             height: 1.1,
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
           frame.subtitle,
-          maxLines: 2,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
             color: subC,
             height: 1.2,
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.neonYellow,
-            borderRadius: BorderRadius.circular(10),
+            color: frame.accentColor,
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: AppColors.neonYellow.withOpacity(0.2),
+                color: frame.accentColor.withOpacity(0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -377,9 +415,9 @@ class _TextContent extends StatelessWidget {
           child: Text(
             frame.cta,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w900,
-              color: AppColors.darkGreenBase,
+              color: Colors.white,
             ),
           ),
         ),
@@ -395,17 +433,16 @@ class _DotsIndicator extends StatelessWidget {
   const _DotsIndicator({
     required this.count,
     required this.current,
-    required this.isDark,
     required this.activeColor,
   });
 
   final int   count;
   final int   current;
-  final bool  isDark;
   final Color activeColor;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final inactiveC = isDark
         ? Colors.white.withOpacity(.18)
         : Colors.black.withOpacity(.12);

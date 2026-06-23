@@ -12,9 +12,9 @@ class NokiBottomNavBar extends StatelessWidget {
 
   static final _items = [
     _NavItemData(icon: FontAwesomeIcons.house,               label: 'Accueil'),
-    _NavItemData(icon: FontAwesomeIcons.clockRotateLeft,     label: 'Historique'),
+    _NavItemData(icon: FontAwesomeIcons.clockRotateLeft,     label: 'Activités'),
     _NavItemData(icon: FontAwesomeIcons.wallet,              label: 'Wallet'),
-    _NavItemData(icon: FontAwesomeIcons.user,                label: 'Profil'),
+    _NavItemData(icon: FontAwesomeIcons.bars,                label: 'Menu'),
   ];
 
   @override
@@ -90,7 +90,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor   = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
+    final activeColor   = isDark ? AppColors.neonYellow : AppColors.success;
     final inactiveColor = isDark
         ? AppColors.textDarkMuted
         : AppColors.textLightMuted;

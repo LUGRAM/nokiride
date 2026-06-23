@@ -114,7 +114,7 @@ class AppTranslations extends Translations {
       'credit':         'CRÉDIT',
       'debit':          'DÉBIT',
       'history':        'Historique',
-      'profile':        'Profil',
+      'profile':        'Menu',
       'home':           'Accueil',
       'logout':         'Se déconnecter',
       'settings':       'Paramètres',

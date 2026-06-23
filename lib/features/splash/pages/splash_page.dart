@@ -38,7 +38,7 @@ class _SplashPageState extends State<SplashPage>
     } else if (hasSeenOnboarding) {
       Get.offAllNamed(Routes.login);
     } else {
-      Get.offAllNamed(Routes.onboarding);
+      Get.offAllNamed(Routes.home);
     }
   }
 
@@ -51,15 +51,15 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDark, // Assure un fallback de couleur uni
+      backgroundColor: AppColors.bgDark,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
             colors: [
-              AppColors.bgDarkElevated,
-              AppColors.emeraldPrimary
+              AppColors.bgDark,
+              AppColors.accentDark,
             ],
           ),
         ),
@@ -69,59 +69,28 @@ class _SplashPageState extends State<SplashPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // ── Conteneur d'animation Premium ──
-                /*Container(
-                  width: 96, height: 96,
-                  decoration: BoxDecoration(
-                    color: AppColors.bgDarkSurface.withOpacity(0.4),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.borderDark.withOpacity(0.6),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.darkGreenBase.withOpacity(0.5),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Lottie.asset(
-                      'assets/animations/halo_soft.json',
-                      width: 200,
-                      height: 200,
-                      repeat: true,
-                    ),
-                  ),
-                ),*/
                 const SizedBox(height: 32),
 
                 // ── Nom de la Marque ──
                 Text(
                   'NokiRide',
                   style: GoogleFonts.inter(
-                    color: Color(0xffFFFDEE),
-                    //color: AppColors.textDarkPrimary, // OffWhite (#FFFDEE)
+                    color: const Color(0xffFFFDEE),
                     fontSize: 36,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1.0,
-                    textBaseline: TextBaseline.alphabetic,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 10),
                 // ── Slogan ──
                 Text(
                   'Mobilité urbaine simplifiée',
                   style: GoogleFonts.inter(
-                    color: AppColors.textDarkPrimary, // Vert adouci à 70%
+                    color: Colors.white70,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

@@ -8,23 +8,21 @@ import '../model/place_model.dart';
 class AddressSearchSheet extends GetView<TripController> {
   const AddressSearchSheet({
     super.key,
-    required this.isDark,
     required this.isPickup,
     required this.onSelect,
   });
 
-  final bool                     isDark;
   final bool                     isPickup;
   final ValueChanged<PlaceModel> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    final bg     = isDark ? AppColors.bgDarkSurface  : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark      : AppColors.borderLight;
-    final primary = isDark ? AppColors.primaryBlue   : AppColors.primaryGreen;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final hintC  = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
-    final inputBg= isDark ? AppColors.bgDarkElevated  : AppColors.bgLightInput;
+    final bg     = AppColors.surface(context);
+    final border = AppColors.divider(context);
+    final primary = AppColors.accent(context);
+    final titleC = AppColors.textPrimary(context);
+    final hintC  = AppColors.textSub(context);
+    final inputBg= AppColors.surface(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -118,7 +116,6 @@ class AddressSearchSheet extends GetView<TripController> {
               return Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                 child: _QuickSuggestions(
-                  isDark:   isDark,
                   onSelect: (place) {
                     onSelect(place);
                     Get.back();
@@ -138,7 +135,6 @@ class AddressSearchSheet extends GetView<TripController> {
                 ),
                 itemBuilder: (_, i) => _ResultTile(
                   place:  results[i],
-                  isDark: isDark,
                   onTap:  () {
                     onSelect(results[i]);
                     controller.clearSearch();
@@ -157,10 +153,8 @@ class AddressSearchSheet extends GetView<TripController> {
 // ─── Suggestions rapides ──────────────────────────────────────
 class _QuickSuggestions extends StatelessWidget {
   const _QuickSuggestions({
-    required this.isDark,
     required this.onSelect,
   });
-  final bool                     isDark;
   final ValueChanged<PlaceModel> onSelect;
 
   static const _suggestions = [
@@ -173,9 +167,7 @@ class _QuickSuggestions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subC  = isDark ? AppColors.textDarkSub  : AppColors.textLightSub;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final border = isDark ? AppColors.borderDark   : AppColors.borderLight;
+    final subC  = AppColors.textSub(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +183,6 @@ class _QuickSuggestions extends StatelessWidget {
         const SizedBox(height: 8),
         ..._suggestions.map((p) => _ResultTile(
           place:  p,
-          isDark: isDark,
           onTap:  () => onSelect(p),
         )),
       ],
@@ -203,17 +194,15 @@ class _QuickSuggestions extends StatelessWidget {
 class _ResultTile extends StatelessWidget {
   const _ResultTile({
     required this.place,
-    required this.isDark,
     required this.onTap,
   });
   final PlaceModel   place;
-  final bool         isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC   = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
+    final titleC = AppColors.textPrimary(context);
+    final subC   = AppColors.textSub(context);
 
     return ListTile(
       onTap:        onTap,
@@ -221,13 +210,13 @@ class _ResultTile extends StatelessWidget {
       leading: Container(
         width: 38, height: 38,
         decoration: BoxDecoration(
-          color:        (isDark ? AppColors.primaryBlue : AppColors.primaryGreen)
+          color:        AppColors.accent(context)
               .withOpacity(.10),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           Icons.place_rounded,
-          color: isDark ? AppColors.primaryBlueLight : AppColors.primaryGreenDark,
+          color: AppColors.accent(context),
           size:  18,
         ),
       ),

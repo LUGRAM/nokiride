@@ -13,13 +13,12 @@ class OtpPage extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    final accentColor = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final inputBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final accentColor = AppColors.accent(context);
+    final titleC = AppColors.textPrimary(context);
+    final subC = AppColors.textSub(context);
+    final inputBg = AppColors.surface(context);
+    final border = AppColors.divider(context);
 
     final defaultPinTheme = PinTheme(
       width: 62,
@@ -62,12 +61,12 @@ class OtpPage extends GetView<AuthController> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.emeraldPrimary.withValues(alpha: 0.1),
+                      color: AppColors.accent(context).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.mark_email_read_rounded,
-                      color: AppColors.emeraldPrimary,
+                      color: AppColors.accent(context),
                       size: 32,
                     ),
                   ),

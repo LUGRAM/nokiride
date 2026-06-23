@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -46,16 +45,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final backgroundGradient = isDark
-        ? const LinearGradient(
+    final backgroundGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [AppColors.bgDarkSurface, AppColors.bgDark],
-    )
-        : const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [AppColors.bgLightSurface, AppColors.bgLight],
+      colors: [AppColors.surface(context), AppColors.background(context)],
     );
 
     return Scaffold(
@@ -70,7 +63,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             left: -80,
             child: _GlassSphere(
               size: 260,
-              color: isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+              color: AppColors.accent(context),
               opacity: isDark ? 0.22 : 0.35,
             ),
           ),
@@ -107,9 +100,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         onPressed: controller.skip,
                         style: TextButton.styleFrom(
                           splashFactory: NoSplash.splashFactory,
-                          foregroundColor: isDark
-                              ? AppColors.textDarkSub
-                              : AppColors.textLightSub,
+                          foregroundColor: AppColors.textSub(context),
                         ),
                         child: Text(
                           'skip'.tr,
@@ -199,7 +190,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _buildDots() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
@@ -215,8 +205,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
             width: 7 + (22 * factor),
             decoration: BoxDecoration(
               color: Color.lerp(
-                isDark ? Colors.white.withOpacity(0.2) : AppColors.textLightSub.withOpacity(0.3),
-                isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+                AppColors.textSub(context).withOpacity(0.3),
+                AppColors.accent(context),
                 factor,
               ),
               borderRadius: BorderRadius.circular(10),
@@ -354,9 +344,7 @@ class _OnboardingCard extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 23,
                         fontWeight: FontWeight.w900,
-                        color: isDark
-                            ? AppColors.textDarkPrimary
-                            : AppColors.textLightPrimary,
+                        color: AppColors.textPrimary(context),
                         letterSpacing: 0.9,
                         height: 1.2,
                       ),
@@ -369,9 +357,7 @@ class _OnboardingCard extends StatelessWidget {
                         fontSize: 15,
                         height: 1.5,
                         fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? AppColors.textDarkSub
-                            : AppColors.textLightSub,
+                        color: AppColors.textSub(context),
                       ),
                     ),
                   ],

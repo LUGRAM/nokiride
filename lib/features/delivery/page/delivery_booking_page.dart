@@ -13,11 +13,8 @@ class DeliveryBookingPage extends GetView<DeliveryController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.bgDark : AppColors.bgLight,
+      backgroundColor: AppColors.background(context),
       body: Stack(
         children: [
           // ── Carte ─────────────────────────────────────────
@@ -37,16 +34,14 @@ class DeliveryBookingPage extends GetView<DeliveryController> {
                     horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    _BackBtn(isDark: isDark),
+                    _BackBtn(),
                     const SizedBox(width: 12),
                     Text(
                       'Envoi de colis',
                       style: TextStyle(
                         fontSize:   18,
                         fontWeight: FontWeight.w800,
-                        color: isDark
-                            ? AppColors.textDarkPrimary
-                            : AppColors.textLightPrimary,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                   ],
@@ -58,7 +53,7 @@ class DeliveryBookingPage extends GetView<DeliveryController> {
           // ── Sheet de saisie ───────────────────────────────
           Positioned(
             left: 0, right: 0, bottom: 0,
-            child: _DeliverySheet(isDark: isDark),
+            child: const _DeliverySheet(),
           ),
         ],
       ),
@@ -70,14 +65,13 @@ class DeliveryBookingPage extends GetView<DeliveryController> {
 // Sheet principale — scrollable
 // ─────────────────────────────────────────────────────────────
 class _DeliverySheet extends GetView<DeliveryController> {
-  const _DeliverySheet({required this.isDark});
-  final bool isDark;
+  const _DeliverySheet();
 
   @override
   Widget build(BuildContext context) {
-    final cardBg  = isDark ? AppColors.bgDarkSurface  : AppColors.bgLightSurface;
-    final border  = isDark ? AppColors.borderDark      : AppColors.borderLight;
-    final primary = isDark ? AppColors.primaryBlue     : AppColors.primaryGreen;
+    final cardBg  = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final primary = AppColors.accent(context);
 
     return Container(
       constraints: BoxConstraints(
@@ -115,11 +109,10 @@ class _DeliverySheet extends GetView<DeliveryController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Adresses ──────────────────────────────
-                  _SectionTitle(label: 'Adresses', isDark: isDark),
+                  _SectionTitle(label: 'Adresses'),
                   const SizedBox(height: 10),
 
                   Obx(() => _AddressField(
-                    isDark:   isDark,
                     hint:     "Point d'enlèvement",
                     value:    controller.pickup.value?.name,
                     dotColor: primary,
@@ -134,7 +127,6 @@ class _DeliverySheet extends GetView<DeliveryController> {
                     ),
                   ),
                   Obx(() => _AddressField(
-                    isDark:   isDark,
                     hint:     'Destination',
                     value:    controller.dropoff.value?.name,
                     dotColor: AppColors.success,
@@ -145,10 +137,9 @@ class _DeliverySheet extends GetView<DeliveryController> {
                   const SizedBox(height: 20),
 
                   // ── Destinataire ──────────────────────────
-                  _SectionTitle(label: 'Destinataire', isDark: isDark),
+                  _SectionTitle(label: 'Destinataire'),
                   const SizedBox(height: 10),
                   _InputField(
-                    isDark:      isDark,
                     hint:        'Nom du destinataire',
                     icon:        Icons.person_outline_rounded,
                     onChanged:   (v) => controller.recipientName.value = v,
@@ -156,7 +147,6 @@ class _DeliverySheet extends GetView<DeliveryController> {
                   ),
                   const SizedBox(height: 10),
                   _InputField(
-                    isDark:      isDark,
                     hint:        'Téléphone  ex: 077 123 456',
                     icon:        Icons.phone_outlined,
                     onChanged:   (v) => controller.recipientPhone.value = v,
@@ -169,10 +159,9 @@ class _DeliverySheet extends GetView<DeliveryController> {
                   const SizedBox(height: 20),
 
                   // ── Type de colis ─────────────────────────
-                  _SectionTitle(label: 'Type de colis', isDark: isDark),
+                  _SectionTitle(label: 'Type de colis'),
                   const SizedBox(height: 10),
                   Obx(() => _ParcelSelector(
-                    isDark:   isDark,
                     selected: controller.parcelSize.value,
                     onSelect: controller.setParcelSize,
                   )),
@@ -182,12 +171,10 @@ class _DeliverySheet extends GetView<DeliveryController> {
                   // ── Note (optionnel) ──────────────────────
                   _SectionTitle(
                     label:    'Note pour le coursier',
-                    isDark:   isDark,
                     optional: true,
                   ),
                   const SizedBox(height: 10),
                   _InputField(
-                    isDark:    isDark,
                     hint:      'Fragile, appeler à l\'arrivée...',
                     icon:      Icons.note_outlined,
                     onChanged: (v) => controller.parcelNote.value = v,
@@ -242,7 +229,6 @@ class _DeliverySheet extends GetView<DeliveryController> {
       isScrollControlled: true,
       backgroundColor:    Colors.transparent,
       builder: (_) => AddressSearchSheet(
-        isDark:   isDark,
         isPickup: isPickup,
         onSelect: isPickup
             ? controller.selectPickup
@@ -257,30 +243,29 @@ class _DeliverySheet extends GetView<DeliveryController> {
 // ─────────────────────────────────────────────────────────────
 class _ParcelSelector extends StatelessWidget {
   const _ParcelSelector({
-    required this.isDark,
     required this.selected,
     required this.onSelect,
   });
 
-  final bool                   isDark;
   final ParcelSize             selected;
   final ValueChanged<ParcelSize> onSelect;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: ParcelSize.values.map((size) {
         final isActive = size == selected;
         final color    = isActive
-            ? (isDark ? AppColors.primaryBlue : AppColors.primaryGreen)
-            : (isDark ? AppColors.bgDarkElevated : AppColors.bgLightInput);
+            ? AppColors.accent(context)
+            : AppColors.surface(context);
         final textC    = isActive
             ? Colors.white
-            : (isDark ? AppColors.textDarkSub : AppColors.textLightSub);
+            : AppColors.textSub(context);
         final border   = isActive
             ? BorderSide.none
             : BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                color: AppColors.divider(context),
               );
 
         return Expanded(
@@ -342,17 +327,15 @@ class _ParcelSelector extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({
     required this.label,
-    required this.isDark,
     this.optional = false,
   });
   final String label;
-  final bool   isDark;
   final bool   optional;
 
   @override
   Widget build(BuildContext context) {
-    final color = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC  = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
+    final color = AppColors.textPrimary(context);
+    final subC  = AppColors.textSub(context);
 
     return Row(
       children: [
@@ -378,14 +361,12 @@ class _SectionTitle extends StatelessWidget {
 
 class _AddressField extends StatelessWidget {
   const _AddressField({
-    required this.isDark,
     required this.hint,
     required this.dotColor,
     required this.onTap,
     this.value,
     this.onClear,
   });
-  final bool         isDark;
   final String       hint;
   final String?      value;
   final Color        dotColor;
@@ -394,9 +375,9 @@ class _AddressField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg    = isDark ? AppColors.bgDarkElevated : AppColors.bgLightInput;
-    final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final hintC = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
+    final bg    = AppColors.surface(context);
+    final textC = AppColors.textPrimary(context);
+    final hintC = AppColors.textSub(context);
     final filled = value != null;
 
     return GestureDetector(
@@ -443,7 +424,6 @@ class _AddressField extends StatelessWidget {
 
 class _InputField extends StatelessWidget {
   const _InputField({
-    required this.isDark,
     required this.hint,
     required this.icon,
     required this.onChanged,
@@ -451,7 +431,6 @@ class _InputField extends StatelessWidget {
     this.inputFormatters,
     this.maxLines = 1,
   });
-  final bool          isDark;
   final String        hint;
   final IconData      icon;
   final ValueChanged<String> onChanged;
@@ -461,10 +440,10 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg    = isDark ? AppColors.bgDarkElevated : AppColors.bgLightInput;
-    final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final hintC = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
-    final iconC = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
+    final bg    = AppColors.surface(context);
+    final textC = AppColors.textPrimary(context);
+    final hintC = AppColors.textSub(context);
+    final iconC = AppColors.textSub(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -506,8 +485,7 @@ class _InputField extends StatelessWidget {
 }
 
 class _BackBtn extends StatelessWidget {
-  const _BackBtn({required this.isDark});
-  final bool isDark;
+  const _BackBtn();
 
   @override
   Widget build(BuildContext context) {
@@ -516,7 +494,7 @@ class _BackBtn extends StatelessWidget {
       child: Container(
         width: 40, height: 40,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface,
+          color: AppColors.surface(context),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(color: Colors.black.withValues(alpha: .10), blurRadius: 8),
@@ -524,7 +502,7 @@ class _BackBtn extends StatelessWidget {
         ),
         child: Icon(
           Icons.arrow_back_rounded,
-          color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+          color: AppColors.textPrimary(context),
           size:  20,
         ),
       ),

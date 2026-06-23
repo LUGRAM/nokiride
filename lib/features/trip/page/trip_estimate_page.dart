@@ -9,8 +9,7 @@ class TripEstimatePage extends GetView<TripController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark  = Theme.of(context).brightness == Brightness.dark;
-    final bg      = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final bg      = AppColors.background(context);
     final trip    = controller.currentTrip.value;
 
     if (trip == null) {
@@ -22,22 +21,22 @@ class TripEstimatePage extends GetView<TripController> {
       body: SafeArea(
         child: Column(
           children: [
-            _Header(isDark: isDark),
+            const _Header(),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    _PriceCard(trip: trip, isDark: isDark),
+                    _PriceCard(trip: trip),
                     const SizedBox(height: 16),
-                    _RouteCard(trip: trip, isDark: isDark),
+                    _RouteCard(trip: trip),
                     const SizedBox(height: 16),
-                    _TarifInfoCard(isDark: isDark),
+                    const _TarifInfoCard(),
                   ],
                 ),
               ),
             ),
-            _BottomActions(isDark: isDark),
+            const _BottomActions(),
           ],
         ),
       ),
@@ -47,8 +46,7 @@ class TripEstimatePage extends GetView<TripController> {
 
 // ─── Header ───────────────────────────────────────────────────
 class _Header extends StatelessWidget {
-  const _Header({required this.isDark});
-  final bool isDark;
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +58,7 @@ class _Header extends StatelessWidget {
             onTap: Get.back,
             child: Icon(
               Icons.arrow_back_rounded,
-              color: isDark
-                  ? AppColors.textDarkPrimary
-                  : AppColors.textLightPrimary,
+              color: AppColors.textPrimary(context),
             ),
           ),
           const SizedBox(width: 16),
@@ -71,9 +67,7 @@ class _Header extends StatelessWidget {
             style: TextStyle(
               fontSize:   18,
               fontWeight: FontWeight.w800,
-              color: isDark
-                  ? AppColors.textDarkPrimary
-                  : AppColors.textLightPrimary,
+              color: AppColors.textPrimary(context),
             ),
           ),
         ],
@@ -84,17 +78,15 @@ class _Header extends StatelessWidget {
 
 // ─── Prix principal ───────────────────────────────────────────
 class _PriceCard extends GetView<TripController> {
-  const _PriceCard({required this.trip, required this.isDark});
+  const _PriceCard({required this.trip});
   final dynamic trip;
-  final bool    isDark;
 
   @override
   Widget build(BuildContext context) {
-    final cardBg  = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border  = isDark ? AppColors.borderDark     : AppColors.borderLight;
-    final primary = isDark ? AppColors.primaryBlue    : AppColors.primaryGreen;
-    final titleC  = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC    = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
+    final cardBg  = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final primary = AppColors.accent(context);
+    final subC    = AppColors.textSub(context);
 
     return Container(
       padding: const EdgeInsets.all(22),
@@ -132,13 +124,11 @@ class _PriceCard extends GetView<TripController> {
               _InfoChip(
                 icon:   Icons.route_rounded,
                 label:  trip.formattedDistance,
-                isDark: isDark,
               ),
               const SizedBox(width: 12),
               _InfoChip(
                 icon:   Icons.timer_outlined,
                 label:  trip.formattedDuration,
-                isDark: isDark,
               ),
             ],
           ),
@@ -152,16 +142,14 @@ class _InfoChip extends StatelessWidget {
   const _InfoChip({
     required this.icon,
     required this.label,
-    required this.isDark,
   });
   final IconData icon;
   final String   label;
-  final bool     isDark;
 
   @override
   Widget build(BuildContext context) {
-    final bg    = isDark ? AppColors.bgDarkElevated : AppColors.bgLightInput;
-    final color = isDark ? AppColors.textDarkSub    : AppColors.textLightSub;
+    final bg    = AppColors.surface(context);
+    final color = AppColors.textSub(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -190,14 +178,13 @@ class _InfoChip extends StatelessWidget {
 
 // ─── Trajet A→B ───────────────────────────────────────────────
 class _RouteCard extends StatelessWidget {
-  const _RouteCard({required this.trip, required this.isDark});
+  const _RouteCard({required this.trip});
   final dynamic trip;
-  final bool    isDark;
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark     : AppColors.borderLight;
+    final cardBg = AppColors.surface(context);
+    final border = AppColors.divider(context);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -210,19 +197,16 @@ class _RouteCard extends StatelessWidget {
         children: [
           _RouteRow(
             icon:      Icons.radio_button_checked_rounded,
-            iconColor: AppColors.primaryBlue,
+            iconColor: AppColors.accent(context),
             label:     trip.pickup.name,
             sub:       trip.pickup.address,
-            isDark:    isDark,
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child: Container(
               width: 1.5,
               height: 20,
-              color: isDark
-                  ? AppColors.borderDark
-                  : AppColors.borderLight,
+              color: border,
             ),
           ),
           _RouteRow(
@@ -230,7 +214,6 @@ class _RouteCard extends StatelessWidget {
             iconColor: AppColors.success,
             label:     trip.dropoff.name,
             sub:       trip.dropoff.address,
-            isDark:    isDark,
           ),
         ],
       ),
@@ -244,18 +227,16 @@ class _RouteRow extends StatelessWidget {
     required this.iconColor,
     required this.label,
     required this.sub,
-    required this.isDark,
   });
   final IconData icon;
   final Color    iconColor;
   final String   label;
   final String   sub;
-  final bool     isDark;
 
   @override
   Widget build(BuildContext context) {
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC   = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
+    final titleC = AppColors.textPrimary(context);
+    final subC   = AppColors.textSub(context);
 
     return Row(
       children: [
@@ -290,13 +271,12 @@ class _RouteRow extends StatelessWidget {
 
 // ─── Info tarif ───────────────────────────────────────────────
 class _TarifInfoCard extends StatelessWidget {
-  const _TarifInfoCard({required this.isDark});
-  final bool isDark;
+  const _TarifInfoCard();
 
   @override
   Widget build(BuildContext context) {
-    final bg    = isDark ? AppColors.infoFill : AppColors.accentBlueFill;
-    final color = isDark ? AppColors.primaryBlueLight : AppColors.accentBlueLight;
+    final bg    = AppColors.accent(context).withOpacity(0.1);
+    final color = AppColors.accent(context);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -327,14 +307,13 @@ class _TarifInfoCard extends StatelessWidget {
 
 // ─── Actions bas de page ──────────────────────────────────────
 class _BottomActions extends GetView<TripController> {
-  const _BottomActions({required this.isDark});
-  final bool isDark;
+  const _BottomActions();
 
   @override
   Widget build(BuildContext context) {
-    final bg      = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border  = isDark ? AppColors.borderDark     : AppColors.borderLight;
-    final primary = isDark ? AppColors.primaryBlue    : AppColors.primaryGreen;
+    final bg      = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final primary = AppColors.accent(context);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
@@ -372,9 +351,7 @@ class _BottomActions extends GetView<TripController> {
             height: 48,
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
-                foregroundColor: isDark
-                    ? AppColors.textDarkSub
-                    : AppColors.textLightSub,
+                foregroundColor: AppColors.textSub(context),
                 side: BorderSide(color: border),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),

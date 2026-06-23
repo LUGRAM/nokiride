@@ -1,12 +1,13 @@
 import 'package:get/get.dart';
 import '../model/history_model.dart';
+import '../../wallet/controller/wallet_controller.dart';
 
 class HistoryController extends GetxController {
 
   // Onglets du tab principal
   final RxInt mainTabIndex = 0.obs; // 0=En cours  1=Historique
   // Sous-onglets historique
-  final RxInt histTabIndex = 0.obs; // 0=Courses   1=Livraisons
+  final RxInt histTabIndex = 0.obs; // 0=Courses   1=Livraisons  2=Transactions
 
   // Détail sélectionné
   final Rx<HistoryModel?> selected = Rx<HistoryModel?>(null);
@@ -112,6 +113,30 @@ class HistoryController extends GetxController {
     final map = <String, List<HistoryModel>>{};
     for (final d in deliveries) {
       map.putIfAbsent(d.groupDate, () => []).add(d);
+    }
+    return map;
+  }
+
+  // Conversion des transactions du Wallet en HistoryModel pour l'affichage unifié
+  Map<String, List<HistoryModel>> get groupedTransactions {
+    final walletController = Get.find<WalletController>();
+    final map = <String, List<HistoryModel>>{};
+    
+    for (final tx in walletController.transactions) {
+      final h = HistoryModel(
+        id: tx.id,
+        title: tx.label,
+        subtitle: 'Paiement NokiPay',
+        formattedPrice: tx.formattedAmount,
+        formattedDate: tx.formattedDate,
+        groupDate: tx.formattedDate, // Utilisation de formattedDate pour le groupement simple
+        courierName: tx.method.name,
+        courierVehicle: '',
+        courierRating: 5.0,
+        type: HistoryType.trip, // Dummy type
+        status: HistoryStatus.completed,
+      );
+      map.putIfAbsent(h.groupDate, () => []).add(h);
     }
     return map;
   }

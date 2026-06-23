@@ -48,24 +48,28 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return CustomPaint(
-      painter: _MapPainter(isDark: isDark),
+      painter: _MapPainter(
+        isDark: isDark,
+        bgColor: AppColors.background(context),
+        routeColor: AppColors.accent(context).withOpacity(0.5),
+      ),
       child: Stack(
         children: [
           // Marqueur départ
           if (widget.pickup != null)
-            const Positioned(
+            Positioned(
               left:   80,
               top:    160,
-              child: _MapPin(color: AppColors.emeraldPrimary,
+              child: _MapPin(color: AppColors.accent(context),
                              icon:  FontAwesomeIcons.circleDot),
             ),
 
           // Marqueur arrivée
           if (widget.dropoff != null)
-            const Positioned(
+            Positioned(
               right: 90,
               top:   280,
-              child: _MapPin(color: AppColors.neonYellow,
+              child: _MapPin(color: AppColors.accent(context),
                              icon:  FontAwesomeIcons.locationDot),
             ),
 
@@ -80,8 +84,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
                 return Positioned(
                   left: left,
                   top:  top,
-                  child: const _MapPin(
-                    color: AppColors.emeraldPrimary,
+                  child: _MapPin(
+                    color: AppColors.accent(context),
                     icon:  FontAwesomeIcons.motorcycle,
                     size:  38,
                   ),
@@ -96,7 +100,6 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
               left: 16,
               child: _LocationBadge(
                 label:  widget.pickup!.name,
-                isDark: isDark,
               ),
             ),
         ],
@@ -107,19 +110,19 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
 
 // ─── Painter carte stylisée ───────────────────────────────────
 class _MapPainter extends CustomPainter {
-  const _MapPainter({required this.isDark});
+  const _MapPainter({required this.isDark, required this.bgColor, required this.routeColor});
   final bool isDark;
+  final Color bgColor;
+  final Color routeColor;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bgColor   = isDark ? AppColors.darkGreenBase : AppColors.bgLight;
     final gridColor = isDark
         ? Colors.white.withOpacity(.02)
         : Colors.black.withOpacity(.03);
     final roadColor = isDark
         ? Colors.white.withOpacity(.04)
         : Colors.black.withOpacity(.05);
-    final routeColor = AppColors.emeraldPrimary.withOpacity(0.5);
 
     // Fond
     canvas.drawRect(Offset.zero & size, Paint()..color = bgColor);
@@ -223,14 +226,13 @@ class _MapPin extends StatelessWidget {
 
 // ─── Badge lieu ───────────────────────────────────────────────
 class _LocationBadge extends StatelessWidget {
-  const _LocationBadge({required this.label, required this.isDark});
+  const _LocationBadge({required this.label});
   final String label;
-  final bool   isDark;
 
   @override
   Widget build(BuildContext context) {
-    final bg    = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
+    final bg    = AppColors.surface(context);
+    final textC = AppColors.textPrimary(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -247,8 +249,8 @@ class _LocationBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const FaIcon(FontAwesomeIcons.locationDot,
-               color: AppColors.emeraldPrimary, size: 10),
+          FaIcon(FontAwesomeIcons.locationDot,
+               color: AppColors.accent(context), size: 10),
           const SizedBox(width: 6),
           Text(
             label,

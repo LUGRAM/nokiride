@@ -41,8 +41,8 @@ class RecentActivitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final primary = isDark ? AppColors.neonYellow : AppColors.emeraldPrimary;
+    final subC = AppColors.textSub(context);
+    final accent = AppColors.accent(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -53,10 +53,10 @@ class RecentActivitySection extends StatelessWidget {
               Text(
                 "recent".tr,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
-                  color: titleC,
-                  letterSpacing: -0.5,
+                  color: subC,
+                  letterSpacing: 1.1,
                 ),
               ),
               const Spacer(),
@@ -65,7 +65,7 @@ class RecentActivitySection extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.1),
+                    color: accent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -73,16 +73,16 @@ class RecentActivitySection extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: primary,
+                      color: accent,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ..._activities.map((a) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: _ActivityTile(data: a, isDark: isDark),
               )),
         ],
@@ -98,47 +98,38 @@ class _ActivityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkMuted : AppColors.textLightMuted;
+    final cardBg = AppColors.surface(context);
+    final border = AppColors.divider(context);
+    final titleC = AppColors.textPrimary(context);
+    final subC = AppColors.textSub(context);
 
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: border, width: 1.5),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border, width: 0.5),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () {},
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: data.statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(16),
+                    color: data.statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
-                    child: FaIcon(data.icon, color: data.statusColor, size: 20),
+                    child: FaIcon(data.icon, color: data.statusColor, size: 16),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,37 +137,36 @@ class _ActivityTile extends StatelessWidget {
                       Text(
                         data.title,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: titleC,
-                          letterSpacing: -0.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         data.datetime,
-                        style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 11, color: subC, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                       data.price,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: titleC,
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    FaIcon(data.statusIcon, color: data.statusColor, size: 14),
+                    const SizedBox(height: 2),
+                    FaIcon(data.statusIcon, color: data.statusColor, size: 12),
                   ],
                 ),
               ],

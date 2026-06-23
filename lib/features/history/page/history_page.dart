@@ -3,8 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../wallet/controller/wallet_controller.dart';
 import '../controller/history_controller.dart';
 import '../model/history_model.dart';
+import 'history_detail_page.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -12,11 +14,10 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(HistoryController());
-    final isDark     = Theme.of(context).brightness == Brightness.dark;
-    final bg         = isDark ? AppColors.bgDark : AppColors.bgLight;
-    final titleC     = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC       = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final primary    = AppColors.emeraldPrimary;
+    final bg         = AppColors.background(context);
+    final titleC     = AppColors.textPrimary(context);
+    final subC       = AppColors.textSub(context);
+    final primary    = AppColors.accent(context);
 
     return Container(
       color: bg,
@@ -24,20 +25,20 @@ class HistoryPage extends StatelessWidget {
         child: Column(children: [
           // ── Header ───────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("activities".tr,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.8)),
-                const SizedBox(height: 4),
-                Text("${controller.trips.length} ${'rides_count'.tr} · ${controller.deliveries.length} ${'deliveries_count'.tr}",
-                    style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
+                Text("Mes Activités",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.8)),
+                const SizedBox(height: 2),
+                Text("${controller.trips.length} courses · ${controller.deliveries.length} envois",
+                    style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
               ]),
               const Spacer(),
-              _HeaderActionBtn(icon: FontAwesomeIcons.sliders, isDark: isDark),
+              _HeaderActionBtn(icon: FontAwesomeIcons.sliders),
             ]),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
           // ── Tabs pill toggle ──────────────────────────────
           Padding(
@@ -45,7 +46,6 @@ class HistoryPage extends StatelessWidget {
             child: Obx(() => _PillTabs(
               selected: controller.mainTabIndex.value,
               onTap:    (i) => controller.mainTabIndex.value = i,
-              isDark:   isDark,
               primary:  primary,
             )),
           ),
@@ -54,8 +54,8 @@ class HistoryPage extends StatelessWidget {
           // ── Contenu ───────────────────────────────────────
           Expanded(
             child: Obx(() => controller.mainTabIndex.value == 0
-                ? _EnCoursTab(isDark: isDark, primary: primary)
-                : _HistoriqueTab(isDark: isDark, primary: primary, controller: controller)),
+                ? _EnCoursTab(primary: primary)
+                : _HistoriqueTab(primary: primary, controller: controller)),
           ),
         ]),
       ),
@@ -64,23 +64,23 @@ class HistoryPage extends StatelessWidget {
 }
 
 class _HeaderActionBtn extends StatelessWidget {
-  const _HeaderActionBtn({required this.icon, required this.isDark});
+  const _HeaderActionBtn({required this.icon});
   final IconData icon;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: 42, height: 42,
+      width: 40, height: 40,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.bgDarkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 1.5),
+        color: AppColors.surface(context),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.divider(context), width: 1.2),
         boxShadow: isDark ? [] : [
           BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
         ],
       ),
-      child: Center(child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 16)),
+      child: Center(child: FaIcon(icon, color: AppColors.accent(context), size: 16)),
     );
   }
 }
@@ -89,25 +89,25 @@ class _HeaderActionBtn extends StatelessWidget {
 class _PillTabs extends StatelessWidget {
   const _PillTabs({
     required this.selected, required this.onTap,
-    required this.isDark, required this.primary,
+    required this.primary,
   });
   final int      selected;
   final Function(int) onTap;
-  final bool     isDark;
   final Color    primary;
 
   @override
   Widget build(BuildContext context) {
-    final bg      = isDark ? AppColors.bgDarkSurface : Colors.white;
-    final border  = isDark ? AppColors.borderDark    : AppColors.borderLight;
-    final inactC  = isDark ? AppColors.textDarkSub   : AppColors.textLightSub;
+    final isDark  = Theme.of(context).brightness == Brightness.dark;
+    final bg      = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final inactC  = AppColors.textSub(context);
     final labels  = ['ongoing'.tr, 'history'.tr];
 
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: bg, borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border, width: 1.5),
+        color: bg, borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border, width: 1.2),
         boxShadow: isDark ? [] : [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
@@ -121,10 +121,10 @@ class _PillTabs extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve:    Curves.easeOutCubic,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color:        active ? primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(labels[i],
                   textAlign: TextAlign.center,
@@ -146,14 +146,13 @@ class _PillTabs extends StatelessWidget {
 
 // ── Tab "En cours" ——————————————————————————————————————————────
 class _EnCoursTab extends StatelessWidget {
-  const _EnCoursTab({required this.isDark, required this.primary});
-  final bool  isDark;
+  const _EnCoursTab({required this.primary});
   final Color primary;
 
   @override
   Widget build(BuildContext context) {
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC   = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
+    final titleC = AppColors.textPrimary(context);
+    final subC   = AppColors.textSub(context);
 
     return Center(
       child: Padding(
@@ -184,8 +183,8 @@ class _EnCoursTab extends StatelessWidget {
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
                 backgroundColor: primary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
               onPressed: () => Get.toNamed(Routes.trip),
@@ -203,14 +202,13 @@ class _EnCoursTab extends StatelessWidget {
 // ── Tab "Historique" ────────────────────────────────────────────
 class _HistoriqueTab extends StatelessWidget {
   const _HistoriqueTab(
-      {required this.isDark, required this.primary, required this.controller});
-  final bool              isDark;
+      {required this.primary, required this.controller});
   final Color             primary;
   final HistoryController controller;
 
   @override
   Widget build(BuildContext context) {
-    final subC   = isDark ? AppColors.textDarkSub  : AppColors.textLightSub;
+    final subC   = AppColors.textSub(context);
 
     return Column(children: [
       // Sous-onglets
@@ -222,7 +220,7 @@ class _HistoriqueTab extends StatelessWidget {
             icon:    FontAwesomeIcons.motorcycle,
             count:   controller.trips.length,
             active:  controller.histTabIndex.value == 0,
-            isDark:  isDark, primary: primary,
+            primary: primary,
             onTap:   () => controller.histTabIndex.value = 0,
           ),
           const SizedBox(width: 12),
@@ -231,8 +229,17 @@ class _HistoriqueTab extends StatelessWidget {
             icon:    FontAwesomeIcons.boxOpen,
             count:   controller.deliveries.length,
             active:  controller.histTabIndex.value == 1,
-            isDark:  isDark, primary: primary,
+            primary: primary,
             onTap:   () => controller.histTabIndex.value = 1,
+          ),
+          const SizedBox(width: 12),
+          _SubTab(
+            label:   "Transactions",
+            icon:    FontAwesomeIcons.wallet,
+            count:   Get.find<WalletController>().transactions.length,
+            active:  controller.histTabIndex.value == 2,
+            primary: primary,
+            onTap:   () => controller.histTabIndex.value = 2,
           ),
         ])),
       ),
@@ -241,11 +248,13 @@ class _HistoriqueTab extends StatelessWidget {
         child: Obx(() {
           final grouped = controller.histTabIndex.value == 0
               ? controller.groupedTrips
-              : controller.groupedDeliveries;
+              : controller.histTabIndex.value == 1 
+                ? controller.groupedDeliveries
+                : controller.groupedTransactions;
 
           if (grouped.isEmpty) {
             return Center(child: Text("no_entries".tr,
-                style: TextStyle(color: isDark ? AppColors.textDarkMuted : AppColors.textLightMuted, fontWeight: FontWeight.w600)));
+                style: TextStyle(color: AppColors.textSub(context), fontWeight: FontWeight.w600)));
           }
 
           final dates = grouped.keys.toList();
@@ -270,7 +279,7 @@ class _HistoriqueTab extends StatelessWidget {
                       Text(date,
                           style: TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w800,
-                              color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+                              color: AppColors.textPrimary(context),
                               letterSpacing: -0.2)),
                       const Spacer(),
                       Text("${items.length} ${'entry'.tr}${items.length > 1 ? 's' : ''}",
@@ -279,9 +288,8 @@ class _HistoriqueTab extends StatelessWidget {
                   ),
                   ...items.map((h) => _HistoryTile(
                     item:    h,
-                    isDark:  isDark,
                     primary: primary,
-                    onTap:   () => Get.to(() => _HistoryDetailPage(item: h)),
+                    onTap:   () => Get.to(() => HistoryDetailPage(item: h)),
                   )),
                   const SizedBox(height: 8),
                 ],
@@ -298,32 +306,32 @@ class _HistoriqueTab extends StatelessWidget {
 class _SubTab extends StatelessWidget {
   const _SubTab({
     required this.label, required this.icon, required this.count,
-    required this.active, required this.isDark, required this.primary,
+    required this.active, required this.primary,
     required this.onTap,
   });
   final String   label;
   final IconData icon;
   final int      count;
-  final bool     active, isDark;
+  final bool     active;
   final Color    primary;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final bg     = active ? primary : (isDark ? AppColors.bgDarkSurface : Colors.white);
-    final textC  = active ? Colors.white : (isDark ? AppColors.textDarkSub : AppColors.textLightSub);
-    final border = active ? primary : (isDark ? AppColors.borderDark : AppColors.borderLight);
+    final bg     = active ? primary : AppColors.surface(context);
+    final textC  = active ? Colors.white : AppColors.textSub(context);
+    final border = active ? primary : AppColors.divider(context);
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: bg, borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border, width: 1.5),
+          color: bg, borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: border, width: 1.2),
           boxShadow: active ? [
-            BoxShadow(color: primary.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: primary.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 4)),
           ] : null,
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -351,18 +359,17 @@ class _SubTab extends StatelessWidget {
 // ── Tile historique ─────────────────────────────────────────────
 class _HistoryTile extends StatelessWidget {
   const _HistoryTile(
-      {required this.item, required this.isDark, required this.primary, required this.onTap});
+      {required this.item, required this.primary, required this.onTap});
   final HistoryModel item;
-  final bool         isDark;
   final Color        primary;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final bg      = isDark ? AppColors.bgDarkSurface : Colors.white;
-    final border  = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC  = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC    = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
+    final bg      = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final titleC  = AppColors.textPrimary(context);
+    final subC    = AppColors.textSub(context);
     final statusColor = item.status == HistoryStatus.completed ? AppColors.success
         : item.status == HistoryStatus.cancelled ? AppColors.error : AppColors.warning;
     final statusLabel = item.status == HistoryStatus.completed ? "completed".tr
@@ -374,34 +381,31 @@ class _HistoryTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: border, width: 1.5),
-          boxShadow: isDark ? [] : [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: border, width: 1.0),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Row(children: [
                 Container(
-                  width: 52, height: 52,
+                  width: 44, height: 44,
                   decoration: BoxDecoration(
                     color:  primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
                     child: FaIcon(
                       isTrip ? FontAwesomeIcons.motorcycle : FontAwesomeIcons.boxOpen,
-                      color: primary, size: 20,
+                      color: primary, size: 18,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Expanded(child: Text(item.courierName,
@@ -429,7 +433,6 @@ class _HistoryTile extends StatelessWidget {
                   _RouteRow(
                     departure: item.title.split(" → ")[0],
                     arrival:   item.title.split(" → ").length > 1 ? item.title.split(" → ")[1] : '',
-                    isDark:    isDark,
                   ),
                 ])),
               ]),
@@ -443,13 +446,12 @@ class _HistoryTile extends StatelessWidget {
 
 // ── Affichage trajet compact ────────────────────────────────────
 class _RouteRow extends StatelessWidget {
-  const _RouteRow({required this.departure, required this.arrival, required this.isDark});
+  const _RouteRow({required this.departure, required this.arrival});
   final String departure, arrival;
-  final bool   isDark;
 
   @override
   Widget build(BuildContext context) {
-    final textC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
+    final textC = AppColors.textSub(context);
     return Row(children: [
       Container(width: 6, height: 6,
           decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle)),
@@ -471,204 +473,6 @@ class _RouteRow extends StatelessWidget {
   }
 }
 
-// ── Page de détail ──────────────────────────────────────────────
-class _HistoryDetailPage extends StatelessWidget {
-  const _HistoryDetailPage({required this.item});
-  final HistoryModel item;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark    = Theme.of(context).brightness == Brightness.dark;
-    final bg        = isDark ? AppColors.bgDark : AppColors.bgLight;
-    final cardBg    = isDark ? AppColors.bgDarkSurface : Colors.white;
-    final border    = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC    = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC      = isDark ? AppColors.textDarkSub  : AppColors.textLightSub;
-    final primary   = AppColors.emeraldPrimary;
-
-    final statusColor = item.status == HistoryStatus.completed ? AppColors.success
-        : item.status == HistoryStatus.cancelled ? AppColors.error : AppColors.warning;
-    final statusLabel = item.status == HistoryStatus.completed ? "completed".tr
-        : item.status == HistoryStatus.cancelled ? "cancelled".tr : "ongoing_caps".tr;
-    final typeLabel   = item.type == HistoryType.trip ? "moto_taxi".tr : "delivery".tr;
-
-    return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
-        child: Column(children: [
-          // ── AppBar ─────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: Row(children: [
-              GestureDetector(
-                onTap: Get.back,
-                child: Container(
-                  width: 42, height: 42,
-                  decoration: BoxDecoration(
-                    color:        cardBg,
-                    borderRadius: BorderRadius.circular(14),
-                    border:       Border.all(color: border, width: 1.5),
-                  ),
-                  child: Center(child: FaIcon(FontAwesomeIcons.arrowLeft, color: titleC, size: 16)),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("$typeLabel · ${item.id}",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.5)),
-                const SizedBox(height: 2),
-                Text(item.groupDate,
-                    style: TextStyle(fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
-              ]),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color:        statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(statusLabel,
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: statusColor, letterSpacing: 0.5)),
-              ),
-            ]),
-          ),
-
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(children: [
-                const SizedBox(height: 8),
-
-                // ── Coursier ──────────────────────────────
-                _DetailCard(cardBg: cardBg, border: border, isDark: isDark, child: Row(children: [
-                  Container(
-                    width: 60, height: 60,
-                    decoration: BoxDecoration(
-                      color:  primary.withValues(alpha: 0.1), 
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(child: FaIcon(FontAwesomeIcons.userLarge, color: primary, size: 24)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(item.courierName,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: titleC, letterSpacing: -0.2)),
-                    const SizedBox(height: 4),
-                    Text(item.courierVehicle,
-                        style: TextStyle(fontSize: 13, color: subC, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color:        AppColors.neonYellow.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        FaIcon(FontAwesomeIcons.solidStar, color: isDark ? AppColors.neonYellow : AppColors.warning, size: 10),
-                        const SizedBox(width: 6),
-                        Text("${item.courierRating}",
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: isDark ? AppColors.neonYellow : AppColors.darkGreenBase)),
-                      ]),
-                    ),
-                  ])),
-                ])),
-                const SizedBox(height: 16),
-
-                // ── Trajet ────────────────────────────────
-                _DetailCard(cardBg: cardBg, border: border, isDark: isDark, child: Column(children: [
-                  _DetailRouteRow(dot: AppColors.success, label: item.title.split(" → ")[0], titleC: titleC),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4.5),
-                    child: Container(width: 1.5, height: 24, color: border),
-                  ),
-                  _DetailRouteRow(
-                    dot: AppColors.error,
-                    label: item.title.split(" → ").length > 1 ? item.title.split(" → ")[1] : '',
-                    titleC: titleC,
-                  ),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text("total_price".tr, style: TextStyle(fontSize: 11, color: subC, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
-                      Text(item.formattedPrice,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primary, letterSpacing: -0.5)),
-                    ]),
-                  ),
-                ])),
-                const SizedBox(height: 16),
-
-                // ── Annulation ────────────────────────────
-                if (item.status == HistoryStatus.cancelled)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color:        AppColors.error.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(20),
-                      border:       Border.all(color: AppColors.error.withValues(alpha: 0.2), width: 1.5),
-                    ),
-                    child: Row(children: [
-                      const FaIcon(FontAwesomeIcons.circleXmark, color: AppColors.error, size: 18),
-                      const SizedBox(width: 12),
-                      Text("cancelled_by_user".tr,
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.error, letterSpacing: 0.5)),
-                    ]),
-                  ),
-                const SizedBox(height: 24),
-
-                // ── Support ───────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: titleC,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side:            BorderSide(color: border, width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: () {},
-                    icon:  const FaIcon(FontAwesomeIcons.headset, size: 16),
-                    label: Text("help".tr,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-                  ),
-                ),
-              ]),
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-}
-
-class _DetailCard extends StatelessWidget {
-  const _DetailCard({required this.cardBg, required this.border, required this.isDark, required this.child});
-  final Color  cardBg, border;
-  final bool isDark;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color:        cardBg,
-        borderRadius: BorderRadius.circular(28),
-        border:       Border.all(color: border, width: 1.5),
-        boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 12, offset: const Offset(0, 6)),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
 class _DetailRouteRow extends StatelessWidget {
   const _DetailRouteRow({required this.dot, required this.label, required this.titleC});
   final Color  dot, titleC;
@@ -677,9 +481,9 @@ class _DetailRouteRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Container(width: 10, height: 10,
+      Container(width: 8, height: 8,
           decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
-      const SizedBox(width: 14),
+      const SizedBox(width: 12),
       Expanded(child: Text(label,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: titleC),
           maxLines: 1, overflow: TextOverflow.ellipsis)),

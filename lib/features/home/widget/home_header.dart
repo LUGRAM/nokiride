@@ -3,15 +3,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../wallet/controller/wallet_controller.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
     super.key,
-    this.userName   = 'Noki',
-    this.location   = 'Libreville, Akanda',
+    this.userName   = 'Utilisateur',
+    this.location   = 'Libreville, Gabon',
     this.notifCount = 0,
     this.onNotifTap,
     this.onAvatarTap,
+    this.onWalletTap,
   });
 
   final String        userName;
@@ -19,44 +21,58 @@ class HomeHeader extends StatelessWidget {
   final int           notifCount;
   final VoidCallback? onNotifTap;
   final VoidCallback? onAvatarTap;
+  final VoidCallback? onWalletTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final titleC = AppColors.textPrimary(context);
+    final walletController = Get.find<WalletController>();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-      child: Row(
+      child: Column(
         children: [
-          _Avatar(
-            initials: _initials(userName),
-            isDark: isDark,
-            onTap: onAvatarTap,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _LocationRow(location: location, isDark: isDark),
-                const SizedBox(height: 2),
-                Text(
-                  _greetingMessage(userName),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.6,
-                    fontSize: 20,
-                  ),
+          Row(
+            children: [
+              _Avatar(
+                initials: _initials(userName),
+                isDark: isDark,
+                onTap: onAvatarTap,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _LocationRow(location: location, isDark: isDark),
+                    const SizedBox(height: 2),
+                    Text(
+                      _greetingMessage(userName),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.6,
+                        fontSize: 20,
+                        color: titleC,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          _NotifButton(
-            count: notifCount,
-            isDark: isDark,
-            onTap: onNotifTap,
+              ),
+              const SizedBox(width: 8),
+              _WalletChip(
+                controller: walletController,
+                isDark: isDark,
+                onTap: onWalletTap,
+              ),
+              const SizedBox(width: 8),
+              _NotifButton(
+                count: notifCount,
+                isDark: isDark,
+                onTap: onNotifTap,
+              ),
+            ],
           ),
         ],
       ),
@@ -110,9 +126,9 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg     = isDark ? AppColors.bgDarkElevated   : AppColors.primaryGreenFill;
-    final border = isDark ? AppColors.borderDark        : AppColors.borderLight;
-    final fg     = isDark ? AppColors.neonYellow        : AppColors.emeraldPrimary;
+    final bg     = isDark ? const Color(0xFF182229) : const Color(0xFFE8F5E9);
+    final border = AppColors.divider(context);
+    final fg     = isDark ? AppColors.accentDark : AppColors.success;
 
     return GestureDetector(
       onTap: onTap,
@@ -122,7 +138,7 @@ class _Avatar extends StatelessWidget {
         decoration: BoxDecoration(
           color:  bg,
           shape:  BoxShape.circle,
-          border: Border.all(color: border, width: 1.5),
+          border: Border.all(color: border, width: 0.5),
         ),
         child: Center(
           child: Text(
@@ -134,6 +150,56 @@ class _Avatar extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Wallet Chip
+// ─────────────────────────────────────────────────────────────
+class _WalletChip extends StatelessWidget {
+  const _WalletChip({
+    required this.controller,
+    required this.isDark,
+    this.onTap,
+  });
+
+  final WalletController controller;
+  final bool             isDark;
+  final VoidCallback?    onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg     = isDark ? const Color(0xFF182229) : AppColors.success.withValues(alpha: 0.1);
+    final border = isDark ? AppColors.borderDark : AppColors.success.withValues(alpha: 0.2);
+    final fg     = isDark ? AppColors.accentDark : AppColors.success;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color:        bg,
+          borderRadius: BorderRadius.circular(12),
+          border:       Border.all(color: border, width: 1),
+        ),
+        child: Row(
+          children: [
+            FaIcon(FontAwesomeIcons.wallet, size: 12, color: fg),
+            const SizedBox(width: 8),
+            Obx(() => Text(
+              controller.balanceVisible.value 
+                  ? "${controller.balance.value} F"
+                  : "•••• F",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: fg,
+              ),
+            )),
+          ],
         ),
       ),
     );
@@ -191,9 +257,9 @@ class _NotifButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg     = isDark ? AppColors.bgDarkElevated : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark      : AppColors.borderLight;
-    final fg     = isDark ? AppColors.textDarkSub     : AppColors.textLightSub;
+    final bg     = isDark ? const Color(0xFF182229) : Colors.white;
+    final border = AppColors.divider(context);
+    final fg     = AppColors.textSub(context);
 
     return GestureDetector(
       onTap: onTap,
@@ -205,8 +271,8 @@ class _NotifButton extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color:        bg,
-              borderRadius: BorderRadius.circular(14),
-              border:       Border.all(color: border, width: 1),
+              borderRadius: BorderRadius.circular(10),
+              border:       Border.all(color: border, width: 0.5),
             ),
             child: Center(
               child: FaIcon(

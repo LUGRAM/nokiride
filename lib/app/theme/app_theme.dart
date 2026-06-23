@@ -7,21 +7,20 @@ class AppTheme {
   AppTheme._();
 
   // ─────────────────────────────────────────────
-  // DARK — Premium Organic (Dark Green)
+  // DARK — Charte CEMAC Production (Inspired by Telegram)
   // ─────────────────────────────────────────────
   static ThemeData get dark {
     final base = ThemeData.dark();
 
     return base.copyWith(
       brightness: Brightness.dark,
-
       scaffoldBackgroundColor: AppColors.bgDark,
 
       colorScheme: const ColorScheme.dark(
-        primary:       AppColors.emeraldPrimary,
+        primary:       AppColors.accentDark,
         onPrimary:     Colors.white,
-        secondary:     AppColors.neonYellow,
-        onSecondary:   AppColors.darkGreenBase,
+        secondary:     AppColors.accentDark,
+        onSecondary:   AppColors.bgDark,
         surface:       AppColors.bgDarkSurface,
         onSurface:     AppColors.textDarkPrimary,
         error:         AppColors.error,
@@ -52,60 +51,51 @@ class AppTheme {
         color:        AppColors.bgDarkSurface,
         elevation:    0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.borderDark, width: 1),
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.borderDark, width: 0.5),
         ),
       ),
+
+      dividerColor: AppColors.borderDark,
+      dividerTheme: const DividerThemeData(color: AppColors.borderDark, thickness: 0.5),
 
       inputDecorationTheme: InputDecorationTheme(
         filled:              true,
         fillColor:           AppColors.bgDarkSurface,
         border:              _inputBorder(AppColors.borderDark),
         enabledBorder:       _inputBorder(AppColors.borderDark),
-        focusedBorder:       _inputBorder(AppColors.emeraldPrimary),
+        focusedBorder:       _inputBorder(AppColors.accentDark),
         hintStyle:           const TextStyle(color: AppColors.textDarkMuted, fontSize: 14),
         contentPadding:      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor:  AppColors.emeraldPrimary,
+          backgroundColor:  AppColors.accentDark,
           foregroundColor:  Colors.white,
           elevation:        0,
-          shadowColor:      Colors.transparent,
           minimumSize:      const Size.fromHeight(54),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
-
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor:     AppColors.bgDark,
-        selectedItemColor:   AppColors.neonYellow,
-        unselectedItemColor: AppColors.textDarkMuted,
-        elevation:           0,
-      ),
-
-      dividerColor: AppColors.borderDark,
-      dividerTheme: const DividerThemeData(color: AppColors.borderDark, thickness: 1),
     );
   }
 
   // ─────────────────────────────────────────────
-  // LIGHT — Clean Slate (Slate & Off White)
+  // LIGHT — Charte CEMAC Clean Edition
   // ─────────────────────────────────────────────
   static ThemeData get light {
     final base = ThemeData.light();
 
     return base.copyWith(
       brightness: Brightness.light,
-
       scaffoldBackgroundColor: AppColors.bgLight,
 
       colorScheme: const ColorScheme.light(
-        primary:       AppColors.emeraldPrimary,
+        primary:       AppColors.accentLight,
         onPrimary:     Colors.white,
-        secondary:     AppColors.emeraldPrimary,
+        secondary:     AppColors.accentLight,
         onSecondary:   Colors.white,
         surface:       AppColors.bgLightSurface,
         onSurface:     AppColors.textLightPrimary,
@@ -135,66 +125,46 @@ class AppTheme {
 
       cardTheme: CardThemeData(
         color:        AppColors.bgLightSurface,
-        elevation:    2,
-        shadowColor:  Colors.black.withOpacity(0.05),
+        elevation:    0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.borderLight, width: 1),
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.borderLight, width: 0.5),
         ),
       ),
+
+      dividerColor: AppColors.borderLight,
+      dividerTheme: const DividerThemeData(color: AppColors.borderLight, thickness: 0.5),
 
       inputDecorationTheme: InputDecorationTheme(
         filled:              true,
         fillColor:           AppColors.bgLightSurface,
         border:              _inputBorder(AppColors.borderLight),
         enabledBorder:       _inputBorder(AppColors.borderLight),
-        focusedBorder:       _inputBorder(AppColors.emeraldPrimary),
+        focusedBorder:       _inputBorder(AppColors.accentLight),
         hintStyle:           const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
         contentPadding:      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor:  AppColors.emeraldPrimary,
+          backgroundColor:  AppColors.accentLight,
           foregroundColor:  Colors.white,
           elevation:        0,
-          shadowColor:      Colors.transparent,
           minimumSize:      const Size.fromHeight(54),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
-
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor:     AppColors.bgLightSurface,
-        selectedItemColor:   AppColors.emeraldPrimary,
-        unselectedItemColor: AppColors.textLightMuted,
-        elevation:           0,
-      ),
-
-      dividerColor: AppColors.borderLight,
-      dividerTheme: const DividerThemeData(color: AppColors.borderLight, thickness: 1),
     );
   }
 
-  // ─────────────────────────────────────────────
-  // HELPERS
-  // ─────────────────────────────────────────────
   static TextTheme _buildTextTheme(Color primary, Color secondary) {
     return GoogleFonts.interTextTheme().copyWith(
       displayLarge:  _ts(32, FontWeight.w900, primary),
-      displayMedium: _ts(28, FontWeight.w900, primary),
       headlineLarge: _ts(24, FontWeight.w800, primary),
-      headlineMedium:_ts(20, FontWeight.w800, primary),
-      headlineSmall: _ts(18, FontWeight.w800, primary),
       titleLarge:    _ts(17, FontWeight.w800, primary),
-      titleMedium:   _ts(15, FontWeight.w700, primary),
-      titleSmall:    _ts(13, FontWeight.w700, primary),
       bodyLarge:     _ts(16, FontWeight.w500, primary),
       bodyMedium:    _ts(14, FontWeight.w500, secondary),
-      bodySmall:     _ts(12, FontWeight.w500, secondary),
-      labelLarge:    _ts(14, FontWeight.w800, primary),
-      labelMedium:   _ts(12, FontWeight.w700, primary),
       labelSmall:    _ts(11, FontWeight.w700, secondary),
     );
   }
@@ -203,7 +173,7 @@ class AppTheme {
       TextStyle(fontSize: size, fontWeight: w, color: c, letterSpacing: -0.5);
 
   static OutlineInputBorder _inputBorder(Color color) => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(16),
-    borderSide: BorderSide(color: color, width: 1.5),
+    borderRadius: BorderRadius.circular(12),
+    borderSide: BorderSide(color: color, width: 1.0),
   );
 }

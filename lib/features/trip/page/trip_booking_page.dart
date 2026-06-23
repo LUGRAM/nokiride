@@ -11,8 +11,7 @@ class TripBookingPage extends GetView<TripController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg     = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final bg     = AppColors.background(context);
 
     return Scaffold(
       backgroundColor: bg,
@@ -34,16 +33,14 @@ class TripBookingPage extends GetView<TripController> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    _BackButton(isDark: isDark),
+                    const _BackButton(),
                     const SizedBox(width: 12),
                     Text(
                       'new_ride'.tr,
                       style: TextStyle(
                         fontSize:   18,
                         fontWeight: FontWeight.w800,
-                        color:      isDark
-                            ? AppColors.textDarkPrimary
-                            : AppColors.textLightPrimary,
+                        color:      AppColors.textPrimary(context),
                       ),
                     ),
                   ],
@@ -55,7 +52,7 @@ class TripBookingPage extends GetView<TripController> {
           // ── Bottom sheet de saisie ────────────────────────
           Positioned(
             left: 0, right: 0, bottom: 0,
-            child: _BookingSheet(isDark: isDark),
+            child: const _BookingSheet(),
           ),
         ],
       ),
@@ -67,14 +64,13 @@ class TripBookingPage extends GetView<TripController> {
 // Bottom sheet de saisie
 // ─────────────────────────────────────────────────────────────
 class _BookingSheet extends GetView<TripController> {
-  const _BookingSheet({required this.isDark});
-  final bool isDark;
+  const _BookingSheet();
 
   @override
   Widget build(BuildContext context) {
-    final cardBg  = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border  = isDark ? AppColors.borderDark     : AppColors.borderLight;
-    final primary = isDark ? AppColors.primaryBlue    : AppColors.primaryGreen;
+    final cardBg  = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final primary = AppColors.accent(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -105,7 +101,6 @@ class _BookingSheet extends GetView<TripController> {
 
           // Champ départ
           Obx(() => _AddressField(
-            isDark:       isDark,
             hint:         "pickup_point".tr,
             value:        controller.pickup.value?.name,
             dotColor:     primary,
@@ -125,7 +120,6 @@ class _BookingSheet extends GetView<TripController> {
 
           // Champ destination
           Obx(() => _AddressField(
-            isDark:   isDark,
             hint:     'destination'.tr,
             value:    controller.dropoff.value?.name,
             dotColor: AppColors.success,
@@ -174,7 +168,6 @@ class _BookingSheet extends GetView<TripController> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => AddressSearchSheet(
-        isDark:   isDark,
         isPickup: isPickup,
         onSelect: (place) {
           if (isPickup) {
@@ -193,7 +186,6 @@ class _BookingSheet extends GetView<TripController> {
 // ─────────────────────────────────────────────────────────────
 class _AddressField extends StatelessWidget {
   const _AddressField({
-    required this.isDark,
     required this.hint,
     required this.dotColor,
     required this.onTap,
@@ -201,7 +193,6 @@ class _AddressField extends StatelessWidget {
     this.onClear,
   });
 
-  final bool         isDark;
   final String       hint;
   final String?      value;
   final Color        dotColor;
@@ -210,9 +201,9 @@ class _AddressField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg    = isDark ? AppColors.bgDarkElevated : AppColors.bgLightInput;
-    final textC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final hintC = isDark ? AppColors.textDarkMuted   : AppColors.textLightMuted;
+    final bg    = AppColors.surface(context);
+    final textC = AppColors.textPrimary(context);
+    final hintC = AppColors.textSub(context);
     final filled = value != null;
 
     return GestureDetector(
@@ -265,13 +256,12 @@ class _AddressField extends StatelessWidget {
 // Bouton retour
 // ─────────────────────────────────────────────────────────────
 class _BackButton extends StatelessWidget {
-  const _BackButton({required this.isDark});
-  final bool isDark;
+  const _BackButton();
 
   @override
   Widget build(BuildContext context) {
-    final bg  = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final fg  = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
+    final bg  = AppColors.surface(context);
+    final fg  = AppColors.textPrimary(context);
     return GestureDetector(
       onTap: () => Get.back(),
       child: Container(

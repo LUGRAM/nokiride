@@ -15,38 +15,26 @@ class HomeSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final bg      = isDark ? AppColors.bgDarkSurface   : AppColors.bgLightSurface;
-    final border  = isDark ? AppColors.borderDark       : AppColors.borderLight;
-    final hintC   = isDark ? AppColors.textDarkMuted    : AppColors.textLightMuted;
-    final dotC    = AppColors.emeraldPrimary;
-    final schedFg = AppColors.emeraldPrimary;
+    final bg      = AppColors.surface(context);
+    final border  = AppColors.divider(context);
+    final hintC   = AppColors.textSub(context);
+    final accent  = AppColors.accent(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
       child: GestureDetector(
         onTap: onSearchTap,
         child: Container(
-          height: 56,
+          height: 52,
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: border, width: 1.5),
-            boxShadow: isDark
-                ? []
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: border, width: 0.5),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              FaIcon(FontAwesomeIcons.magnifyingGlass, color: dotC, size: 18),
+              FaIcon(FontAwesomeIcons.magnifyingGlass, color: accent, size: 18),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -54,14 +42,14 @@ class HomeSearchBar extends StatelessWidget {
                   style: TextStyle(
                     color: hintC,
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: -0.2,
                   ),
                 ),
               ),
               Container(
-                height: 32,
-                width: 1.5,
+                height: 24,
+                width: 0.5,
                 color: border,
                 margin: const EdgeInsets.symmetric(horizontal: 12),
               ),
@@ -73,13 +61,13 @@ class HomeSearchBar extends StatelessWidget {
                     FaIcon(
                       FontAwesomeIcons.solidClock,
                       size: 16,
-                      color: schedFg,
+                      color: accent,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'now'.tr,
                       style: TextStyle(
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+                        color: AppColors.textPrimary(context),
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),

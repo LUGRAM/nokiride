@@ -11,10 +11,8 @@ class GradientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final topColor    = isDark ? AppColors.bgDark         : AppColors.bgLight;
-    final bottomColor = isDark ? AppColors.bgDarkElevated : AppColors.bgLightSurface;
+    final topColor    = AppColors.background(context);
+    final bottomColor = AppColors.surface(context);
 
     return Container(
       decoration: BoxDecoration(

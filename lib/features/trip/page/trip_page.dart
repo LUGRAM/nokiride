@@ -11,8 +11,6 @@ class TripPage extends GetView<TripController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -27,20 +25,20 @@ class TripPage extends GetView<TripController> {
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 20,
-            child: _CircleBackButton(isDark: isDark, onTap: controller.prevStep),
+            child: _CircleBackButton(onTap: controller.prevStep),
           ),
 
           // 3. UI Dynamique (Bottom Sheets)
           Obx(() {
             switch (controller.currentStep.value) {
               case TripStep.destination:
-                return _DestinationSheet(isDark: isDark);
+                return const _DestinationSheet();
               case TripStep.selecting:
-                return _ServiceSelectionSheet(isDark: isDark);
+                return const _ServiceSelectionSheet();
               case TripStep.matching:
-                return _MatchingOverlay(isDark: isDark);
+                return const _MatchingOverlay();
               case TripStep.tracking:
-                return _TrackingSheet(isDark: isDark);
+                return const _TrackingSheet();
             }
           }),
         ],
@@ -53,8 +51,7 @@ class TripPage extends GetView<TripController> {
 // COMPOSANTS ÉCRAN 1 : SAISIE DESTINATION
 // ─────────────────────────────────────────────────────────────
 class _DestinationSheet extends StatelessWidget {
-  const _DestinationSheet({required this.isDark});
-  final bool isDark;
+  const _DestinationSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +62,7 @@ class _DestinationSheet extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface,
+          color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
@@ -76,18 +73,18 @@ class _DestinationSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSearchInput(
+              context,
               icon: FontAwesomeIcons.circleDot,
-              color: AppColors.emeraldPrimary,
+              color: AppColors.accent(context),
               hint: "Position actuelle",
               value: controller.pickup.value?.name ?? "Chargement...",
-              isDark: isDark,
             ),
             const SizedBox(height: 12),
             _buildSearchInput(
+              context,
               icon: FontAwesomeIcons.locationDot,
-              color: AppColors.neonYellow,
+              color: AppColors.accent(context),
               hint: "Où allez-vous ?",
-              isDark: isDark,
               autofocus: true,
               onChanged: controller.searchPlace,
             ),
@@ -96,7 +93,7 @@ class _DestinationSheet extends StatelessWidget {
             // Résultats de recherche
             Obx(() {
               if (controller.searchResults.isEmpty) {
-                return _buildRecentPlaces(isDark);
+                return _buildRecentPlaces(context);
               }
               return ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 300),
@@ -106,9 +103,9 @@ class _DestinationSheet extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final place = controller.searchResults[index];
                     return ListTile(
-                      leading: const FaIcon(FontAwesomeIcons.clockRotateLeft, size: 14, color: AppColors.greyMuted),
-                      title: Text(place.name, style: TextStyle(color: isDark ? Colors.white : AppColors.darkGreenBase, fontWeight: FontWeight.w700)),
-                      subtitle: Text(place.address, style: const TextStyle(fontSize: 12, color: AppColors.greyMuted)),
+                      leading: FaIcon(FontAwesomeIcons.clockRotateLeft, size: 14, color: AppColors.textSub(context)),
+                      title: Text(place.name, style: TextStyle(color: AppColors.textPrimary(context), fontWeight: FontWeight.w700)),
+                      subtitle: Text(place.address, style: TextStyle(fontSize: 12, color: AppColors.textSub(context))),
                       onTap: () => controller.selectDropoff(place),
                     );
                   },
@@ -121,11 +118,11 @@ class _DestinationSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchInput({
+  Widget _buildSearchInput(
+    BuildContext context, {
     required dynamic icon,
     required Color color,
     required String hint,
-    required bool isDark,
     String? value,
     bool autofocus = false,
     Function(String)? onChanged,
@@ -133,9 +130,9 @@ class _DestinationSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.bgDark.withOpacity(0.5) : AppColors.bgLight,
+        color: AppColors.background(context).withOpacity(0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 1.5),
+        border: Border.all(color: AppColors.divider(context), width: 1.5),
       ),
       child: Row(
         children: [
@@ -148,13 +145,13 @@ class _DestinationSheet extends StatelessWidget {
               controller: value != null ? TextEditingController(text: value) : null,
               readOnly: value != null,
               style: TextStyle(
-                color: isDark ? Colors.white : AppColors.darkGreenBase,
+                color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
               ),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: AppColors.greyMuted, fontWeight: FontWeight.w500),
+                hintStyle: TextStyle(color: AppColors.textSub(context), fontWeight: FontWeight.w500),
                 border: InputBorder.none,
               ),
             ),
@@ -164,14 +161,14 @@ class _DestinationSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentPlaces(bool isDark) {
+  Widget _buildRecentPlaces(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("RÉCENT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.greyMuted, letterSpacing: 1.0)),
+        Text("RÉCENT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.textSub(context), letterSpacing: 1.0)),
         const SizedBox(height: 12),
-        _RecentPlaceItem(icon: FontAwesomeIcons.house, title: "Maison", address: "Akanda, Cité de la Caisse", isDark: isDark),
-        _RecentPlaceItem(icon: FontAwesomeIcons.briefcase, title: "Travail", address: "Centre-ville, Immeuble inter-bancaire", isDark: isDark),
+        const _RecentPlaceItem(icon: FontAwesomeIcons.house, title: "Maison", address: "Akanda, Cité de la Caisse"),
+        const _RecentPlaceItem(icon: FontAwesomeIcons.briefcase, title: "Travail", address: "Centre-ville, Immeuble inter-bancaire"),
       ],
     );
   }
@@ -181,8 +178,7 @@ class _DestinationSheet extends StatelessWidget {
 // COMPOSANTS ÉCRAN 2 : SÉLECTION SERVICE
 // ─────────────────────────────────────────────────────────────
 class _ServiceSelectionSheet extends StatelessWidget {
-  const _ServiceSelectionSheet({required this.isDark});
-  final bool isDark;
+  const _ServiceSelectionSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +189,7 @@ class _ServiceSelectionSheet extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface,
+          color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
@@ -202,7 +198,7 @@ class _ServiceSelectionSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: isDark ? AppColors.borderDark : AppColors.borderLight, borderRadius: BorderRadius.circular(10)))),
+            Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: AppColors.divider(context), borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 20),
             
             _ServiceCard(
@@ -211,7 +207,6 @@ class _ServiceSelectionSheet extends StatelessWidget {
               price: "${controller.currentTrip.value?.priceFCFA ?? 0} F",
               desc: "Chauffeur certifié · ${controller.currentTrip.value?.estimatedMinutes ?? 0} min",
               icon: FontAwesomeIcons.motorcycle,
-              isDark: isDark,
             ),
             const SizedBox(height: 12),
             _ServiceCard(
@@ -220,11 +215,10 @@ class _ServiceSelectionSheet extends StatelessWidget {
               price: "${((controller.currentTrip.value?.priceFCFA ?? 0) * 1.5).round()} F",
               desc: "Top-Rated · Casque Premium incl.",
               icon: FontAwesomeIcons.crown,
-              isDark: isDark,
             ),
             
             const SizedBox(height: 24),
-            _buildPaymentAndPromo(isDark),
+            _buildPaymentAndPromo(context),
             const SizedBox(height: 20),
             
             SizedBox(
@@ -232,12 +226,12 @@ class _ServiceSelectionSheet extends StatelessWidget {
               height: 56,
               child: FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.neonYellow,
+                  backgroundColor: AppColors.accent(context),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 onPressed: controller.nextStep,
-                child: const Text("Commander NokiRide", style: TextStyle(color: AppColors.darkGreenBase, fontSize: 16, fontWeight: FontWeight.w900)),
+                child: const Text("Commander NokiRide", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
               ),
             ),
           ],
@@ -246,7 +240,7 @@ class _ServiceSelectionSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentAndPromo(bool isDark) {
+  Widget _buildPaymentAndPromo(BuildContext context) {
     return Row(
       children: [
         // NokiPay
@@ -254,17 +248,17 @@ class _ServiceSelectionSheet extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight,
+              color: AppColors.background(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.emeraldPrimary.withOpacity(0.3)),
+              border: Border.all(color: AppColors.accent(context).withOpacity(0.3)),
             ),
             child: Row(
               children: [
-                const FaIcon(FontAwesomeIcons.wallet, color: AppColors.emeraldPrimary, size: 14),
+                FaIcon(FontAwesomeIcons.wallet, color: AppColors.accent(context), size: 14),
                 const SizedBox(width: 10),
-                Text("NokiPay", style: TextStyle(fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.darkGreenBase, fontSize: 13)),
+                Text("NokiPay", style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textPrimary(context), fontSize: 13)),
                 const Spacer(),
-                const FaIcon(FontAwesomeIcons.chevronRight, color: AppColors.greyMuted, size: 10),
+                FaIcon(FontAwesomeIcons.chevronRight, color: AppColors.textSub(context), size: 10),
               ],
             ),
           ),
@@ -274,10 +268,10 @@ class _ServiceSelectionSheet extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight,
+            color: AppColors.background(context),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const FaIcon(FontAwesomeIcons.tag, color: AppColors.neonYellow, size: 14),
+          child: FaIcon(FontAwesomeIcons.tag, color: AppColors.accent(context), size: 14),
         ),
       ],
     );
@@ -288,26 +282,25 @@ class _ServiceSelectionSheet extends StatelessWidget {
 // COMPOSANTS ÉCRAN 3 : MATCHING
 // ─────────────────────────────────────────────────────────────
 class _MatchingOverlay extends StatelessWidget {
-  const _MatchingOverlay({required this.isDark});
-  final bool isDark;
+  const _MatchingOverlay();
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<TripController>();
 
     return Container(
-      color: (isDark ? AppColors.bgDark : Colors.white).withOpacity(0.9),
+      color: AppColors.background(context).withOpacity(0.9),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _RadarAnimation(),
+            const _RadarAnimation(),
             const SizedBox(height: 40),
             Text("Recherche d'un chauffeur...", 
-                style: TextStyle(color: isDark ? Colors.white : AppColors.darkGreenBase, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                style: TextStyle(color: AppColors.textPrimary(context), fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
             const SizedBox(height: 12),
             Text("Moto-Eco vers ${controller.dropoff.value?.name}", 
-                style: const TextStyle(color: AppColors.greyMuted, fontWeight: FontWeight.w500)),
+                style: TextStyle(color: AppColors.textSub(context), fontWeight: FontWeight.w500)),
             const SizedBox(height: 60),
             TextButton(
               onPressed: controller.cancelTrip,
@@ -324,8 +317,7 @@ class _MatchingOverlay extends StatelessWidget {
 // COMPOSANTS ÉCRAN 4 : TRACKING
 // ─────────────────────────────────────────────────────────────
 class _TrackingSheet extends StatelessWidget {
-  const _TrackingSheet({required this.isDark});
-  final bool isDark;
+  const _TrackingSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -334,39 +326,39 @@ class _TrackingSheet extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface,
+          color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: isDark ? AppColors.borderDark : AppColors.borderLight, borderRadius: BorderRadius.circular(10)))),
+            Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: AppColors.divider(context), borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 20),
             Row(
               children: [
                 // Driver Avatar
                 Container(
                   width: 60, height: 60,
-                  decoration: BoxDecoration(color: AppColors.greyMuted.withOpacity(0.2), shape: BoxShape.circle),
-                  child: const Center(child: FaIcon(FontAwesomeIcons.userLarge, color: AppColors.emeraldPrimary)),
+                  decoration: BoxDecoration(color: AppColors.textSub(context).withOpacity(0.2), shape: BoxShape.circle),
+                  child: Center(child: FaIcon(FontAwesomeIcons.userLarge, color: AppColors.accent(context))),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Jean-Pierre M.", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppColors.darkGreenBase)),
+                      Text("Jean-Pierre M.", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.textPrimary(context))),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const FaIcon(FontAwesomeIcons.solidStar, color: AppColors.neonYellow, size: 10),
+                          const FaIcon(FontAwesomeIcons.solidStar, color: AppColors.warning, size: 10),
                           const SizedBox(width: 4),
-                          const Text("4.9", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.greyMuted)),
+                          Text("4.9", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textSub(context))),
                           const SizedBox(width: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: AppColors.emeraldPrimary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                            child: const Text("G-204-BC", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: AppColors.emeraldPrimary)),
+                            decoration: BoxDecoration(color: AppColors.accent(context).withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                            child: Text("G-204-BC", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: AppColors.accent(context))),
                           ),
                         ],
                       ),
@@ -374,9 +366,9 @@ class _TrackingSheet extends StatelessWidget {
                   ),
                 ),
                 // Actions
-                _ActionButton(icon: FontAwesomeIcons.phone, color: AppColors.emeraldPrimary, isDark: isDark),
+                _ActionButton(icon: FontAwesomeIcons.phone, color: AppColors.accent(context)),
                 const SizedBox(width: 10),
-                _ActionButton(icon: FontAwesomeIcons.solidMessage, color: AppColors.emeraldPrimary, isDark: isDark),
+                _ActionButton(icon: FontAwesomeIcons.solidMessage, color: AppColors.accent(context)),
               ],
             ),
             const SizedBox(height: 24),
@@ -403,8 +395,7 @@ class _TrackingSheet extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _CircleBackButton extends StatelessWidget {
-  const _CircleBackButton({required this.isDark, required this.onTap});
-  final bool isDark;
+  const _CircleBackButton({required this.onTap});
   final VoidCallback onTap;
 
   @override
@@ -414,11 +405,11 @@ class _CircleBackButton extends StatelessWidget {
       child: Container(
         width: 44, height: 44,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : Colors.white,
+          color: AppColors.surface(context),
           shape: BoxShape.circle,
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
         ),
-        child: Center(child: FaIcon(FontAwesomeIcons.arrowLeft, size: 16, color: isDark ? Colors.white : AppColors.darkGreenBase)),
+        child: Center(child: FaIcon(FontAwesomeIcons.arrowLeft, size: 16, color: AppColors.textPrimary(context))),
       ),
     );
   }
@@ -431,13 +422,11 @@ class _ServiceCard extends StatelessWidget {
     required this.price,
     required this.desc,
     required this.icon,
-    required this.isDark,
   });
 
   final String id;
   final String title, price, desc;
   final dynamic icon;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -450,10 +439,10 @@ class _ServiceCard extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.emeraldPrimary.withOpacity(0.05) : (isDark ? AppColors.bgDark : Colors.white),
+            color: isSelected ? AppColors.accent(context).withOpacity(0.05) : AppColors.background(context),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? AppColors.neonYellow : (isDark ? AppColors.borderDark : AppColors.borderLight),
+              color: isSelected ? AppColors.accent(context) : AppColors.divider(context),
               width: isSelected ? 2 : 1.5,
             ),
           ),
@@ -461,21 +450,21 @@ class _ServiceCard extends StatelessWidget {
             children: [
               Container(
                 width: 48, height: 48,
-                decoration: BoxDecoration(color: AppColors.emeraldPrimary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                child: Center(child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 20)),
+                decoration: BoxDecoration(color: AppColors.accent(context).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: Center(child: FaIcon(icon, color: AppColors.accent(context), size: 20)),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: isDark ? Colors.white : AppColors.darkGreenBase)),
+                    Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.textPrimary(context))),
                     const SizedBox(height: 4),
-                    Text(desc, style: const TextStyle(fontSize: 12, color: AppColors.greyMuted, fontWeight: FontWeight.w500)),
+                    Text(desc, style: TextStyle(fontSize: 12, color: AppColors.textSub(context), fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
-              Text(price, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppColors.darkGreenBase)),
+              Text(price, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.textPrimary(context))),
             ],
           ),
         ),
@@ -485,10 +474,9 @@ class _ServiceCard extends StatelessWidget {
 }
 
 class _RecentPlaceItem extends StatelessWidget {
-  const _RecentPlaceItem({required this.icon, required this.title, required this.address, required this.isDark});
+  const _RecentPlaceItem({required this.icon, required this.title, required this.address});
   final dynamic icon;
   final String title, address;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -498,16 +486,16 @@ class _RecentPlaceItem extends StatelessWidget {
         children: [
           Container(
             width: 36, height: 36,
-            decoration: BoxDecoration(color: isDark ? AppColors.bgDarkElevated : AppColors.bgLight, shape: BoxShape.circle),
-            child: Center(child: FaIcon(icon, size: 14, color: AppColors.greyMuted)),
+            decoration: BoxDecoration(color: AppColors.surface(context), shape: BoxShape.circle),
+            child: Center(child: FaIcon(icon, size: 14, color: AppColors.textSub(context))),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: isDark ? Colors.white : AppColors.darkGreenBase)),
-                Text(address, style: const TextStyle(fontSize: 12, color: AppColors.greyMuted)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.textPrimary(context))),
+                Text(address, style: TextStyle(fontSize: 12, color: AppColors.textSub(context))),
               ],
             ),
           ),
@@ -518,10 +506,9 @@ class _RecentPlaceItem extends StatelessWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.icon, required this.color, required this.isDark});
+  const _ActionButton({required this.icon, required this.color});
   final dynamic icon;
   final Color color;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -534,6 +521,8 @@ class _ActionButton extends StatelessWidget {
 }
 
 class _RadarAnimation extends StatefulWidget {
+  const _RadarAnimation({super.key});
+
   @override
   State<_RadarAnimation> createState() => _RadarAnimationState();
 }
@@ -556,9 +545,9 @@ class _RadarAnimationState extends State<_RadarAnimation> with SingleTickerProvi
           width: 120, height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.emeraldPrimary.withOpacity(1 - _controller.value), width: _controller.value * 20),
+            border: Border.all(color: AppColors.accent(context).withOpacity(1 - _controller.value), width: _controller.value * 20),
           ),
-          child: const Center(child: FaIcon(FontAwesomeIcons.motorcycle, color: AppColors.emeraldPrimary, size: 30)),
+          child: Center(child: FaIcon(FontAwesomeIcons.motorcycle, color: AppColors.accent(context), size: 30)),
         );
       },
     );

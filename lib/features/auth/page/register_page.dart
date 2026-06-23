@@ -56,10 +56,8 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
+    final titleC = AppColors.textPrimary(context);
+    final subC = AppColors.textSub(context);
     final hintStyle = GoogleFonts.inter(
       color: subC.withValues(alpha: 0.4),
       fontSize: 14,
@@ -95,12 +93,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.emeraldPrimary.withValues(alpha: 0.1),
+                              color: AppColors.accent(context).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.person_add_rounded,
-                              color: AppColors.emeraldPrimary,
+                              color: AppColors.accent(context),
                               size: 32,
                             ),
                           ),
@@ -154,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         color: titleC,
                         fontWeight: FontWeight.w600,
                       ),
-                      cursorColor: AppColors.emeraldPrimary,
+                      cursorColor: AppColors.accent(context),
                       decoration: InputDecoration(
                         hintText: "phone_hint".tr,
                         hintStyle: hintStyle,
@@ -211,7 +209,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           TextSpan(
                             text: "login_btn".tr,
                             style: GoogleFonts.inter(
-                              color: isDark ? AppColors.neonYellow : AppColors.emeraldPrimary,
+                              color: AppColors.accent(context),
                               fontWeight: FontWeight.w800,
                             ),
                             recognizer: TapGestureRecognizer()
