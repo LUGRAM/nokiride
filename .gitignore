@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Laravel backend (independent Git repository)
+/backend/
+
 # Symbolication related
 app.*.symbols
 
