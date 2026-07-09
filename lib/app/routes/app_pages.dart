@@ -4,6 +4,7 @@ import '../../features/auth/bindings/auth_binding.dart';
 import '../../features/auth/page/login_page.dart';
 import '../../features/auth/page/otp_page.dart';
 import '../../features/auth/page/register_page.dart';
+import '../../features/auth/page/forgot_password_page.dart';
 import '../../features/delivery/bindings/delivery_binding.dart';
 import '../../features/delivery/page/delivery_booking_page.dart';
 import '../../features/delivery/page/delivery_estimate_page.dart';
@@ -32,75 +33,98 @@ import 'app_routes.dart';
 
 class AppPages {
   static final routes = [
-    GetPage(name: Routes.splash,
-        page: () => const SplashPage(),
+    GetPage(
+      name: Routes.splash,
+      page: () => const SplashPage(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-    GetPage(name: Routes.onboarding,
-        page: () => const OnboardingPage(),
-        binding: OnboardingBinding(),
-    ),
-    GetPage(name: Routes.login,
-        page: () => const LoginPage(),
-        binding: AuthBinding(),
-        transition: Transition.fadeIn,
+    GetPage(
+      name: Routes.onboarding,
+      page: () => const OnboardingPage(),
+      binding: OnboardingBinding(),
     ),
     GetPage(
-        name: Routes.otp,
-        page: () => const OtpPage(),
-        binding: AuthBinding(),
-        transition: Transition.fadeIn,
+      name: Routes.login,
+      page: () => const LoginPage(),
+      binding: AuthBinding(),
+      transition: Transition.fadeIn,
     ),
-    GetPage(name: Routes.register,
-        page: () => const RegisterPage(),
-        binding: AuthBinding(),
-        transition: Transition.fadeIn,
+    GetPage(
+      name: Routes.otp,
+      page: () => const OtpPage(),
+      binding: AuthBinding(),
+      transition: Transition.fadeIn,
     ),
-    GetPage(name: Routes.home,
+    GetPage(
+      name: Routes.register,
+      page: () => const RegisterPage(),
+      binding: AuthBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: Routes.forgotPassword,
+      page: () => const ForgotPasswordPage(),
+      binding: AuthBinding(),
+    ),
+    GetPage(
+        name: Routes.home,
         page: () => const HomePage(),
         binding: HomeBinding()),
-    GetPage(name: Routes.trip,
+    GetPage(
+        name: Routes.trip,
         page: () => const TripPage(),
         binding: TripBinding()),
-    GetPage(name: Routes.tripEstimate,
+    GetPage(
+        name: Routes.tripEstimate,
         page: () => const TripEstimatePage(),
         binding: TripBinding()),
-    GetPage(name: Routes.tripSearching,
+    GetPage(
+        name: Routes.tripSearching,
         page: () => const TripSearchingPage(),
         binding: TripBinding()),
-    GetPage(name: Routes.tripTracking,
+    GetPage(
+        name: Routes.tripTracking,
         page: () => const TripTrackingPage(),
         binding: TripBinding()),
-    GetPage(name: Routes.tripRating,
+    GetPage(
+        name: Routes.tripRating,
         page: () => const TripRatingPage(),
         binding: TripBinding()),
-    GetPage(name: Routes.delivery,
+    GetPage(
+        name: Routes.delivery,
         page: () => const DeliveryBookingPage(),
         binding: DeliveryBinding()),
-    GetPage(name: Routes.deliveryEstimate,
+    GetPage(
+        name: Routes.deliveryEstimate,
         page: () => const DeliveryEstimatePage(),
         binding: DeliveryBinding()),
-    GetPage(name: Routes.deliverySearching,
+    GetPage(
+        name: Routes.deliverySearching,
         page: () => const DeliverySearchingPage(),
         binding: DeliveryBinding()),
-    GetPage(name: Routes.deliveryTracking,
+    GetPage(
+        name: Routes.deliveryTracking,
         page: () => const DeliveryTrackingPage(),
         binding: DeliveryBinding()),
-    GetPage(name: Routes.market,
+    GetPage(
+        name: Routes.market,
         page: () => const MarketPage(),
         binding: MarketBinding()),
-    GetPage(name: Routes.marketMerchant,
+    GetPage(
+        name: Routes.marketMerchant,
         page: () => const MerchantPage(),
         binding: MarketBinding()),
-    GetPage(name: Routes.marketCart,
+    GetPage(
+        name: Routes.marketCart,
         page: () => const CartPage(),
         binding: MarketBinding()),
-    GetPage(name: Routes.notifications,
-        page: () => const NotificationsPage()),
-    GetPage(name: Routes.wallet,
+    GetPage(name: Routes.notifications, page: () => const NotificationsPage()),
+    GetPage(
+        name: Routes.wallet,
         page: () => const WalletPage(),
         binding: WalletBinding()),
-    GetPage(name: Routes.profile,
+    GetPage(
+        name: Routes.profile,
         page: () => const ProfilePage(),
         binding: ProfileBinding())
   ];

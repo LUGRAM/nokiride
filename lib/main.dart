@@ -14,8 +14,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr_FR', null);
   await GetStorage.init();
-  await GetStorage().erase(); // Cela vide toute la mémoire locale
-
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

@@ -4,6 +4,9 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/network/api_exception.dart';
+import '../../../core/network/services/auth_api_service.dart';
+import '../../../core/storage/app_storage.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -20,25 +23,35 @@ class _SplashPageState extends State<SplashPage>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1000));
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
     _ctrl.forward();
     Future.delayed(const Duration(seconds: 3), _redirect);
   }
 
-  void _redirect() {
+  Future<void> _redirect() async {
     if (_isRouting || !mounted) return;
     _isRouting = true;
     final box = GetStorage();
-    final token = box.read('auth_token');
+    final token = await AppStorage.token;
     final hasSeenOnboarding = box.read('hasSeenOnboarding') ?? false;
 
     if (token != null && token.toString().trim().isNotEmpty) {
-      Get.offAllNamed(Routes.home);
+      try {
+        final data = await AuthApiService().me();
+        await AppStorage.saveUser(
+          Map<String, dynamic>.from(data['user'] as Map),
+        );
+        Get.offAllNamed(Routes.home);
+      } on ApiException {
+        await AppStorage.clearAuth();
+        Get.offAllNamed(Routes.login);
+      }
     } else if (hasSeenOnboarding) {
       Get.offAllNamed(Routes.login);
     } else {
-      Get.offAllNamed(Routes.home);
+      Get.offAllNamed(Routes.onboarding);
     }
   }
 

@@ -5,15 +5,15 @@ import 'package:pinput/pinput.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
 import '../../../app/widgets/gradient_background.dart';
-import '../controller/auth_controller.dart';
+import '../controller/otp_controller.dart';
 
-class OtpPage extends GetView<AuthController> {
+class OtpPage extends GetView<OtpController> {
   const OtpPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    
+
     final accentColor = AppColors.accent(context);
     final titleC = AppColors.textPrimary(context);
     final subC = AppColors.textSub(context);
@@ -48,7 +48,10 @@ class OtpPage extends GetView<AuthController> {
         body: SafeArea(
           child: SingleChildScrollView(
             child: Container(
-              height: size.height - MediaQuery.of(context).padding.top - kToolbarHeight - 20,
+              height: size.height -
+                  MediaQuery.of(context).padding.top -
+                  kToolbarHeight -
+                  20,
               padding: EdgeInsets.symmetric(
                 horizontal: size.width * 0.08,
                 vertical: size.height * 0.02,
@@ -57,7 +60,7 @@ class OtpPage extends GetView<AuthController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  
+
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -82,76 +85,62 @@ class OtpPage extends GetView<AuthController> {
                   ),
                   const SizedBox(height: 8),
                   Obx(() => Text(
-                    "${'code_sent_to'.tr} ${controller.phone.value}",
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      color: subC,
-                      fontWeight: FontWeight.w500,
-                      height: 1.4,
-                    ),
-                  )),
-                  
+                        "${'code_sent_to'.tr} ${controller.phone}",
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: subC,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
+                      )),
+
                   const SizedBox(height: 16),
 
-                  // Badge de Code de Test
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 1),
-                    ),
-                    child: Text(
-                      "test_code_hint".tr,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: accentColor,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  
                   const Spacer(),
 
                   // Saisie du Code PIN (Pinput)
                   Center(
-                    child: Pinput(
-                      length: 4,
-                      defaultPinTheme: defaultPinTheme,
-                      focusedPinTheme: defaultPinTheme.copyWith(
-                        decoration: defaultPinTheme.decoration!.copyWith(
-                          border: Border.all(color: accentColor, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: accentColor.withValues(alpha: 0.08),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                    child: Obx(() => Pinput(
+                          length: controller.otpLength.value,
+                          defaultPinTheme: defaultPinTheme,
+                          focusedPinTheme: defaultPinTheme.copyWith(
+                            decoration: defaultPinTheme.decoration!.copyWith(
+                              border: Border.all(color: accentColor, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withValues(alpha: 0.08),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      onCompleted: (v) {
-                        controller.setOtp(v);
-                        controller.verifyOtp();
-                      },
-                    ),
+                          ),
+                          onCompleted: (v) {
+                            controller.setCode(v);
+                            controller.verify();
+                          },
+                        )),
                   ),
-                  
+
                   const Spacer(),
 
                   // Bouton de Vérification
                   Obx(() => AppButton(
-                    label: controller.isLoading.value ? "verifying".tr : "verify_btn".tr,
-                    loading: controller.isLoading.value,
-                    onTap: controller.verifyOtp,
-                  )),
+                        label: controller.isLoading.value
+                            ? "verifying".tr
+                            : "verify_btn".tr,
+                        loading: controller.isLoading.value,
+                        onTap: controller.verify,
+                      )),
 
                   const SizedBox(height: 24),
 
                   // Renvoyer le Code
                   Center(
                     child: TextButton(
-                      onPressed: controller.isLoading.value ? null : controller.sendOtp,
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : () => controller.send(resend: true),
                       child: Text(
                         "resend_code".tr,
                         style: GoogleFonts.inter(
@@ -162,7 +151,7 @@ class OtpPage extends GetView<AuthController> {
                       ),
                     ),
                   ),
-                  
+
                   const Spacer(flex: 2),
                 ],
               ),

@@ -16,10 +16,10 @@ class TripPage extends GetView<TripController> {
         children: [
           // 1. Fond Carte Stylisée
           Obx(() => MiniMapWidget(
-            pickup: controller.pickup.value,
-            dropoff: controller.dropoff.value,
-            showDriver: controller.currentStep.value == TripStep.tracking,
-          )),
+                pickup: controller.pickup.value,
+                dropoff: controller.dropoff.value,
+                showDriver: controller.currentStep.value == TripStep.tracking,
+              )),
 
           // 2. Bouton Retour Flottant
           Positioned(
@@ -65,7 +65,10 @@ class _DestinationSheet extends StatelessWidget {
           color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
+            BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -5)),
           ],
         ),
         child: Column(
@@ -89,7 +92,7 @@ class _DestinationSheet extends StatelessWidget {
               onChanged: controller.searchPlace,
             ),
             const SizedBox(height: 20),
-            
+
             // Résultats de recherche
             Obx(() {
               if (controller.searchResults.isEmpty) {
@@ -103,9 +106,15 @@ class _DestinationSheet extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final place = controller.searchResults[index];
                     return ListTile(
-                      leading: FaIcon(FontAwesomeIcons.clockRotateLeft, size: 14, color: AppColors.textSub(context)),
-                      title: Text(place.name, style: TextStyle(color: AppColors.textPrimary(context), fontWeight: FontWeight.w700)),
-                      subtitle: Text(place.address, style: TextStyle(fontSize: 12, color: AppColors.textSub(context))),
+                      leading: FaIcon(FontAwesomeIcons.clockRotateLeft,
+                          size: 14, color: AppColors.textSub(context)),
+                      title: Text(place.name,
+                          style: TextStyle(
+                              color: AppColors.textPrimary(context),
+                              fontWeight: FontWeight.w700)),
+                      subtitle: Text(place.address,
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.textSub(context))),
                       onTap: () => controller.selectDropoff(place),
                     );
                   },
@@ -142,7 +151,8 @@ class _DestinationSheet extends StatelessWidget {
             child: TextField(
               autofocus: autofocus,
               onChanged: onChanged,
-              controller: value != null ? TextEditingController(text: value) : null,
+              controller:
+                  value != null ? TextEditingController(text: value) : null,
               readOnly: value != null,
               style: TextStyle(
                 color: AppColors.textPrimary(context),
@@ -151,7 +161,9 @@ class _DestinationSheet extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: TextStyle(color: AppColors.textSub(context), fontWeight: FontWeight.w500),
+                hintStyle: TextStyle(
+                    color: AppColors.textSub(context),
+                    fontWeight: FontWeight.w500),
                 border: InputBorder.none,
               ),
             ),
@@ -165,10 +177,21 @@ class _DestinationSheet extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("RÉCENT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.textSub(context), letterSpacing: 1.0)),
+        Text("RÉCENT",
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textSub(context),
+                letterSpacing: 1.0)),
         const SizedBox(height: 12),
-        const _RecentPlaceItem(icon: FontAwesomeIcons.house, title: "Maison", address: "Akanda, Cité de la Caisse"),
-        const _RecentPlaceItem(icon: FontAwesomeIcons.briefcase, title: "Travail", address: "Centre-ville, Immeuble inter-bancaire"),
+        const _RecentPlaceItem(
+            icon: FontAwesomeIcons.house,
+            title: "Maison",
+            address: "Akanda, Cité de la Caisse"),
+        const _RecentPlaceItem(
+            icon: FontAwesomeIcons.briefcase,
+            title: "Travail",
+            address: "Centre-ville, Immeuble inter-bancaire"),
       ],
     );
   }
@@ -192,47 +215,69 @@ class _ServiceSelectionSheet extends StatelessWidget {
           color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
+            BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -5)),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: AppColors.divider(context), borderRadius: BorderRadius.circular(10)))),
+            Center(
+                child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: AppColors.divider(context),
+                        borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 20),
-            
             _ServiceCard(
               id: 'eco',
               title: "Moto-Eco",
               price: "${controller.currentTrip.value?.priceFCFA ?? 0} F",
-              desc: "Chauffeur certifié · ${controller.currentTrip.value?.estimatedMinutes ?? 0} min",
+              desc:
+                  "Chauffeur certifié · ${controller.currentTrip.value?.estimatedMinutes ?? 0} min",
               icon: FontAwesomeIcons.motorcycle,
             ),
             const SizedBox(height: 12),
             _ServiceCard(
               id: 'premium',
               title: "Moto-Premium",
-              price: "${((controller.currentTrip.value?.priceFCFA ?? 0) * 1.5).round()} F",
+              price:
+                  "${((controller.currentTrip.value?.priceFCFA ?? 0) * 1.5).round()} F",
               desc: "Top-Rated · Casque Premium incl.",
               icon: FontAwesomeIcons.crown,
             ),
-            
             const SizedBox(height: 24),
             _buildPaymentAndPromo(context),
             const SizedBox(height: 20),
-            
             SizedBox(
               width: double.infinity,
               height: 56,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.accent(context),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                onPressed: controller.nextStep,
-                child: const Text("Commander NokiRide", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
-              ),
+              child: Obx(() => FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.accent(context),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    onPressed: controller.isConfirming.value
+                        ? null
+                        : controller.nextStep,
+                    child: controller.isConfirming.value
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2.4, color: Colors.white),
+                          )
+                        : const Text("Commander NokiRide",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900)),
+                  )),
             ),
           ],
         ),
@@ -250,15 +295,22 @@ class _ServiceSelectionSheet extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.background(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.accent(context).withOpacity(0.3)),
+              border:
+                  Border.all(color: AppColors.accent(context).withOpacity(0.3)),
             ),
             child: Row(
               children: [
-                FaIcon(FontAwesomeIcons.wallet, color: AppColors.accent(context), size: 14),
+                FaIcon(FontAwesomeIcons.wallet,
+                    color: AppColors.accent(context), size: 14),
                 const SizedBox(width: 10),
-                Text("NokiPay", style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textPrimary(context), fontSize: 13)),
+                Text("NokiPay",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary(context),
+                        fontSize: 13)),
                 const Spacer(),
-                FaIcon(FontAwesomeIcons.chevronRight, color: AppColors.textSub(context), size: 10),
+                FaIcon(FontAwesomeIcons.chevronRight,
+                    color: AppColors.textSub(context), size: 10),
               ],
             ),
           ),
@@ -271,7 +323,8 @@ class _ServiceSelectionSheet extends StatelessWidget {
             color: AppColors.background(context),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: FaIcon(FontAwesomeIcons.tag, color: AppColors.accent(context), size: 14),
+          child: FaIcon(FontAwesomeIcons.tag,
+              color: AppColors.accent(context), size: 14),
         ),
       ],
     );
@@ -296,15 +349,26 @@ class _MatchingOverlay extends StatelessWidget {
           children: [
             const _RadarAnimation(),
             const SizedBox(height: 40),
-            Text("Recherche d'un chauffeur...", 
-                style: TextStyle(color: AppColors.textPrimary(context), fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+            Text("Recherche d'un chauffeur...",
+                style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5)),
             const SizedBox(height: 12),
-            Text("Moto-Eco vers ${controller.dropoff.value?.name}", 
-                style: TextStyle(color: AppColors.textSub(context), fontWeight: FontWeight.w500)),
+            Text("Moto-Eco vers ${controller.dropoff.value?.name}",
+                style: TextStyle(
+                    color: AppColors.textSub(context),
+                    fontWeight: FontWeight.w500)),
             const SizedBox(height: 60),
             TextButton(
               onPressed: controller.cancelTrip,
-              child: const Text("ANNULER LA COURSE", style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.0)),
+              child: const Text("ANNULER LA COURSE",
+                  style: TextStyle(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                      letterSpacing: 1.0)),
             ),
           ],
         ),
@@ -332,33 +396,61 @@ class _TrackingSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: AppColors.divider(context), borderRadius: BorderRadius.circular(10)))),
+            Center(
+                child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: AppColors.divider(context),
+                        borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 20),
             Row(
               children: [
                 // Driver Avatar
                 Container(
-                  width: 60, height: 60,
-                  decoration: BoxDecoration(color: AppColors.textSub(context).withOpacity(0.2), shape: BoxShape.circle),
-                  child: Center(child: FaIcon(FontAwesomeIcons.userLarge, color: AppColors.accent(context))),
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                      color: AppColors.textSub(context).withOpacity(0.2),
+                      shape: BoxShape.circle),
+                  child: Center(
+                      child: FaIcon(FontAwesomeIcons.userLarge,
+                          color: AppColors.accent(context))),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Jean-Pierre M.", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.textPrimary(context))),
+                      Text("Jean-Pierre M.",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              color: AppColors.textPrimary(context))),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const FaIcon(FontAwesomeIcons.solidStar, color: AppColors.warning, size: 10),
+                          const FaIcon(FontAwesomeIcons.solidStar,
+                              color: AppColors.warning, size: 10),
                           const SizedBox(width: 4),
-                          Text("4.9", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textSub(context))),
+                          Text("4.9",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13,
+                                  color: AppColors.textSub(context))),
                           const SizedBox(width: 12),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: AppColors.accent(context).withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                            child: Text("G-204-BC", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: AppColors.accent(context))),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                                color:
+                                    AppColors.accent(context).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6)),
+                            child: Text("G-204-BC",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 11,
+                                    color: AppColors.accent(context))),
                           ),
                         ],
                       ),
@@ -366,9 +458,13 @@ class _TrackingSheet extends StatelessWidget {
                   ),
                 ),
                 // Actions
-                _ActionButton(icon: FontAwesomeIcons.phone, color: AppColors.accent(context)),
+                _ActionButton(
+                    icon: FontAwesomeIcons.phone,
+                    color: AppColors.accent(context)),
                 const SizedBox(width: 10),
-                _ActionButton(icon: FontAwesomeIcons.solidMessage, color: AppColors.accent(context)),
+                _ActionButton(
+                    icon: FontAwesomeIcons.solidMessage,
+                    color: AppColors.accent(context)),
               ],
             ),
             const SizedBox(height: 24),
@@ -376,11 +472,15 @@ class _TrackingSheet extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                const FaIcon(FontAwesomeIcons.shieldHalved, color: AppColors.error, size: 16),
+                const FaIcon(FontAwesomeIcons.shieldHalved,
+                    color: AppColors.error, size: 16),
                 const SizedBox(width: 10),
-                const Text("Sécurité & Bouton SOS", style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.error)),
+                const Text("Sécurité & Bouton SOS",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: AppColors.error)),
                 const Spacer(),
-                FaIcon(FontAwesomeIcons.chevronRight, color: AppColors.error.withOpacity(0.5), size: 12),
+                FaIcon(FontAwesomeIcons.chevronRight,
+                    color: AppColors.error.withOpacity(0.5), size: 12),
               ],
             ),
           ],
@@ -403,13 +503,18 @@ class _CircleBackButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44, height: 44,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: AppColors.surface(context),
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)
+          ],
         ),
-        child: Center(child: FaIcon(FontAwesomeIcons.arrowLeft, size: 16, color: AppColors.textPrimary(context))),
+        child: Center(
+            child: FaIcon(FontAwesomeIcons.arrowLeft,
+                size: 16, color: AppColors.textPrimary(context))),
       ),
     );
   }
@@ -439,32 +544,53 @@ class _ServiceCard extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.accent(context).withOpacity(0.05) : AppColors.background(context),
+            color: isSelected
+                ? AppColors.accent(context).withOpacity(0.05)
+                : AppColors.background(context),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? AppColors.accent(context) : AppColors.divider(context),
+              color: isSelected
+                  ? AppColors.accent(context)
+                  : AppColors.divider(context),
               width: isSelected ? 2 : 1.5,
             ),
           ),
           child: Row(
             children: [
               Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(color: AppColors.accent(context).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                child: Center(child: FaIcon(icon, color: AppColors.accent(context), size: 20)),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                    color: AppColors.accent(context).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12)),
+                child: Center(
+                    child: FaIcon(icon,
+                        color: AppColors.accent(context), size: 20)),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.textPrimary(context))),
+                    Text(title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            color: AppColors.textPrimary(context))),
                     const SizedBox(height: 4),
-                    Text(desc, style: TextStyle(fontSize: 12, color: AppColors.textSub(context), fontWeight: FontWeight.w500)),
+                    Text(desc,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSub(context),
+                            fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
-              Text(price, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.textPrimary(context))),
+              Text(price,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: AppColors.textPrimary(context))),
             ],
           ),
         ),
@@ -474,7 +600,8 @@ class _ServiceCard extends StatelessWidget {
 }
 
 class _RecentPlaceItem extends StatelessWidget {
-  const _RecentPlaceItem({required this.icon, required this.title, required this.address});
+  const _RecentPlaceItem(
+      {required this.icon, required this.title, required this.address});
   final dynamic icon;
   final String title, address;
 
@@ -485,17 +612,27 @@ class _RecentPlaceItem extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(color: AppColors.surface(context), shape: BoxShape.circle),
-            child: Center(child: FaIcon(icon, size: 14, color: AppColors.textSub(context))),
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+                color: AppColors.surface(context), shape: BoxShape.circle),
+            child: Center(
+                child:
+                    FaIcon(icon, size: 14, color: AppColors.textSub(context))),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.textPrimary(context))),
-                Text(address, style: TextStyle(fontSize: 12, color: AppColors.textSub(context))),
+                Text(title,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: AppColors.textPrimary(context))),
+                Text(address,
+                    style: TextStyle(
+                        fontSize: 12, color: AppColors.textSub(context))),
               ],
             ),
           ),
@@ -513,8 +650,10 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 44, height: 44,
-      decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+      width: 44,
+      height: 44,
+      decoration:
+          BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
       child: Center(child: FaIcon(icon, color: color, size: 16)),
     );
   }
@@ -527,27 +666,41 @@ class _RadarAnimation extends StatefulWidget {
   State<_RadarAnimation> createState() => _RadarAnimationState();
 }
 
-class _RadarAnimationState extends State<_RadarAnimation> with SingleTickerProviderStateMixin {
+class _RadarAnimationState extends State<_RadarAnimation>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat();
   }
+
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
         return Container(
-          width: 120, height: 120,
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.accent(context).withOpacity(1 - _controller.value), width: _controller.value * 20),
+            border: Border.all(
+                color: AppColors.accent(context)
+                    .withOpacity(1 - _controller.value),
+                width: _controller.value * 20),
           ),
-          child: Center(child: FaIcon(FontAwesomeIcons.motorcycle, color: AppColors.accent(context), size: 30)),
+          child: Center(
+              child: FaIcon(FontAwesomeIcons.motorcycle,
+                  color: AppColors.accent(context), size: 30)),
         );
       },
     );

@@ -14,13 +14,13 @@ class ProfilePage extends GetView<ProfileController> {
       final isDark = ThemeService.to.isDark;
 
       // Utilisation des alias dynamiques de AppColors
-      final Color colorBg            = AppColors.background(context);
-      final Color colorSurface       = AppColors.surface(context);
-      final Color colorSlate         = AppColors.accent(context);
-      final Color colorBorder        = AppColors.divider(context);
-      final Color colorTextPrimary   = AppColors.textPrimary(context);
+      final Color colorBg = AppColors.background(context);
+      final Color colorSurface = AppColors.surface(context);
+      final Color colorSlate = AppColors.accent(context);
+      final Color colorBorder = AppColors.divider(context);
+      final Color colorTextPrimary = AppColors.textPrimary(context);
       final Color colorTextSecondary = AppColors.textSub(context);
-      final Color colorError         = AppColors.error;
+      final Color colorError = AppColors.error;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
@@ -38,12 +38,14 @@ class ProfilePage extends GetView<ProfileController> {
                   const SizedBox(height: 24),
 
                   // 1. En-tête Profil
-                  _buildHeader(colorSurface, colorBorder, colorSlate, colorTextPrimary, colorTextSecondary),
+                  _buildHeader(colorSurface, colorBorder, colorSlate,
+                      colorTextPrimary, colorTextSecondary),
 
                   const SizedBox(height: 24),
 
                   // 2. Bloc Statistiques
-                  _buildStatsStrip(colorSurface, colorBorder, colorTextPrimary, colorTextSecondary),
+                  _buildStatsStrip(colorSurface, colorBorder, colorTextPrimary,
+                      colorTextSecondary),
 
                   const SizedBox(height: 24),
 
@@ -54,7 +56,7 @@ class ProfilePage extends GetView<ProfileController> {
                       _buildTile(
                         icon: Icons.person_outline_rounded,
                         label: "Informations personnelles",
-                        onTap: () {},
+                        onTap: () => _showEditProfileSheet(context),
                         colorSlate: colorSlate,
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,
@@ -102,7 +104,8 @@ class ProfilePage extends GetView<ProfileController> {
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,
                       ),
-                      _buildReferralCard(isDark, colorSlate, colorTextPrimary, colorTextSecondary, colorBg),
+                      _buildReferralCard(isDark, colorSlate, colorTextPrimary,
+                          colorTextSecondary, colorBg),
                     ],
                     colorSurface: colorSurface,
                     colorBorder: colorBorder,
@@ -126,8 +129,10 @@ class ProfilePage extends GetView<ProfileController> {
                             value: isDark,
                             onChanged: (_) => controller.toggleTheme(),
                             activeColor: colorSlate,
-                            inactiveThumbColor: isDark ? const Color(0xFF8696A0) : null,
-                            inactiveTrackColor: isDark ? const Color(0xFF222C32) : null,
+                            inactiveThumbColor:
+                                isDark ? const Color(0xFF8696A0) : null,
+                            inactiveTrackColor:
+                                isDark ? const Color(0xFF222C32) : null,
                           ),
                         ),
                       ),
@@ -139,16 +144,21 @@ class ProfilePage extends GetView<ProfileController> {
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,
                         trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF222C32) : colorSlate.withOpacity(0.05),
+                            color: isDark
+                                ? const Color(0xFF222C32)
+                                : colorSlate.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: colorSlate.withOpacity(0.2)),
+                            border:
+                                Border.all(color: colorSlate.withOpacity(0.2)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(controller.isFrench ? "🇫🇷" : "🇬🇧", style: const TextStyle(fontSize: 12)),
+                              Text(controller.isFrench ? "🇫🇷" : "🇬🇧",
+                                  style: const TextStyle(fontSize: 12)),
                               const SizedBox(width: 4),
                               Text(
                                 controller.isFrench ? "FR" : "EN",
@@ -182,8 +192,10 @@ class ProfilePage extends GetView<ProfileController> {
                             value: false,
                             onChanged: (v) {},
                             activeColor: colorSlate,
-                            inactiveThumbColor: isDark ? const Color(0xFF8696A0) : null,
-                            inactiveTrackColor: isDark ? const Color(0xFF222C32) : null,
+                            inactiveThumbColor:
+                                isDark ? const Color(0xFF8696A0) : null,
+                            inactiveTrackColor:
+                                isDark ? const Color(0xFF222C32) : null,
                           ),
                         ),
                       ),
@@ -214,9 +226,12 @@ class ProfilePage extends GetView<ProfileController> {
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,
                         trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF102A22) : const Color(0xFFE8F5E9),
+                            color: isDark
+                                ? const Color(0xFF102A22)
+                                : const Color(0xFFE8F5E9),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -224,7 +239,8 @@ class ProfilePage extends GetView<ProfileController> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: isDark ? colorSlate : const Color(0xFF2E7D32),
+                              color:
+                                  isDark ? colorSlate : const Color(0xFF2E7D32),
                             ),
                           ),
                         ),
@@ -257,11 +273,16 @@ class ProfilePage extends GetView<ProfileController> {
                     onPressed: controller.logout,
                     style: TextButton.styleFrom(foregroundColor: colorError),
                     icon: const Icon(Icons.logout_rounded, size: 18),
-                    label: Text("logout".tr, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    label: Text("logout".tr,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 15)),
                   ),
 
                   const SizedBox(height: 24),
-                  Text("NokiRide v1.0.0", style: TextStyle(fontSize: 11, color: colorTextSecondary.withOpacity(0.4))),
+                  Text("NokiRide v1.0.0",
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: colorTextSecondary.withOpacity(0.4))),
                   const SizedBox(height: 120),
                 ],
               ),
@@ -290,7 +311,8 @@ class ProfilePage extends GetView<ProfileController> {
             border: Border.all(color: colorBorder, width: 2),
           ),
           child: Center(
-            child: Icon(Icons.person_rounded, size: 48, color: colorTextSecondary),
+            child:
+                Icon(Icons.person_rounded, size: 48, color: colorTextSecondary),
           ),
         ),
         const SizedBox(height: 16),
@@ -298,14 +320,21 @@ class ProfilePage extends GetView<ProfileController> {
           final name = controller.userName.value.split('#')[0].trim();
           return Text(
             name.isEmpty ? "Utilisateur" : name,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: colorTextPrimary, letterSpacing: -0.5),
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: colorTextPrimary,
+                letterSpacing: -0.5),
           );
         }),
         const SizedBox(height: 4),
         Obx(() => Text(
-          controller.userPhone.value,
-          style: TextStyle(fontSize: 14, color: colorTextSecondary, fontWeight: FontWeight.w500),
-        )),
+              controller.userPhone.value,
+              style: TextStyle(
+                  fontSize: 14,
+                  color: colorTextSecondary,
+                  fontWeight: FontWeight.w500),
+            )),
       ],
     );
   }
@@ -316,32 +345,225 @@ class ProfilePage extends GetView<ProfileController> {
     Color colorTextPrimary,
     Color colorTextSecondary,
   ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: colorSurface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorBorder),
+    return Obx(() {
+      final isLoading = controller.isLoadingStats.value;
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: colorSurface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colorBorder),
+        ),
+        child: isLoading
+            ? SizedBox(
+                height: 42,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    color: colorTextPrimary,
+                  ),
+                ),
+              )
+            : Row(
+                children: [
+                  _buildStatItem("${controller.totalTrips}", "Courses",
+                      colorTextPrimary, colorTextSecondary),
+                  _buildVerticalDivider(colorBorder),
+                  _buildStatItem(controller.totalSpent, "Dépenses",
+                      colorTextPrimary, colorTextSecondary),
+                  _buildVerticalDivider(colorBorder),
+                  _buildStatItem(controller.memberSince, "Depuis",
+                      colorTextPrimary, colorTextSecondary),
+                ],
+              ),
+      );
+    });
+  }
+
+  void _showEditProfileSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final nameController =
+        TextEditingController(text: controller.userName.value);
+    final phoneController =
+        TextEditingController(text: controller.userPhone.value);
+    final emailController =
+        TextEditingController(text: controller.userEmail.value);
+    final titleC = AppColors.textPrimary(context);
+    final subC = AppColors.textSub(context);
+    final surface = AppColors.surface(context);
+    final border = AppColors.divider(context);
+    final accent = AppColors.accent(context);
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 14,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 18,
+        ),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+          border: Border(top: BorderSide(color: border)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: border,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Informations personnelles',
+                style: TextStyle(
+                  color: titleC,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Le téléphone doit rester au format +24177xxxxxx.',
+                style: TextStyle(color: subC, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              _profileField(
+                controller: nameController,
+                label: 'Nom complet',
+                icon: Icons.person_outline_rounded,
+                titleC: titleC,
+                subC: subC,
+                border: border,
+                accent: accent,
+              ),
+              const SizedBox(height: 10),
+              _profileField(
+                controller: phoneController,
+                label: 'Téléphone',
+                icon: Icons.phone_outlined,
+                titleC: titleC,
+                subC: subC,
+                border: border,
+                accent: accent,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 10),
+              _profileField(
+                controller: emailController,
+                label: 'Email',
+                icon: Icons.email_outlined,
+                titleC: titleC,
+                subC: subC,
+                border: border,
+                accent: accent,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: Obx(() => FilledButton(
+                      onPressed: controller.isSavingProfile.value
+                          ? null
+                          : () => controller.updateProfile(
+                                name: nameController.text,
+                                phone: phoneController.text,
+                                email: emailController.text,
+                              ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: accent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: controller.isSavingProfile.value
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Enregistrer',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                    )),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Row(
-        children: [
-          _buildStatItem("${controller.totalTrips}", "Courses", colorTextPrimary, colorTextSecondary),
-          _buildVerticalDivider(colorBorder),
-          _buildStatItem(controller.totalSpent, "Dépenses", colorTextPrimary, colorTextSecondary),
-          _buildVerticalDivider(colorBorder),
-          _buildStatItem(controller.memberSince, "Depuis", colorTextPrimary, colorTextSecondary),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: isDark ? .55 : .25),
+    ).whenComplete(() {
+      nameController.dispose();
+      phoneController.dispose();
+      emailController.dispose();
+    });
+  }
+
+  Widget _profileField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required Color titleC,
+    required Color subC,
+    required Color border,
+    required Color accent,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: TextStyle(color: titleC, fontSize: 14),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: subC),
+        prefixIcon: Icon(icon, color: subC, size: 20),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: accent),
+        ),
       ),
     );
   }
 
-  Widget _buildStatItem(String value, String label, Color colorTextPrimary, Color colorTextSecondary) {
+  Widget _buildStatItem(String value, String label, Color colorTextPrimary,
+      Color colorTextSecondary) {
     return Expanded(
       child: Column(
         children: [
-          Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: colorTextPrimary)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: colorTextPrimary)),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: colorTextSecondary)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: colorTextSecondary)),
         ],
       ),
     );
@@ -358,13 +580,18 @@ class ProfilePage extends GetView<ProfileController> {
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: colorTextSecondary, letterSpacing: 1.1),
+          style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: colorTextSecondary,
+              letterSpacing: 1.1),
         ),
       ),
     );
   }
 
-  Widget _buildGroupedBlock(List<Widget> tiles, {required Color colorSurface, required Color colorBorder}) {
+  Widget _buildGroupedBlock(List<Widget> tiles,
+      {required Color colorSurface, required Color colorBorder}) {
     return Container(
       decoration: BoxDecoration(
         color: colorSurface,
@@ -377,7 +604,11 @@ class ProfilePage extends GetView<ProfileController> {
             children: [
               tiles[index],
               if (index < tiles.length - 1)
-                Divider(height: 0.5, thickness: 0.5, color: colorBorder, indent: 52),
+                Divider(
+                    height: 0.5,
+                    thickness: 0.5,
+                    color: colorBorder,
+                    indent: 52),
             ],
           );
         }),
@@ -400,11 +631,19 @@ class ProfilePage extends GetView<ProfileController> {
       visualDensity: VisualDensity.compact,
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: colorSlate.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+            color: colorSlate.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8)),
         child: Icon(icon, size: 18, color: colorSlate),
       ),
-      title: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colorTextPrimary)),
-      trailing: trailing ?? Icon(Icons.chevron_right_rounded, size: 18, color: colorTextSecondary),
+      title: Text(label,
+          style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: colorTextPrimary)),
+      trailing: trailing ??
+          Icon(Icons.chevron_right_rounded,
+              size: 18, color: colorTextSecondary),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12),
     );
   }
@@ -425,7 +664,8 @@ class ProfilePage extends GetView<ProfileController> {
       ),
       child: Row(
         children: [
-          Icon(Icons.card_giftcard_rounded, color: isDark ? colorSlate : const Color(0xFF2E7D32), size: 22),
+          Icon(Icons.card_giftcard_rounded,
+              color: isDark ? colorSlate : const Color(0xFF2E7D32), size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -434,25 +674,38 @@ class ProfilePage extends GetView<ProfileController> {
               children: [
                 Text(
                   "Gagnez des réductions !",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: colorTextPrimary, height: 1.2),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: colorTextPrimary,
+                      height: 1.2),
                 ),
                 Text(
                   "Invitez vos proches sur l'application.",
-                  style: TextStyle(fontSize: 11, color: colorTextSecondary, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: colorTextSecondary,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
           ),
           ElevatedButton.icon(
             onPressed: () {},
-            icon: Icon(Icons.share_rounded, size: 12, color: isDark ? colorBg : Colors.white),
-            label: Text("Partager", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? colorBg : Colors.white)),
+            icon: Icon(Icons.share_rounded,
+                size: 12, color: isDark ? colorBg : Colors.white),
+            label: Text("Partager",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? colorBg : Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: isDark ? colorSlate : const Color(0xFF1E3A2F),
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
               minimumSize: const Size(0, 32),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6)),
             ),
           ),
         ],

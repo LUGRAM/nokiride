@@ -26,6 +26,8 @@ lib/
     ├── wallet/           Portefeuille + recharge
     ├── profile/          Profil + settings
     └── notifications/    Centre de notifications
+backend/
+└── Laravel + Filament     API mobile + administration
 ```
 
 ## Démarrage
@@ -34,6 +36,21 @@ lib/
 flutter pub get
 flutter run
 ```
+
+## Backend Laravel + Filament
+
+```bash
+cd backend
+composer install
+php artisan migrate --seed
+php artisan serve
+```
+
+Admin Filament: `http://127.0.0.1:8000/admin`
+
+Compte de démonstration:
+- Email: `admin@nokiride.local`
+- Mot de passe: `password`
 
 ## Auth (prototype)
 - Code OTP de test : **1234**

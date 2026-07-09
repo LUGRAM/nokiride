@@ -60,7 +60,7 @@ class MarketPage extends GetView<MarketController> {
                   final m = controller.filteredMerchants[i];
                   final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
                   return GestureDetector(
-                    onTap: () { controller.selectMerchant(m.id); Get.toNamed(Routes.marketMerchant); },
+                    onTap: () async { await controller.selectMerchant(m.id); Get.toNamed(Routes.marketMerchant); },
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(color: cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: border)),

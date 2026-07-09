@@ -169,6 +169,10 @@ class _BookingSheet extends GetView<TripController> {
       backgroundColor: Colors.transparent,
       builder: (_) => AddressSearchSheet(
         isPickup: isPickup,
+        onSearch: controller.searchPlace,
+        searchResults: controller.searchResults,
+        isSearching: controller.isSearching,
+        onClearSearch: controller.clearSearch,
         onSelect: (place) {
           if (isPickup) {
             controller.selectPickup(place);

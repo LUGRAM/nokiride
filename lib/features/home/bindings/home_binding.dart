@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import '../../../core/network/services/wallet_api_service.dart';
+import '../../../core/network/services/auth_api_service.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../../history/controller/history_controller.dart';
 import '../../wallet/controller/wallet_controller.dart';
@@ -9,7 +11,15 @@ class HomeBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<HomeController>(() => HomeController(), fenix: true);
     Get.lazyPut<HistoryController>(() => HistoryController(), fenix: true);
-    Get.lazyPut<WalletController>(() => WalletController(), fenix: true);
-    Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
+    Get.lazyPut<AuthApiService>(() => AuthApiService(), fenix: true);
+    Get.lazyPut<WalletApiService>(() => WalletApiService(), fenix: true);
+    Get.lazyPut<WalletController>(
+      () => WalletController(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<ProfileController>(
+      () => ProfileController(Get.find()),
+      fenix: true,
+    );
   }
 }

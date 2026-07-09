@@ -230,6 +230,10 @@ class _DeliverySheet extends GetView<DeliveryController> {
       backgroundColor:    Colors.transparent,
       builder: (_) => AddressSearchSheet(
         isPickup: isPickup,
+        onSearch: controller.searchPlace,
+        searchResults: controller.searchResults,
+        isSearching: controller.isSearching,
+        onClearSearch: controller.clearSearch,
         onSelect: isPickup
             ? controller.selectPickup
             : controller.selectDropoff,

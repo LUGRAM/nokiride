@@ -14,6 +14,13 @@ class PlaceModel {
     required this.lng,
   });
 
+  factory PlaceModel.fromJson(Map<String, dynamic> json) => PlaceModel(
+    name: json['name'] ?? '',
+    address: json['address'] ?? '',
+    lat: double.tryParse('${json['latitude'] ?? json['lat'] ?? 0}') ?? 0,
+    lng: double.tryParse('${json['longitude'] ?? json['lng'] ?? 0}') ?? 0,
+  );
+
   /// Distance haversine en km entre ce lieu et un autre
   double distanceTo(PlaceModel other) {
     const r = 6371.0;

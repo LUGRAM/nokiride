@@ -22,12 +22,10 @@ class NokiBottomNavBar extends StatelessWidget {
     final controller = Get.find<HomeController>();
     final isDark     = Theme.of(context).brightness == Brightness.dark;
 
-    final navBg     = isDark
-        ? AppColors.bgDark.withOpacity(.95)
-        : AppColors.bgLightSurface.withOpacity(.90);
+    final navBg     = AppColors.success;
     final navBorder = isDark
-        ? AppColors.borderDark
-        : AppColors.borderLight;
+        ? AppColors.success.withValues(alpha: 0.2)
+        : AppColors.success.withValues(alpha: 0.1);
 
     return Obx(() {
       final selectedIndex = controller.tabIndex.value;
@@ -90,10 +88,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor   = isDark ? AppColors.neonYellow : AppColors.success;
-    final inactiveColor = isDark
-        ? AppColors.textDarkMuted
-        : AppColors.textLightMuted;
+    final activeColor   = Colors.white;
+    final inactiveColor = Colors.white.withValues(alpha: 0.6);
 
     final rippleColor = activeColor.withOpacity(.10);
 

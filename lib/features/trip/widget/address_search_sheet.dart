@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../controller/trip_controller.dart';
 import '../model/place_model.dart';
 
-class AddressSearchSheet extends GetView<TripController> {
+class AddressSearchSheet extends StatelessWidget {
   const AddressSearchSheet({
     super.key,
     required this.isPickup,
     required this.onSelect,
+    required this.onSearch,
+    required this.searchResults,
+    required this.isSearching,
+    required this.onClearSearch,
   });
 
   final bool                     isPickup;
   final ValueChanged<PlaceModel> onSelect;
+  final ValueChanged<String>     onSearch;
+  final RxList<PlaceModel>       searchResults;
+  final RxBool                   isSearching;
+  final VoidCallback             onClearSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +94,7 @@ class AddressSearchSheet extends GetView<TripController> {
                             isDense:     true,
                             contentPadding: EdgeInsets.zero,
                           ),
-                          onChanged: controller.searchPlace,
+                          onChanged: onSearch,
                         ),
                       ),
                     ],
@@ -100,7 +107,7 @@ class AddressSearchSheet extends GetView<TripController> {
 
           // Résultats
           Obx(() {
-            if (controller.isSearching.value) {
+            if (isSearching.value) {
               return Padding(
                 padding: const EdgeInsets.all(20),
                 child: CircularProgressIndicator(
@@ -110,7 +117,7 @@ class AddressSearchSheet extends GetView<TripController> {
               );
             }
 
-            final results = controller.searchResults;
+            final results = searchResults;
 
             if (results.isEmpty) {
               return Padding(
@@ -137,7 +144,7 @@ class AddressSearchSheet extends GetView<TripController> {
                   place:  results[i],
                   onTap:  () {
                     onSelect(results[i]);
-                    controller.clearSearch();
+                    onClearSearch();
                     Get.back();
                   },
                 ),

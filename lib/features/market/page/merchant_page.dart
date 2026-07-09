@@ -17,17 +17,17 @@ class MerchantPage extends GetView<MarketController> {
     final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
-    final merchant = controller.selectedMerchantId.value.isNotEmpty
-        ? merchants.firstWhere((m) => m.id == controller.selectedMerchantId.value)
-        : merchants.first;
-
     return Scaffold(
       backgroundColor: bg,
       body: Stack(
         children: [
           SafeArea(
-            child: Column(
-              children: [
+            child: Obx(() {
+              final merchant = controller.selectedMerchant;
+              if (merchant == null) return const SizedBox.shrink();
+
+              return Column(
+                children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                   child: Row(children: [
@@ -76,7 +76,8 @@ class MerchantPage extends GetView<MarketController> {
                   ),
                 ),
               ],
-            ),
+            );
+            }),
           ),
           // Bouton panier
           Positioned(

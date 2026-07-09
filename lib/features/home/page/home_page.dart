@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../history/page/history_page.dart';
+import '../../profile/controller/profile_controller.dart';
 import '../../profile/page/profile_page.dart';
 import '../../wallet/page/wallet_page.dart';
 import '../controller/home_controller.dart';
@@ -18,32 +19,35 @@ class HomePage extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final Widget dashboardBody = SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            HomeHeader(
-              onAvatarTap: () => controller.tabIndex.value = 3,
-              onWalletTap: () => controller.tabIndex.value = 2,
-            ),
-            const SizedBox(height: 20),
-            const PromoCarousel(),
-            const SizedBox(height: 24),
-            ServiceGridSection(
-              onServiceTap: (id) {
-                if (id == 'moto') Get.toNamed('/trip');
-                if (id == 'envoi') Get.toNamed('/delivery');
-              },
-            ),
-            const SizedBox(height: 24),
-            RecentActivitySection(
-              onSeeAll: () => controller.changeTabIndex(1),
-            ),
-          ],
+    final profileController = Get.find<ProfileController>();
+    final Widget dashboardBody = Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 120, top: 80),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const PromoCarousel(),
+              const SizedBox(height: 24),
+              ServiceGridSection(
+                onServiceTap: (id) {
+                  if (id == 'moto') Get.toNamed('/trip');
+                  if (id == 'envoi') Get.toNamed('/delivery');
+                },
+              ),
+              const SizedBox(height: 24),
+              Obx(() => RecentActivitySection(
+                    activities: profileController.stats.value.recentActivities,
+                    onSeeAll: () => controller.changeTabIndex(1),
+                  )),
+            ],
+          ),
         ),
-      ),
+        HomeHeader(
+          onAvatarTap: () => controller.tabIndex.value = 3,
+        ),
+      ],
     );
 
     final List<Widget> mainPages = [
@@ -59,9 +63,9 @@ class HomePage extends GetView<HomeController> {
         children: [
           // Gère le switch d'écran de manière réactive
           Obx(() => IndexedStack(
-            index: controller.tabIndex.value,
-            children: mainPages,
-          )),
+                index: controller.tabIndex.value,
+                children: mainPages,
+              )),
 
           // Ton BottomNavBar personnalisé flottant ou ancré
           const Positioned(

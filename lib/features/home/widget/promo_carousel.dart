@@ -64,7 +64,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
   void initState() {
     super.initState();
     _frames = widget.frames ?? _defaultFrames;
-    _ctrl   = PageController(viewportFraction: 0.90);
+    _ctrl   = PageController(viewportFraction: 1.0);
     _startAutoPlay();
   }
 
@@ -129,27 +129,30 @@ class _PromoCarouselState extends State<PromoCarousel> {
   Widget build(BuildContext context) {
     if (_frames.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: widget.height,
-          child: PageView.builder(
-            controller:    _ctrl,
-            itemCount:     _frames.length,
-            onPageChanged: (i) => setState(() => _current = i),
-            itemBuilder:   (_, i) => _PromoCard(
-              frame:  _frames[i],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: widget.height,
+            child: PageView.builder(
+              controller:    _ctrl,
+              itemCount:     _frames.length,
+              onPageChanged: (i) => setState(() => _current = i),
+              itemBuilder:   (_, i) => _PromoCard(
+                frame:  _frames[i],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        _DotsIndicator(
-          count:       _frames.length,
-          current:     _current,
-          activeColor: _frames[_current].accentColor,
-        ),
-      ],
+          const SizedBox(height: 10),
+          _DotsIndicator(
+            count:       _frames.length,
+            current:     _current,
+            activeColor: _frames[_current].accentColor,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -165,53 +168,45 @@ class _PromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Dark  : accent teinté sur fond sombre
-    // Light : blanc avec légère teinte accent — PLUS lisible
     final bgBase = isDark
         ? Color.alphaBlend(frame.accentColor.withOpacity(.13), AppColors.surface(context))
         : AppColors.surface(context);
     final border = frame.accentColor.withOpacity(.22);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Material(
-        color:        Colors.transparent,
+    return Material(
+      color:        Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap:        frame.onTap,
         borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap:        frame.onTap,
-          borderRadius: BorderRadius.circular(12),
-          splashColor:  frame.accentColor.withOpacity(.08),
-          child: Ink(
-            decoration: BoxDecoration(
-              color:        bgBase,
-              borderRadius: BorderRadius.circular(12),
-              border:       Border.all(color: border, width: 1),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Image droite ou icône fallback
-                  if (frame.hasImage)
-                    _ImagePanel(frame: frame)
-                  else
-                    _IconPanel(frame: frame),
+        splashColor:  frame.accentColor.withOpacity(.08),
+        child: Ink(
+          decoration: BoxDecoration(
+            color:        bgBase,
+            borderRadius: BorderRadius.circular(12),
+            border:       Border.all(color: border, width: 1),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (frame.hasImage)
+                  _ImagePanel(frame: frame)
+                else
+                  _IconPanel(frame: frame),
 
-                  // Dégradé — opacité adaptée au thème
-                  if (frame.hasImage)
-                    _GradientOverlay(color: bgBase),
+                if (frame.hasImage)
+                  _GradientOverlay(color: bgBase),
 
-                  // Textes gauche
-                  Positioned(
-                    left:   18,
-                    top:    14,
-                    bottom: 14,
-                    width:  185,
-                    child: _TextContent(frame: frame),
-                  ),
-                ],
-              ),
+                Positioned(
+                  left:   18,
+                  top:    14,
+                  bottom: 14,
+                  width:  185,
+                  child: _TextContent(frame: frame),
+                ),
+              ],
             ),
           ),
         ),
@@ -290,8 +285,6 @@ class _GradientOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Light : dégradé surface très opaque → transparent
-    // Dark  : dégradé couleur accent → transparent
     final opaqueColor  = isDark ? color : AppColors.surface(context);
     final stops        = isDark
         ? const [0.0, 0.50, 0.72, 1.0]
