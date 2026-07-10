@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/services/wallet_api_service.dart';
 import '../model/wallet_model.dart';
-import '../../home/controller/home_controller.dart';
+import '../../client/home/controller/home_controller.dart';
 import '../../history/controller/history_controller.dart';
 
 class WalletController extends GetxController {
@@ -66,10 +66,10 @@ class WalletController extends GetxController {
     }
   }
 
-  Future<void> recharge(int amount) async {
+  Future<void> recharge(int amount, {String method = 'airtel_money'}) async {
     isLoading.value = true;
     try {
-      final data = await _walletService.requestRecharge(amount, 'airtel_money');
+      final data = await _walletService.requestRecharge(amount, method);
       balance.value =
           int.tryParse('${data['balance_fcfa'] ?? balance.value}') ??
               balance.value;
@@ -91,23 +91,32 @@ class WalletController extends GetxController {
     }
   }
 
-  void sendCredit(int amount, String recipient) {
-    if (balance.value < amount) {
-      Get.snackbar('Erreur', 'Solde insuffisant',
+  Future<void> sendCredit(int amount, String recipientPhone) async {
+    if (amount <= 0 || recipientPhone.trim().isEmpty) {
+      Get.snackbar('Erreur', 'Montant ou destinataire invalide.',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    balance.value -= amount;
-    final newTx = TransactionModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      label: 'Envoi à $recipient',
-      amount: amount,
-      date: DateTime.now(),
-      type: TransactionType.debit,
-    );
-    transactions.insert(0, newTx);
-    Get.snackbar('Succès', 'Envoi de $amount F effectué',
-        snackPosition: SnackPosition.BOTTOM);
+
+    isLoading.value = true;
+    try {
+      final data = await _walletService.transfer(amount, recipientPhone.trim());
+      balance.value =
+          int.tryParse('${data['balance_fcfa'] ?? balance.value}') ??
+              balance.value;
+      transactions.insert(
+        0,
+        _transactionFromJson(
+            Map<String, dynamic>.from(data['transaction'] as Map)),
+      );
+      Get.snackbar('Succès', 'Transfert effectué',
+          snackPosition: SnackPosition.BOTTOM);
+    } on ApiException catch (error) {
+      Get.snackbar('Erreur', error.message,
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   String get formattedBalance {

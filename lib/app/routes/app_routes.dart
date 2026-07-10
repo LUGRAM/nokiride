@@ -5,7 +5,13 @@ abstract class Routes {
   static const otp = '/otp';
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
+  static const resetPassword = '/reset-password';
   static const home = '/home';
+  static const clientHome = '/client/home';
+
+  static const driverDashboard = '/driver/dashboard';
+  static const driverVehicleRegistration = '/driver/vehicle/register';
+  static const driverEarnings = '/driver/earnings';
 
   static const trip = '/trip';
   static const tripEstimate = '/trip/estimate';

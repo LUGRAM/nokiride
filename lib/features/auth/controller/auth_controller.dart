@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
+import '../../../core/models/user_model.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/services/auth_api_service.dart';
 import '../../../core/storage/app_storage.dart';
@@ -19,6 +20,13 @@ class AuthController extends GetxController {
   void setName(String v) => name.value = v;
   void setPassword(String v) => password.value = v;
 
+  String routeForUser(Map<String, dynamic>? userData) {
+    final user = UserModel.fromJson(userData ?? AppStorage.user ?? {});
+    return user.role == UserRole.driver && AppStorage.lastActiveRole == 'driver'
+        ? Routes.driverDashboard
+        : Routes.clientHome;
+  }
+
   Future<bool> login(String phoneVal, String password) async {
     if (!_gabonPhonePattern.hasMatch(phoneVal) || password.isEmpty) {
       return false;
@@ -31,6 +39,11 @@ class AuthController extends GetxController {
       await AppStorage.saveAuth(
         token: data['token'] as String,
         user: Map<String, dynamic>.from(data['user'] as Map),
+      );
+      final user =
+          UserModel.fromJson(Map<String, dynamic>.from(data['user'] as Map));
+      await AppStorage.saveLastActiveRole(
+        user.role == UserRole.driver ? 'driver' : 'client',
       );
       return true;
     } on ApiException catch (error) {
@@ -56,7 +69,8 @@ class AuthController extends GetxController {
         token: data['token'] as String,
         user: Map<String, dynamic>.from(data['user'] as Map),
       );
-      Get.offAllNamed(Routes.home);
+      Get.offAllNamed(
+          routeForUser(Map<String, dynamic>.from(data['user'] as Map)));
     } on ApiException catch (error) {
       lastError.value = error.message;
       Get.snackbar('Erreur', error.message,
@@ -74,5 +88,39 @@ class AuthController extends GetxController {
     }
     await AppStorage.clearAuth();
     Get.offAllNamed(Routes.login);
+  }
+
+  Future<void> switchRole() async {
+    final user = UserModel.fromJson(AppStorage.user ?? {});
+    if (user.role != UserRole.driver) {
+      Get.snackbar(
+        'Espace chauffeur indisponible',
+        'Votre compte n’est pas encore configuré comme chauffeur.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    final isDriverScreen = Get.currentRoute.startsWith('/driver');
+    final nextRole = isDriverScreen ? 'client' : 'driver';
+    try {
+      final response = await _authService.updateActiveRole(nextRole);
+      final serverUser = response['user'];
+      if (serverUser is Map) {
+        await AppStorage.saveUser(Map<String, dynamic>.from(serverUser));
+      }
+    } on ApiException catch (error) {
+      Get.snackbar('Mode non synchronisé', error.message,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      Get.snackbar(
+        'Mode local',
+        'Le serveur est indisponible, le changement est conservé localement.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+    await AppStorage.saveLastActiveRole(nextRole);
+    Get.offAllNamed(
+        nextRole == 'client' ? Routes.clientHome : Routes.driverDashboard);
   }
 }

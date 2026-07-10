@@ -50,9 +50,18 @@ class ApiClient {
   static String get _baseUrl {
     const configuredUrl = String.fromEnvironment('API_BASE_URL');
     if (configuredUrl.isNotEmpty) return configuredUrl;
-    if (kIsWeb) return 'http://127.0.0.1:8000/api/v1';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1';
-    return 'http://127.0.0.1:8000/api/v1';
+
+    const apiHost = String.fromEnvironment(
+      'API_HOST',
+      defaultValue: '192.168.1.74',
+    );
+    const apiPort = String.fromEnvironment('API_PORT', defaultValue: '9000');
+    const apiScheme =
+        String.fromEnvironment('API_SCHEME', defaultValue: 'http');
+
+    if (kIsWeb) return '$apiScheme://$apiHost:$apiPort/api/v1';
+    if (Platform.isAndroid) return '$apiScheme://$apiHost:$apiPort/api/v1';
+    return '$apiScheme://$apiHost:$apiPort/api/v1';
   }
 
   Future<Map<String, dynamic>> get(

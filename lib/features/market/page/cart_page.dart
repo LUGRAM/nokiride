@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/payment_method_selector.dart';
 import '../controller/market_controller.dart';
 
 class CartPage extends GetView<MarketController> {
@@ -125,6 +126,44 @@ class CartPage extends GetView<MarketController> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 14),
+                Obx(() {
+                  final method = paymentMethodByValue(
+                      controller.selectedPaymentMethod.value);
+                  return GestureDetector(
+                    onTap: () async {
+                      final value = await showPaymentMethodSelector(
+                        context: context,
+                        selectedMethod: controller.selectedPaymentMethod.value,
+                      );
+                      if (value != null) controller.selectPaymentMethod(value);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: border),
+                      ),
+                      child: Row(children: [
+                        Icon(method.icon, color: primary, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            method.label,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: titleC),
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            color: subC, size: 20),
+                      ]),
+                    ),
+                  );
+                }),
                 const SizedBox(height: 14),
                 Obx(() => Column(children: [
                       Row(

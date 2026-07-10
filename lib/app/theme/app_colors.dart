@@ -1,58 +1,70 @@
 import 'package:flutter/material.dart';
 
-/// Palette NokiRide — Charte CEMAC Dynamique (Production)
+/// Palette NokiRide — Green Mobility
 class AppColors {
   AppColors._();
 
   // ════════════════════════════════════════════════
-  // DARK THEME (Telegram Redesign Inspired)
+  // BRAND SCALE
   // ════════════════════════════════════════════════
-  static const Color bgDark          = Color(0xFF0B141A); // Fond profond
-  static const Color bgDarkSurface   = Color(0xFF182229); // Blocs / Cartes
-  static const Color borderDark      = Color(0xFF222C32); // Séparateurs
-  static const Color accentDark      = Color(0xFF00A884); // Vert Mint Éclatant
+  static const Color green950 = Color(0xFF0B1220);
+  static const Color green900 = Color(0xFF14532D);
+  static const Color green800 = Color(0xFF15803D);
+  static const Color green700 = Color(0xFF16A34A);
+  static const Color green500 = Color(0xFF22C55E);
+  static const Color green400 = Color(0xFF34D399);
+  static const Color green300 = Color(0xFF4ADE80);
+  static const Color green100 = Color(0xFFDCFCE7);
+
+  // ════════════════════════════════════════════════
+  // DARK THEME
+  // ════════════════════════════════════════════════
+  static const Color bgDark          = Color(0xFF0B1220);
+  static const Color bgDarkSurface   = Color(0xFF111827);
+  static const Color borderDark      = Color(0xFF334155);
+  static const Color accentDark      = green500;
   
-  static const Color textDarkPrimary = Color(0xFFFFFFFF); // Titres
-  static const Color textDarkSub     = Color(0xFF8696A0); // Gris bleuté
-  static const Color textDarkMuted   = Color(0x668696A0);
+  static const Color textDarkPrimary = Color(0xFFE5E7EB);
+  static const Color textDarkSub     = Color(0xFF9CA3AF);
+  static const Color textDarkMuted   = Color(0x999CA3AF);
 
   // ════════════════════════════════════════════════
-  // LIGHT THEME (CEMAC Clean Edition)
+  // LIGHT THEME
   // ════════════════════════════════════════════════
-  static const Color bgLight          = Color(0xFFF5F7F5); // Blanc cassé teinté
-  static const Color bgLightSurface   = Color(0xFFFFFFFF); // Blanc pur
-  static const Color borderLight      = Color(0xFFE0E0E0); // Séparateurs fins
-  static const Color accentLight      = Color(0xFF1E3A2F); // Vert sombre identitaire
+  static const Color bgLight          = Color(0xFFF8FAF8);
+  static const Color bgLightSurface   = Color(0xFFFFFFFF);
+  static const Color borderLight      = Color(0xFFD1D5DB);
+  static const Color accentLight      = green700;
 
-  static const Color textLightPrimary = Color(0xFF1E3A2F); // Anthracite sombre
-  static const Color textLightSub     = Color(0xFF545454); // Noir atténué
-  static const Color textLightMuted   = Color(0xFF9AA3AF);
+  static const Color textLightPrimary = Color(0xFF0F172A);
+  static const Color textLightSub     = Color(0xFF475569);
+  static const Color textLightMuted   = Color(0xFF64748B);
 
   // ════════════════════════════════════════════════
   // SÉMANTIQUE & SERVICES
   // ════════════════════════════════════════════════
-  static const Color success        = Color(0xFF00A884);
-  static const Color warning        = Color(0xFFF2994A);
-  static const Color error          = Color(0xFFEF5350);
+  static const Color success        = green500;
+  static const Color warning        = Color(0xFFF59E0B);
+  static const Color error          = Color(0xFFD95555);
 
-  static const Color serviceMoto    = Color(0xFF00A884);
-  static const Color serviceEnvoi   = Color(0xFF2D9CDB);
-  static const Color serviceMarket  = Color(0xFFF2C94C);
-  static const Color servicePlan    = Color(0xFF9B51E0);
+  static const Color serviceMoto    = green700;
+  static const Color serviceEnvoi   = green400;
+  static const Color serviceMarket  = Color(0xFFEAB308);
+  static const Color servicePlan    = Color(0xFF64748B);
 
-  // Nouvelles couleurs ajoutées pour corriger les erreurs de compilation
-  static const Color emeraldPrimary   = Color(0xFF00A884);
-  static const Color bgLightInput     = Color(0xFFF0F2F5);
-  static const Color primaryBlue      = Color(0xFF2D9CDB);
-  static const Color primaryGreen     = Color(0xFF00A884);
-  static const Color bgDarkElevated   = Color(0xFF1F2C34);
-  static const Color infoFill         = Color(0xFF1F2C34); 
-  static const Color accentBlueFill   = Color(0xFFE3F2FD); 
-  static const Color primaryBlueLight = Color(0xFF2D9CDB);
-  static const Color accentBlueLight  = Color(0xFF1976D2);
-  static const Color neonYellow       = Color(0xFFF2C94C);
-  static const Color darkGreenBase    = Color(0xFF1E3A2F);
-  static const Color darkGreenSurface = Color(0xFF1E3A2F);
+  // Compatibilité avec les écrans existants.
+  static const Color emeraldPrimary   = green700;
+  static const Color bgLightInput     = Color(0xFFF1F5F1);
+  static const Color primaryBlue      = green400;
+  static const Color primaryGreen     = green700;
+  static const Color bgDarkElevated   = Color(0xFF1F2937);
+  static const Color infoFill         = Color(0xFF1F2937); 
+  static const Color accentBlueFill   = green100; 
+  static const Color primaryBlueLight = green400;
+  static const Color accentBlueLight  = green700;
+  static const Color neonYellow       = Color(0xFFEAB308);
+  static const Color darkGreenBase    = green900;
+  static const Color darkGreenSurface = green900;
 
   // Alias pour faciliter le switch dynamique dans le code
   static Color background(BuildContext context) => 

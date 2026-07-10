@@ -117,6 +117,8 @@ class MarketController extends GetxController {
   final RxList<CartItem> cart = <CartItem>[].obs;
   final RxString searchQuery = ''.obs;
   final RxString deliveryAddress = ''.obs;
+  final RxString selectedPaymentMethod = 'noki_pay'.obs;
+  final RxString lastPaymentReference = ''.obs;
   final RxBool isLoading = false.obs;
   final RxBool isOrdering = false.obs;
   final RxList<MerchantModel> merchantList = <MerchantModel>[].obs;
@@ -299,6 +301,7 @@ class MarketController extends GetxController {
       final order = await _marketService.createOrder(
         merchantId: int.parse(merchant.id),
         deliveryAddress: address,
+        paymentMethod: selectedPaymentMethod.value,
         items: cart
             .map((item) => {
                   'product_id': int.parse(item.product.id),
@@ -306,6 +309,7 @@ class MarketController extends GetxController {
                 })
             .toList(),
       );
+      lastPaymentReference.value = '${order['payment_reference'] ?? ''}';
 
       clearCart();
       Get.back();
@@ -328,5 +332,9 @@ class MarketController extends GetxController {
     } finally {
       isOrdering.value = false;
     }
+  }
+
+  void selectPaymentMethod(String method) {
+    selectedPaymentMethod.value = method;
   }
 }

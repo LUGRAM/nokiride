@@ -22,8 +22,9 @@ class TripApiService {
     });
     final data = Map<String, dynamic>.from(response['data'] as Map);
     final payment = response['payment'];
+    data['payment_reference'] = response['payment_reference'];
     if (payment is Map) {
-      data['payment_reference'] = payment['reference'];
+      data['payment_reference'] ??= payment['reference'];
       data['payment_status'] = payment['status'];
     }
     return data;

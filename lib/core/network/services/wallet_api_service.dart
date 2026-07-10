@@ -12,4 +12,10 @@ class WalletApiService {
         'amount_fcfa': amount,
         'method': method,
       });
+
+  Future<Map<String, dynamic>> transfer(int amount, String recipientPhone) =>
+      _client.post('/wallet/transfer', data: {
+        'amount_fcfa': amount,
+        'recipient_phone': recipientPhone,
+      });
 }

@@ -1,5 +1,5 @@
 enum HistoryType { trip, delivery, market }
-enum HistoryStatus { completed, cancelled, inProgress }
+enum HistoryStatus { completed, cancelled, inProgress, pending }
 
 class HistoryModel {
   final String id;

@@ -17,13 +17,21 @@ class MarketApiService {
     required String deliveryAddress,
     required List<Map<String, dynamic>> items,
     String paymentMethod = 'noki_pay',
-  }) async =>
-      Map<String, dynamic>.from(
-        (await _client.post('/market/orders', data: {
-          'merchant_id': merchantId,
-          'delivery_address': deliveryAddress,
-          'items': items,
-          'payment_method': paymentMethod,
-        }))['data'] as Map,
-      );
+  }) async {
+    final response = await _client.post('/market/orders', data: {
+      'merchant_id': merchantId,
+      'delivery_address': deliveryAddress,
+      'items': items,
+      'payment_method': paymentMethod,
+    });
+    final data = Map<String, dynamic>.from(response['data'] as Map);
+    final payment = response['payment'];
+    data['payment_reference'] = response['payment_reference'];
+    if (payment is Map) {
+      data['payment_reference'] ??= payment['reference'];
+      data['payment_status'] = payment['status'];
+      data['payment'] = Map<String, dynamic>.from(payment);
+    }
+    return data;
+  }
 }

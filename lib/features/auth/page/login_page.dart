@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (success) {
-      Get.offAllNamed(Routes.home);
+      Get.offAllNamed(_controller.routeForUser(null));
     } else {
       Get.snackbar(
         "login_failed".tr,

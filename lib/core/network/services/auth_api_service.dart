@@ -36,6 +36,9 @@ class AuthApiService {
 
   Future<Map<String, dynamic>> stats() => _client.get('/auth/stats');
 
+  Future<Map<String, dynamic>> updateActiveRole(String role) =>
+      _client.patch('/auth/active-role', data: {'active_role': role});
+
   Future<void> logout() async {
     await _client.post('/auth/logout');
   }

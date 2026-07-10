@@ -13,7 +13,7 @@ class HistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(HistoryController());
+    final controller = Get.find<HistoryController>();
     final bg         = AppColors.background(context);
     final titleC     = AppColors.textPrimary(context);
     final subC       = AppColors.textSub(context);

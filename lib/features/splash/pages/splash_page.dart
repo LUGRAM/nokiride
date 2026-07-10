@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/models/user_model.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/services/auth_api_service.dart';
 import '../../../core/storage/app_storage.dart';
@@ -43,16 +44,29 @@ class _SplashPageState extends State<SplashPage>
         await AppStorage.saveUser(
           Map<String, dynamic>.from(data['user'] as Map),
         );
-        Get.offAllNamed(Routes.home);
-      } on ApiException {
-        await AppStorage.clearAuth();
-        Get.offAllNamed(Routes.login);
+        Get.offAllNamed(_routeForStoredUser());
+      } on ApiException catch (e) {
+        if (e.message.contains('401') ||
+            e.message.contains('Unauthenticated')) {
+          await AppStorage.clearAuth();
+          Get.offAllNamed(Routes.login);
+        } else {
+          // Erreur réseau probable, on tente d'accéder à l'accueil avec les données locales
+          Get.offAllNamed(_routeForStoredUser());
+        }
       }
     } else if (hasSeenOnboarding) {
       Get.offAllNamed(Routes.login);
     } else {
       Get.offAllNamed(Routes.onboarding);
     }
+  }
+
+  String _routeForStoredUser() {
+    final user = UserModel.fromJson(AppStorage.user ?? {});
+    return user.role == UserRole.driver && AppStorage.lastActiveRole == 'driver'
+        ? Routes.driverDashboard
+        : Routes.clientHome;
   }
 
   @override

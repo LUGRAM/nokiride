@@ -18,8 +18,8 @@ class AppTheme {
 
       colorScheme: const ColorScheme.dark(
         primary:       AppColors.accentDark,
-        onPrimary:     Colors.white,
-        secondary:     AppColors.accentDark,
+        onPrimary:     AppColors.green950,
+        secondary:     AppColors.green400,
         onSecondary:   AppColors.bgDark,
         surface:       AppColors.bgDarkSurface,
         onSurface:     AppColors.textDarkPrimary,
@@ -72,13 +72,32 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor:  AppColors.accentDark,
-          foregroundColor:  Colors.white,
+          foregroundColor:  AppColors.green950,
           elevation:        0,
           minimumSize:      const Size.fromHeight(54),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
+
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.accentDark,
+          foregroundColor: AppColors.green950,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+        ),
+      ),
+
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: AppColors.green300,
+        selectionColor: Color(0x5522C55E),
+        selectionHandleColor: AppColors.green500,
+      ),
+
+      splashColor: AppColors.green500.withValues(alpha: .10),
+      highlightColor: AppColors.green500.withValues(alpha: .06),
     );
   }
 
@@ -95,7 +114,7 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary:       AppColors.accentLight,
         onPrimary:     Colors.white,
-        secondary:     AppColors.accentLight,
+        secondary:     AppColors.green700,
         onSecondary:   Colors.white,
         surface:       AppColors.bgLightSurface,
         onSurface:     AppColors.textLightPrimary,
@@ -155,6 +174,25 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
+
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.accentLight,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+        ),
+      ),
+
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: AppColors.green700,
+        selectionColor: Color(0x44DCFCE7),
+        selectionHandleColor: AppColors.green700,
+      ),
+
+      splashColor: AppColors.green700.withValues(alpha: .08),
+      highlightColor: AppColors.green700.withValues(alpha: .05),
     );
   }
 

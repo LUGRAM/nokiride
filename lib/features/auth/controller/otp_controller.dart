@@ -16,16 +16,18 @@ class OtpController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxInt remainingSeconds = 0.obs;
   final RxInt otpLength = 6.obs;
+  final RxString purpose = 'registration'.obs;
   Timer? _timer;
 
   String get phone => _authController.phone.value;
 
-  Future<void> send({bool resend = false}) async {
+  Future<void> send({bool resend = false, String? newPurpose}) async {
+    if (newPurpose != null) purpose.value = newPurpose;
     isLoading.value = true;
     try {
       final data = resend
-          ? await _repository.resend(phone, 'registration')
-          : await _repository.send(phone, 'registration');
+          ? await _repository.resend(phone, purpose.value)
+          : await _repository.send(phone, purpose.value);
       otpLength.value = int.tryParse('${data['length']}') ?? 6;
       _startCountdown(DateTime.tryParse('${data['expires_at']}'));
       if (!resend) Get.toNamed(Routes.otp);
@@ -42,13 +44,21 @@ class OtpController extends GetxController {
     try {
       final response = await _repository.verify(
         phone,
-        'registration',
+        purpose.value,
         code.value,
       );
       final data = Map<String, dynamic>.from(response['data'] as Map);
-      await _authController.register(
-        otpVerificationToken: data['verification_token'] as String,
-      );
+
+      if (purpose.value == 'registration') {
+        await _authController.register(
+          otpVerificationToken: data['verification_token'] as String,
+        );
+      } else if (purpose.value == 'password_reset') {
+        Get.toNamed(Routes.resetPassword, arguments: {
+          'token': data['verification_token'],
+          'phone': phone,
+        });
+      }
     } on ApiException catch (error) {
       Get.snackbar('Erreur', error.message);
     } finally {

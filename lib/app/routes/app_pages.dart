@@ -5,13 +5,13 @@ import '../../features/auth/page/login_page.dart';
 import '../../features/auth/page/otp_page.dart';
 import '../../features/auth/page/register_page.dart';
 import '../../features/auth/page/forgot_password_page.dart';
-import '../../features/delivery/bindings/delivery_binding.dart';
-import '../../features/delivery/page/delivery_booking_page.dart';
-import '../../features/delivery/page/delivery_estimate_page.dart';
-import '../../features/delivery/page/delivery_searching_page.dart';
-import '../../features/delivery/page/delivery_tracking_page.dart';
-import '../../features/home/bindings/home_binding.dart';
-import '../../features/home/page/home_page.dart';
+import '../../features/client/delivery/bindings/delivery_binding.dart';
+import '../../features/client/delivery/page/delivery_booking_page.dart';
+import '../../features/client/delivery/page/delivery_estimate_page.dart';
+import '../../features/client/delivery/page/delivery_searching_page.dart';
+import '../../features/client/delivery/page/delivery_tracking_page.dart';
+import '../../features/client/home/bindings/home_binding.dart';
+import '../../features/client/home/page/home_page.dart';
 import '../../features/market/bindings/market_binding.dart';
 import '../../features/market/page/cart_page.dart';
 import '../../features/market/page/market_page.dart';
@@ -19,15 +19,19 @@ import '../../features/market/page/merchant_page.dart';
 import '../../features/notifications/page/notifications_page.dart';
 import '../../features/onboarding/bindings/onboarding_binding.dart';
 import '../../features/onboarding/pages/onboarding_page.dart';
-import '../../features/profile/bindings/profile_binding.dart';
-import '../../features/profile/page/profile_page.dart';
+import '../../features/client/profile/bindings/profile_binding.dart';
+import '../../features/client/profile/page/profile_page.dart';
 import '../../features/splash/pages/splash_page.dart';
-import '../../features/trip/bindings/trip_binding.dart';
-import '../../features/trip/page/trip_estimate_page.dart';
-import '../../features/trip/page/trip_page.dart';
-import '../../features/trip/page/trip_rating_page.dart';
-import '../../features/trip/page/trip_searching_page.dart';
-import '../../features/trip/page/trip_tracking_page.dart';
+import '../../features/client/trip/bindings/trip_binding.dart';
+import '../../features/client/trip/page/trip_estimate_page.dart';
+import '../../features/client/trip/page/trip_page.dart';
+import '../../features/client/trip/page/trip_rating_page.dart';
+import '../../features/client/trip/page/trip_searching_page.dart';
+import '../../features/client/trip/page/trip_tracking_page.dart';
+import '../../features/driver/dashboard/bindings/driver_dashboard_binding.dart';
+import '../../features/driver/dashboard/page/driver_dashboard_page.dart';
+import '../../features/driver/earnings/page/driver_earnings_page.dart';
+import '../../features/driver/vehicle/page/vehicle_registration_page.dart';
 import '../../features/wallet/page/wallet_page.dart';
 import 'app_routes.dart';
 
@@ -67,9 +71,31 @@ class AppPages {
       binding: AuthBinding(),
     ),
     GetPage(
+      name: Routes.resetPassword,
+      page: () => const ForgotPasswordPage(),
+      binding: AuthBinding(),
+    ),
+    GetPage(
         name: Routes.home,
         page: () => const HomePage(),
         binding: HomeBinding()),
+    GetPage(
+        name: Routes.clientHome,
+        page: () => const HomePage(),
+        binding: HomeBinding()),
+    GetPage(
+        name: Routes.driverDashboard,
+        page: () => const DriverDashboardPage(),
+        binding: DriverDashboardBinding()),
+    GetPage(
+      name: Routes.driverVehicleRegistration,
+      page: () => const VehicleRegistrationPage(),
+      binding: DriverDashboardBinding(),
+    ),
+    GetPage(
+      name: Routes.driverEarnings,
+      page: () => const DriverEarningsPage(),
+    ),
     GetPage(
         name: Routes.trip,
         page: () => const TripPage(),
