@@ -17,6 +17,15 @@ class AppColors {
   static const Color green100 = Color(0xFFDCFCE7);
 
   // ════════════════════════════════════════════════
+  // PARTNER / SLATE SCALE
+  // ════════════════════════════════════════════════
+  static const Color slate950 = Color(0xFF0F1115);
+  static const Color slate900 = Color(0xFF1A1C1E);
+  static const Color slate800 = Color(0xFF24272B);
+  static const Color slate700 = Color(0xFF33373D);
+  static const Color slateDivider = Color(0xFF2D3139);
+
+  // ════════════════════════════════════════════════
   // DARK THEME
   // ════════════════════════════════════════════════
   static const Color bgDark          = Color(0xFF0B1220);

@@ -32,6 +32,7 @@ class ProfileController extends GetxController {
 
   int get totalTrips => stats.value.totalTrips;
   String get totalSpent => stats.value.formattedSpent;
+  String get totalEarnings => stats.value.formattedSpent;
   String get memberSince => stats.value.formattedMemberSince;
 
   bool get isDark => ThemeService.to.isDark;

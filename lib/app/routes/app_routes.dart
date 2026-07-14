@@ -10,6 +10,7 @@ abstract class Routes {
   static const clientHome = '/client/home';
 
   static const driverDashboard = '/driver/dashboard';
+  static const driverActiveTrip = '/driver/active-trip';
   static const driverVehicleRegistration = '/driver/vehicle/register';
   static const driverEarnings = '/driver/earnings';
 

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../history/page/history_page.dart';
 import '../../profile/controller/profile_controller.dart';
-import '../../profile/page/profile_page.dart';
+import '../../profile/page/client_profile_page.dart';
 import '../../../wallet/page/wallet_page.dart';
 import '../controller/home_controller.dart';
 
@@ -54,7 +54,7 @@ class HomePage extends GetView<HomeController> {
       dashboardBody,
       const HistoryPage(),
       const WalletPage(),
-      const ProfilePage(),
+      const ClientProfilePage(),
     ];
 
     return Scaffold(

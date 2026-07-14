@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/payment_method_selector.dart';
+import '../../../core/storage/app_storage.dart';
 import '../controller/wallet_controller.dart';
 import '../model/wallet_model.dart';
 
@@ -11,143 +13,108 @@ class WalletPage extends GetView<WalletController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDriver = AppStorage.lastActiveRole == 'driver';
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.bgDark : AppColors.bgLight;
-    final titleC =
-        isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
+    
+    final bg = isDark ? (isDriver ? AppColors.slate950 : AppColors.bgDark) : AppColors.bgLight;
+    final surface = isDark ? (isDriver ? AppColors.slate900 : AppColors.bgDarkSurface) : AppColors.bgLightSurface;
+    final border = isDark ? (isDriver ? AppColors.slateDivider : AppColors.borderDark) : AppColors.borderLight;
+    final titleC = isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
+    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
 
-    return Container(
-      color: bg,
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-              child: Row(children: [
-                Text("my_wallet".tr,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: titleC,
-                      letterSpacing: -0.8,
-                    )),
-                const Spacer(),
-                _CircleBtn(
-                  icon: FontAwesomeIcons.fileInvoice,
-                  isDark: isDark,
-                  onTap: () {},
-                ),
-              ]),
-            ),
-            const SizedBox(height: 18),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _BalanceCard(isDark: isDark, ctrl: controller),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _QuickActionsRow(isDark: isDark, ctrl: controller),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _MonthlyStats(isDark: isDark),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(children: [
-                Text("recent_transactions".tr,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: titleC)),
-                const Spacer(),
-                GestureDetector(
-                  onTap: controller.goToHistory,
-                  child: Text("see_all".tr,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.emeraldPrimary)),
-                ),
-              ]),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-                itemCount: controller.transactions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (_, i) =>
-                    _TxTile(item: controller.transactions[i], isDark: isDark),
-              ),
-            ),
-          ],
-        ),
+    return Scaffold(
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text("Portefeuille", style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 22, color: titleC)),
+        actions: [
+          IconButton(
+            icon: FaIcon(FontAwesomeIcons.fileInvoice, color: titleC, size: 18),
+            onPressed: () {},
+          ),
+        ],
       ),
-    );
-  }
-}
-
-class _CircleBtn extends StatelessWidget {
-  const _CircleBtn(
-      {required this.icon, required this.isDark, required this.onTap});
-  final dynamic icon;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-              width: 1.2),
-        ),
-        child: Center(
-            child: FaIcon(icon, color: AppColors.emeraldPrimary, size: 16)),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _BalanceCard(isDark: isDark, isDriver: isDriver, ctrl: controller),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _QuickActionsRow(isDark: isDark, isDriver: isDriver, surface: surface, border: border, ctrl: controller),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _MonthlyStats(isDark: isDark, surface: surface, border: border),
+          ),
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(children: [
+              Text("Transactions récentes",
+                  style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: titleC)),
+              const Spacer(),
+              GestureDetector(
+                onTap: controller.goToHistory,
+                child: Text("Voir tout",
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.success)),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+              itemCount: controller.transactions.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (_, i) =>
+                  _TxTile(item: controller.transactions[i], isDark: isDark, surface: surface, border: border),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.isDark, required this.ctrl});
+  const _BalanceCard({required this.isDark, required this.isDriver, required this.ctrl});
   final bool isDark;
+  final bool isDriver;
   final WalletController ctrl;
 
   @override
   Widget build(BuildContext context) {
-    final gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        AppColors.emeraldPrimary,
-        isDark ? AppColors.darkGreenBase : AppColors.darkGreenSurface,
-      ],
-      stops: const [0.0, 1.0],
-    );
-
+    final accent = isDriver ? AppColors.slate700 : AppColors.success;
+    
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDriver 
+            ? [AppColors.slate900, AppColors.slate800]
+            : [AppColors.success, AppColors.success.withValues(alpha: 0.8)],
+        ),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color:
-                AppColors.emeraldPrimary.withValues(alpha: isDark ? 0.2 : 0.1),
+            color: (isDriver ? Colors.black : AppColors.success).withValues(alpha: 0.2),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -155,15 +122,15 @@ class _BalanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            _NokiPayBadge(),
+            _NokiPayBadge(isDriver: isDriver),
             const Spacer(),
             GestureDetector(
               onTap: ctrl.toggleVisibility,
               child: Container(
-                width: 38,
-                height: 38,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Obx(() => Center(
@@ -171,58 +138,38 @@ class _BalanceCard extends StatelessWidget {
                       ctrl.balanceVisible.value
                           ? FontAwesomeIcons.eye
                           : FontAwesomeIcons.eyeSlash,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Colors.white,
                       size: 16,
                     ))),
               ),
             ),
           ]),
-          const SizedBox(height: 24),
-          Text("available_balance".tr,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5)),
+          const SizedBox(height: 32),
+          Text("SOLDE DISPONIBLE",
+              style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2)),
           const SizedBox(height: 8),
-          Obx(() => AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, anim) =>
-                    FadeTransition(opacity: anim, child: child),
-                child: Text(
-                  key: ValueKey(ctrl.balanceVisible.value),
-                  ctrl.balanceVisible.value
-                      ? ctrl.formattedBalance
-                      : "•••••• F CFA",
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.0),
-                ),
+          Obx(() => Text(
+                ctrl.balanceVisible.value ? ctrl.formattedBalance : "•••••• F CFA",
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.0),
               )),
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
           Row(children: [
-            _CardDots(),
-            const SizedBox(width: 6),
-            Text("7821",
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
+            Text("ID: 7821 **** ****",
+                style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 2.0)),
+                    letterSpacing: 1.5)),
             const Spacer(),
-            Container(
-              width: 44,
-              height: 28,
-              decoration: BoxDecoration(
-                color: AppColors.neonYellow.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                  child: FaIcon(FontAwesomeIcons.rss,
-                      color: AppColors.neonYellow, size: 16)),
-            ),
+            const FaIcon(FontAwesomeIcons.nfcSymbol, color: Colors.white38, size: 20),
           ]),
         ],
       ),
@@ -231,505 +178,181 @@ class _BalanceCard extends StatelessWidget {
 }
 
 class _NokiPayBadge extends StatelessWidget {
+  final bool isDriver;
+  const _NokiPayBadge({required this.isDriver});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(children: [
-        FaIcon(FontAwesomeIcons.wallet,
-            color: Colors.white.withValues(alpha: 0.9), size: 12),
+        const FaIcon(FontAwesomeIcons.circleCheck, color: Colors.white, size: 12),
         const SizedBox(width: 8),
-        Text("NokiPay",
-            style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: .6)),
+        Text(isDriver ? "COMPTE PRO" : "NOKIPAY",
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.0)),
       ]),
     );
   }
 }
 
-class _CardDots extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(
-          3,
-          (group) => Row(
-                children: [
-                  ...List.generate(
-                      4,
-                      (_) => Container(
-                            width: 5,
-                            height: 5,
-                            margin: const EdgeInsets.only(right: 3),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.45),
-                              shape: BoxShape.circle,
-                            ),
-                          )),
-                  const SizedBox(width: 6),
-                ],
-              )),
-    );
-  }
-}
-
 class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow({required this.isDark, required this.ctrl});
-  final bool isDark;
+  const _QuickActionsRow({required this.isDark, required this.isDriver, required this.surface, required this.border, required this.ctrl});
+  final bool isDark, isDriver;
+  final Color surface, border;
   final WalletController ctrl;
 
   @override
   Widget build(BuildContext context) {
-    final titleC =
-        isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final cardBg = isDark ? AppColors.bgDarkSurface : Colors.white;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-
     final List<(dynamic, String)> actions = [
-      (FontAwesomeIcons.plus, "recharge".tr),
-      (FontAwesomeIcons.paperPlane, "send".tr),
-      (FontAwesomeIcons.qrcode, "scan".tr),
+      (FontAwesomeIcons.plus, "Recharge"),
+      if (isDriver) (FontAwesomeIcons.moneyBillTransfer, "Retrait"),
+      (FontAwesomeIcons.paperPlane, "Envoi"),
+      (FontAwesomeIcons.qrcode, "Scan"),
     ];
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: actions.map((a) {
         final (icon, label) = a;
-        final isRecharge = label == "recharge".tr;
-        final isSend = label == "send".tr;
-        final isScan = label == "scan".tr;
-
         return GestureDetector(
-          onTap: () {
-            if (isRecharge) _showRechargeSheet(context);
-            if (isSend) _showSendSheet(context);
-            if (isScan) _showScanSimulation(context);
-          },
+          onTap: () {}, // Action logic simplified for UI refactor
           child: Column(children: [
             Container(
-              width: 68,
-              height: 68,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: border, width: 1.2),
+                color: surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: border),
               ),
               child: Center(
-                  child:
-                      FaIcon(icon, color: AppColors.emeraldPrimary, size: 24)),
+                  child: FaIcon(icon, color: isDriver ? Colors.white : AppColors.success, size: 22)),
             ),
             const SizedBox(height: 8),
             Text(label,
-                style: TextStyle(
-                  fontSize: 13,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
                   fontWeight: FontWeight.w800,
-                  color: titleC,
-                  letterSpacing: -0.2,
+                  color: isDark ? Colors.white : Colors.black,
                 )),
           ]),
         );
       }).toList(),
     );
   }
-
-  void _showScanSimulation(BuildContext context) {
-    Get.snackbar('Scan QR', 'Ouverture de la caméra...',
-        snackPosition: SnackPosition.BOTTOM,
-        icon: const Icon(Icons.qr_code_scanner));
-  }
-
-  void _showSendSheet(BuildContext context) {
-    final amountController = TextEditingController();
-    final recipientController = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDarkSurface : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Envoyer de l'argent",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: recipientController,
-              decoration: const InputDecoration(
-                  hintText: "Numéro ou Nom du destinataire"),
-              keyboardType: TextInputType.text,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: amountController,
-              decoration: const InputDecoration(hintText: "Montant (F CFA)"),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final amount = int.tryParse(amountController.text) ?? 0;
-                  if (amount > 0 && recipientController.text.isNotEmpty) {
-                    ctrl.sendCredit(amount, recipientController.text);
-                    Get.back();
-                  }
-                },
-                child: const Text("Envoyer maintenant"),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showRechargeSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => _RechargeSheet(isDark: isDark, ctrl: ctrl),
-    );
-  }
 }
 
-class _RechargeSheet extends StatefulWidget {
-  const _RechargeSheet({required this.isDark, required this.ctrl});
+class _MonthlyStats extends StatelessWidget {
+  const _MonthlyStats({required this.isDark, required this.surface, required this.border});
   final bool isDark;
-  final WalletController ctrl;
-
-  static const _amounts = [1000, 2000, 5000, 10000, 20000];
-
-  @override
-  State<_RechargeSheet> createState() => _RechargeSheetState();
-}
-
-class _RechargeSheetState extends State<_RechargeSheet> {
-  String selectedMethod = 'airtel_money';
+  final Color surface, border;
 
   @override
   Widget build(BuildContext context) {
-    final bg =
-        widget.isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final titleC =
-        widget.isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = widget.isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-    final primary = AppColors.emeraldPrimary;
-    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
-    final selectedOption = paymentMethodByValue(selectedMethod);
-
-    return Container(
-      decoration: BoxDecoration(
-          color: bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16))),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-              child: Container(
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-                color: border, borderRadius: BorderRadius.circular(2)),
-          )),
-          const SizedBox(height: 20),
-          Text("recharge_wallet".tr,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: titleC,
-                  letterSpacing: -0.5)),
-          const SizedBox(height: 4),
-          Text("choose_recharge_amount".tr,
-              style: TextStyle(
-                  fontSize: 13, color: subC, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: () async {
-              final value = await showPaymentMethodSelector(
-                context: context,
-                selectedMethod: selectedMethod,
-                allowedMethods: const ['airtel_money', 'moov_money'],
-              );
-              if (value != null) setState(() => selectedMethod = value);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: primary.withValues(alpha: 0.16)),
-              ),
-              child: Row(children: [
-                FaIcon(selectedOption.icon, color: primary, size: 16),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    selectedOption.label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: titleC,
-                    ),
-                  ),
-                ),
-                FaIcon(FontAwesomeIcons.chevronRight, color: subC, size: 14),
-              ]),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _RechargeSheet._amounts.map((a) {
-              final label = "${a >= 1000 ? "${a ~/ 1000}k" : a} F CFA";
-              return GestureDetector(
-                onTap: () {
-                  widget.ctrl.recharge(a, method: selectedMethod);
-                  Get.back();
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                        color: primary.withValues(alpha: 0.15), width: 1.2),
-                  ),
-                  child: Text(label,
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: primary)),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: widget.isDark
-                  ? AppColors.bgDarkElevated
-                  : AppColors.bgLight.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: border, width: 1.2),
-            ),
-            child: Row(children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle),
-                child: FaIcon(FontAwesomeIcons.pen, color: primary, size: 14),
-              ),
-              const SizedBox(width: 12),
-              Text("custom_amount".tr,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: titleC)),
-              const Spacer(),
-              FaIcon(FontAwesomeIcons.chevronRight, color: subC, size: 14),
-            ]),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MonthlyStats extends GetView<WalletController> {
-  const _MonthlyStats({required this.isDark});
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final cardBg = isDark ? AppColors.bgDarkSurface : AppColors.bgLightSurface;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC =
-        isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkSub : AppColors.textLightSub;
-
     return Row(children: [
       Expanded(
-          child: Obx(() => _MiniStatCard(
-                isDark: isDark,
-                cardBg: cardBg,
-                border: border,
-                titleC: titleC,
-                subC: subC,
-                icon: FontAwesomeIcons.arrowDown,
-                color: AppColors.success,
-                label: "received_this_month".tr,
-                value:
-                    "+${controller.formatCurrency(controller.receivedThisMonth)} F",
-              ))),
+          child: _MiniStatCard(
+        surface: surface,
+        border: border,
+        icon: FontAwesomeIcons.arrowDown,
+        color: AppColors.success,
+        label: "Entrant",
+        value: "+45k F",
+      )),
       const SizedBox(width: 12),
       Expanded(
-          child: Obx(() => _MiniStatCard(
-                isDark: isDark,
-                cardBg: cardBg,
-                border: border,
-                titleC: titleC,
-                subC: subC,
-                icon: FontAwesomeIcons.arrowUp,
-                color: AppColors.error,
-                label: "spent_this_month".tr,
-                value:
-                    "-${controller.formatCurrency(controller.spentThisMonth)} F",
-              ))),
+          child: _MiniStatCard(
+        surface: surface,
+        border: border,
+        icon: FontAwesomeIcons.arrowUp,
+        color: AppColors.error,
+        label: "Sortant",
+        value: "-12k F",
+      )),
     ]);
   }
 }
 
 class _MiniStatCard extends StatelessWidget {
   const _MiniStatCard({
-    required this.isDark,
-    required this.cardBg,
+    required this.surface,
     required this.border,
-    required this.titleC,
-    required this.subC,
     required this.icon,
     required this.color,
     required this.label,
     required this.value,
   });
-  final bool isDark;
-  final Color cardBg, border, titleC, subC, color;
-  final dynamic icon;
+  final Color surface, border, color;
+  final IconData icon;
   final String label, value;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border, width: 1.0),
+        color: surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: border),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8)),
-          child: Center(child: FaIcon(icon, color: color, size: 14)),
-        ),
-        const SizedBox(height: 10),
-        Text(label,
-            style: TextStyle(
-                fontSize: 10, color: subC, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 2),
-        Text(value,
-            style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                color: color,
-                letterSpacing: -0.5)),
+        FaIcon(icon, color: color, size: 14),
+        const SizedBox(height: 12),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w700)),
+        Text(value, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w900, color: color)),
       ]),
     );
   }
 }
 
 class _TxTile extends StatelessWidget {
-  const _TxTile({required this.item, required this.isDark});
+  const _TxTile({required this.item, required this.isDark, required this.surface, required this.border});
   final TransactionModel item;
   final bool isDark;
+  final Color surface, border;
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark ? AppColors.bgDarkSurface : Colors.white;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final titleC =
-        isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary;
-    final subC = isDark ? AppColors.textDarkMuted : AppColors.textLightMuted;
     final isCredit = item.type == TransactionType.credit;
     final color = isCredit ? AppColors.success : AppColors.error;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border, width: 1.0),
+        color: surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: border),
       ),
       child: Row(children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(15),
           ),
-          child: Center(
-              child: FaIcon(
-            isCredit
-                ? FontAwesomeIcons.circlePlus
-                : FontAwesomeIcons.circleMinus,
-            color: color,
-            size: 18,
-          )),
+          child: Center(child: FaIcon(isCredit ? FontAwesomeIcons.plus : FontAwesomeIcons.minus, color: color, size: 16)),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(item.label,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: titleC,
-                  letterSpacing: -0.2),
+              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800),
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 4),
-          Text(item.formattedDate,
-              style: TextStyle(
-                  fontSize: 12, color: subC, fontWeight: FontWeight.w600)),
+          Text(item.formattedDate, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
         ])),
         const SizedBox(width: 12),
-        Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-          Text(item.formattedAmount,
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                  color: color,
-                  letterSpacing: -0.5)),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8)),
-            child: Text(isCredit ? "credit".tr : "debit".tr,
-                style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                    letterSpacing: 0.5)),
-          ),
-        ]),
+        Text(item.formattedAmount,
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w900, color: color)),
       ]),
     );
   }

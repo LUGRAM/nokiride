@@ -14,12 +14,14 @@ class MiniMapWidget extends StatefulWidget {
     this.dropoff,
     this.driverLocation,
     this.showDriver = false,
+    this.showHeatmap = false,
   });
 
   final PlaceModel? pickup;
   final PlaceModel? dropoff;
   final PlaceModel? driverLocation;
   final bool showDriver;
+  final bool showHeatmap;
 
   @override
   State<MiniMapWidget> createState() => _MiniMapWidgetState();
@@ -75,6 +77,7 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
   Widget _buildGoogleMap(BuildContext context) {
     final markers = _markers(context);
     final polylines = _polylines(context);
+    final circles = _circles(context);
     final target = _cameraTarget;
 
     return Stack(
@@ -83,6 +86,7 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
           initialCameraPosition: CameraPosition(target: target, zoom: 13.5),
           markers: markers,
           polylines: polylines,
+          circles: circles,
           myLocationButtonEnabled: false,
           zoomControlsEnabled: false,
           compassEnabled: false,
@@ -114,7 +118,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
       painter: _MapPainter(
         isDark: isDark,
         bgColor: AppColors.background(context),
-        routeColor: AppColors.accent(context).withOpacity(0.5),
+        routeColor: AppColors.accent(context).withValues(alpha: 0.5),
+        showHeatmap: widget.showHeatmap,
       ),
       child: Stack(
         children: [
@@ -217,6 +222,22 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
       }
     }
 
+    if (widget.showHeatmap) {
+      // Mock autres chauffeurs à proximité
+      markers.addAll({
+        Marker(
+          markerId: const MarkerId('other_1'),
+          position: const LatLng(0.395, 9.460),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        ),
+        Marker(
+          markerId: const MarkerId('other_2'),
+          position: const LatLng(0.385, 9.445),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        ),
+      });
+    }
+
     return markers;
   }
 
@@ -234,6 +255,30 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
         ],
         color: AppColors.accent(context),
         width: 5,
+      ),
+    };
+  }
+
+  Set<Circle> _circles(BuildContext context) {
+    if (!widget.showHeatmap) return {};
+
+    // Mock zones de forte demande
+    return {
+      Circle(
+        circleId: const CircleId('demand_1'),
+        center: const LatLng(0.3901, 9.4544),
+        radius: 800,
+        fillColor: Colors.orange.withValues(alpha: 0.2),
+        strokeColor: Colors.orange.withValues(alpha: 0.5),
+        strokeWidth: 2,
+      ),
+      Circle(
+        circleId: const CircleId('demand_2'),
+        center: const LatLng(0.4200, 9.4200),
+        radius: 1200,
+        fillColor: Colors.red.withValues(alpha: 0.15),
+        strokeColor: Colors.red.withValues(alpha: 0.4),
+        strokeWidth: 2,
       ),
     };
   }
@@ -334,21 +379,38 @@ class _LocateButton extends StatelessWidget {
 
 // ─── Painter carte stylisée ───────────────────────────────────
 class _MapPainter extends CustomPainter {
-  const _MapPainter(
-      {required this.isDark, required this.bgColor, required this.routeColor});
+  const _MapPainter({
+    required this.isDark,
+    required this.bgColor,
+    required this.routeColor,
+    this.showHeatmap = false,
+  });
   final bool isDark;
   final Color bgColor;
   final Color routeColor;
+  final bool showHeatmap;
 
   @override
   void paint(Canvas canvas, Size size) {
     final gridColor =
-        isDark ? Colors.white.withOpacity(.02) : Colors.black.withOpacity(.03);
+        isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.03);
     final roadColor =
-        isDark ? Colors.white.withOpacity(.04) : Colors.black.withOpacity(.05);
+        isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.05);
 
     // Fond
     canvas.drawRect(Offset.zero & size, Paint()..color = bgColor);
+
+    if (showHeatmap) {
+      final hPaint = Paint()..style = PaintingStyle.fill;
+      canvas.drawCircle(
+          Offset(size.width * .4, size.height * .4),
+          60,
+          hPaint..color = Colors.orange.withValues(alpha: 0.1));
+      canvas.drawCircle(
+          Offset(size.width * .7, size.height * .6),
+          80,
+          hPaint..color = Colors.red.withValues(alpha: 0.1));
+    }
 
     // Grille
     final gPaint = Paint()
@@ -442,12 +504,12 @@ class _MapPin extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withOpacity(.25),
+        color: color.withValues(alpha: 0.25),
         shape: BoxShape.circle,
         border: Border.all(color: color, width: 2),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 12,
           ),
         ],
@@ -474,7 +536,7 @@ class _LocationBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
           ),
         ],

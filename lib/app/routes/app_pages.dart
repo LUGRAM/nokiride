@@ -20,7 +20,7 @@ import '../../features/notifications/page/notifications_page.dart';
 import '../../features/onboarding/bindings/onboarding_binding.dart';
 import '../../features/onboarding/pages/onboarding_page.dart';
 import '../../features/client/profile/bindings/profile_binding.dart';
-import '../../features/client/profile/page/profile_page.dart';
+import '../../features/client/profile/page/client_profile_page.dart';
 import '../../features/splash/pages/splash_page.dart';
 import '../../features/client/trip/bindings/trip_binding.dart';
 import '../../features/client/trip/page/trip_estimate_page.dart';
@@ -29,9 +29,11 @@ import '../../features/client/trip/page/trip_rating_page.dart';
 import '../../features/client/trip/page/trip_searching_page.dart';
 import '../../features/client/trip/page/trip_tracking_page.dart';
 import '../../features/driver/dashboard/bindings/driver_dashboard_binding.dart';
-import '../../features/driver/dashboard/page/driver_dashboard_page.dart';
+import '../../features/driver/dashboard/page/driver_main_page.dart';
 import '../../features/driver/earnings/page/driver_earnings_page.dart';
 import '../../features/driver/vehicle/page/vehicle_registration_page.dart';
+import '../../features/driver/trip_mgt/bindings/active_trip_binding.dart';
+import '../../features/driver/trip_mgt/presentation/pages/active_trip_page.dart';
 import '../../features/wallet/page/wallet_page.dart';
 import 'app_routes.dart';
 
@@ -85,8 +87,12 @@ class AppPages {
         binding: HomeBinding()),
     GetPage(
         name: Routes.driverDashboard,
-        page: () => const DriverDashboardPage(),
+        page: () => const DriverMainPage(),
         binding: DriverDashboardBinding()),
+    GetPage(
+        name: Routes.driverActiveTrip,
+        page: () => const ActiveTripPage(),
+        binding: ActiveTripBinding()),
     GetPage(
       name: Routes.driverVehicleRegistration,
       page: () => const VehicleRegistrationPage(),
@@ -151,7 +157,7 @@ class AppPages {
         binding: WalletBinding()),
     GetPage(
         name: Routes.profile,
-        page: () => const ProfilePage(),
+        page: () => const ClientProfilePage(),
         binding: ProfileBinding())
   ];
 }

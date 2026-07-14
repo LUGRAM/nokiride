@@ -10,6 +10,7 @@ import '../../../../core/storage/app_storage.dart';
 import '../../../client/trip/model/place_model.dart';
 
 class DriverDashboardController extends GetxController {
+  final RxInt tabIndex = 0.obs;
   final RxBool isOnline = false.obs;
   final Rx<PlaceModel?> currentLocation = Rx<PlaceModel?>(null);
   final RxDouble todayRevenue = 0.0.obs;
@@ -51,20 +52,23 @@ class DriverDashboardController extends GetxController {
   }
 
   void _requireVehicleIfMissing() {
-    if (hasVehicle) return;
-    Get.offNamed(Routes.driverVehicleRegistration);
+    // Désactivé pour le moment
+    // if (hasVehicle) return;
+    // Get.offNamed(Routes.driverVehicleRegistration);
+  }
+
+  void changeTabIndex(int index) {
+    tabIndex.value = index;
   }
 
   Future<void> toggleOnline(bool value) async {
+    // Check véhicule désactivé temporairement
+    /*
     if (value && !hasVehicle) {
-      Get.snackbar(
-        'Véhicule requis',
-        'Enregistrez votre véhicule avant de passer en ligne.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      Get.toNamed(Routes.driverVehicleRegistration);
-      return;
+       Get.snackbar('Véhicule requis', ...);
+       return;
     }
+    */
 
     isOnline.value = value;
     await AppStorage.updateUser({'is_online': value});

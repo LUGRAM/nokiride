@@ -53,7 +53,7 @@ class ApiClient {
 
     const apiHost = String.fromEnvironment(
       'API_HOST',
-      defaultValue: '192.168.1.74',
+      defaultValue: '192.168.1.81',
     );
     const apiPort = String.fromEnvironment('API_PORT', defaultValue: '9000');
     const apiScheme =
