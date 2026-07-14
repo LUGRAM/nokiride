@@ -14,7 +14,7 @@ class AuthController extends GetxController {
   final RxString password = ''.obs;
   final RxBool isLoading = false.obs;
   final RxString lastError = ''.obs;
-  static final RegExp _gabonPhonePattern = RegExp(r'^\+241\d{8}$');
+  static final RegExp _gabonPhonePattern = RegExp(r'^(\+241|0)\d{8,9}$');
 
   void setPhone(String v) => phone.value = v;
   void setName(String v) => name.value = v;
@@ -28,14 +28,21 @@ class AuthController extends GetxController {
   }
 
   Future<bool> login(String phoneVal, String password) async {
+    // Normalisation simple du numéro de téléphone avant envoi
+    String normalizedPhone = phoneVal.trim();
+    if (normalizedPhone.startsWith('0')) {
+      normalizedPhone = '+241${normalizedPhone.substring(1)}';
+    }
+
     if (!_gabonPhonePattern.hasMatch(phoneVal) || password.isEmpty) {
+      lastError.value = "Format de numéro de téléphone invalide.";
       return false;
     }
 
     isLoading.value = true;
     lastError.value = '';
     try {
-      final data = await _authService.login(phoneVal, password);
+      final data = await _authService.login(normalizedPhone, password);
       await AppStorage.saveAuth(
         token: data['token'] as String,
         user: Map<String, dynamic>.from(data['user'] as Map),
