@@ -18,6 +18,7 @@ class BackgroundLocationService extends GetxService {
   final RxDouble latitude = 0.0.obs;
   final RxDouble longitude = 0.0.obs;
   final RxBool isServiceRunning = false.obs;
+  StreamSubscription<Map<String, dynamic>?>? _serviceUpdateSubscription;
 
   @override
   void onInit() {
@@ -77,12 +78,20 @@ class BackgroundLocationService extends GetxService {
   }
 
   void _listenToServiceUpdates() {
-    FlutterBackgroundService().on('update').listen((event) {
+    _serviceUpdateSubscription?.cancel();
+    _serviceUpdateSubscription =
+        FlutterBackgroundService().on('update').listen((event) {
       if (event != null) {
         latitude.value = event['latitude'];
         longitude.value = event['longitude'];
       }
     });
+  }
+
+  @override
+  void onClose() {
+    _serviceUpdateSubscription?.cancel();
+    super.onClose();
   }
 }
 
@@ -90,27 +99,58 @@ class BackgroundLocationService extends GetxService {
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   await GetStorage.init();
-  
+
   bool dataSaver = false;
   StreamSubscription<Position>? positionStream;
   List<Map<String, dynamic>> locationBuffer = [];
+  String? activeDispatchId;
 
   if (service is AndroidServiceInstance) {
-    service.on('setAsForeground').listen((event) => service.setAsForegroundService());
-    service.on('setAsBackground').listen((event) => service.setAsBackgroundService());
+    service
+        .on('setAsForeground')
+        .listen((event) => service.setAsForegroundService());
+    service
+        .on('setAsBackground')
+        .listen((event) => service.setAsBackgroundService());
   }
 
-  service.on('stopService').listen((event) {
-    positionStream?.cancel();
+  late final StreamSubscription<Map<String, dynamic>?> dispatchSubscription;
+  dispatchSubscription = service.on('dispatchCommand').listen((event) {
+    final tripId = event?['trip_id']?.toString();
+    final state = event?['state']?.toString();
+    if (tripId == null || state == null) return;
+
+    activeDispatchId = state == 'presented' || state == 'received_in_background'
+        ? tripId
+        : activeDispatchId == tripId
+            ? null
+            : activeDispatchId;
+    service.invoke('dispatchStateChanged', {
+      'trip_id': tripId,
+      'state': state,
+      'active_trip_id': activeDispatchId,
+    });
+  });
+
+  service.on('stopService').listen((event) async {
+    await positionStream?.cancel();
+    await dispatchSubscription.cancel();
     service.stopSelf();
   });
 
-  service.on('setSettings').listen((event) {
+  service.on('setSettings').listen((event) async {
     dataSaver = event?['dataSaverEnabled'] ?? false;
-    _setupLocationStream(service, dataSaver, (stream) => positionStream = stream, locationBuffer);
+    await positionStream?.cancel();
+    _setupLocationStream(
+      service,
+      dataSaver,
+      (stream) => positionStream = stream,
+      locationBuffer,
+    );
   });
 
-  _setupLocationStream(service, dataSaver, (stream) => positionStream = stream, locationBuffer);
+  _setupLocationStream(
+      service, dataSaver, (stream) => positionStream = stream, locationBuffer);
 }
 
 @pragma('vm:entry-point')
@@ -119,12 +159,10 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 void _setupLocationStream(
-  ServiceInstance service, 
-  bool dataSaver, 
-  Function(StreamSubscription<Position>) onStreamCreated,
-  List<Map<String, dynamic>> buffer
-) async {
-  
+    ServiceInstance service,
+    bool dataSaver,
+    Function(StreamSubscription<Position>) onStreamCreated,
+    List<Map<String, dynamic>> buffer) async {
   final LocationSettings locationSettings = AndroidSettings(
     accuracy: LocationAccuracy.high,
     distanceFilter: dataSaver ? 15 : 5,
@@ -136,9 +174,9 @@ void _setupLocationStream(
     ),
   );
 
-  final stream = Geolocator.getPositionStream(locationSettings: locationSettings)
-      .listen((Position position) async {
-    
+  final stream =
+      Geolocator.getPositionStream(locationSettings: locationSettings)
+          .listen((Position position) async {
     final locationData = {
       "latitude": position.latitude,
       "longitude": position.longitude,
@@ -161,7 +199,8 @@ void _setupLocationStream(
     try {
       final token = await AppStorage.token;
       if (token != null) {
-        final response = await ApiClient.instance.post('/driver/update-location', data: {
+        final response =
+            await ApiClient.instance.post('/driver/update-location', data: {
           "locations": buffer, // We send the whole buffer
         });
 
@@ -170,7 +209,8 @@ void _setupLocationStream(
         }
       }
     } catch (e) {
-      debugPrint("Sync Error: Background location buffered (${buffer.length} items)");
+      debugPrint(
+          "Sync Error: Background location buffered (${buffer.length} items)");
     }
   });
 

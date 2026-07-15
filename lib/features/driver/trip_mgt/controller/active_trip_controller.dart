@@ -1,37 +1,75 @@
 import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import '../../../../core/location/background_location_service.dart';
+import '../../../../core/navigation/google_routes_service.dart';
 import '../../../../core/network/api_client.dart';
 
-enum DriverTripStatus {
-  accepted,      // En route vers le client
-  arrived,       // Arrivé au point de départ
-  pickedUp,      // Client récupéré, en route vers destination
-  completed      // Course terminée
-}
+enum DriverTripStatus { accepted, arrived, pickedUp, completed }
 
 class ActiveTripController extends GetxController {
-  final BackgroundLocationService _locationService = Get.find<BackgroundLocationService>();
-  
+  ActiveTripController({GoogleRoutesService? routesService})
+      : _routesService = routesService ?? const GoogleRoutesService();
+
+  final BackgroundLocationService _locationService =
+      Get.find<BackgroundLocationService>();
+  final GoogleRoutesService _routesService;
+
   final Rx<DriverTripStatus> currentStatus = DriverTripStatus.accepted.obs;
   final RxMap<String, dynamic> tripData = <String, dynamic>{}.obs;
-  
-  GoogleMapController? mapController;
   final RxSet<Marker> markers = <Marker>{}.obs;
   final RxSet<Polyline> polylines = <Polyline>{}.obs;
-  
-  StreamSubscription? _locationSubscription;
+  final RxBool isRouteLoading = false.obs;
+  final RxInt routeDistanceMeters = 0.obs;
+  final RxInt routeDurationSeconds = 0.obs;
+
+  GoogleMapController? mapController;
+  StreamSubscription<double>? _locationSubscription;
+  var _routeRequestId = 0;
+  bool _hasRequestedDriverRoute = false;
+
+  LatLng get pickup => LatLng(
+        _coordinate('pickup_latitude'),
+        _coordinate('pickup_longitude'),
+      );
+
+  LatLng get destination => LatLng(
+        _coordinate('dropoff_latitude'),
+        _coordinate('dropoff_longitude'),
+      );
+
+  LatLng? get driverPosition {
+    final latitude = _locationService.latitude.value;
+    final longitude = _locationService.longitude.value;
+    if (latitude == 0 && longitude == 0) return null;
+    return LatLng(latitude, longitude);
+  }
+
+  String get routeSummary {
+    if (isRouteLoading.value) return 'Calcul de l’itinéraire…';
+    if (routeDistanceMeters.value <= 0) return '';
+    final distance = routeDistanceMeters.value >= 1000
+        ? '${(routeDistanceMeters.value / 1000).toStringAsFixed(1)} km'
+        : '${routeDistanceMeters.value} m';
+    final minutes = math.max(1, (routeDurationSeconds.value / 60).ceil());
+    return '$distance • $minutes min';
+  }
+
+  String get targetAddress => currentStatus.value == DriverTripStatus.pickedUp
+      ? '${tripData['dropoff_address'] ?? ''}'
+      : '${tripData['pickup_address'] ?? ''}';
 
   @override
   void onInit() {
     super.onInit();
-    // Récupération des données passées en argument lors de la navigation
-    if (Get.arguments != null) {
-      tripData.value = Map<String, dynamic>.from(Get.arguments);
+    final arguments = Get.arguments;
+    if (arguments is Map) {
+      tripData.value = Map<String, dynamic>.from(arguments);
     }
-    
     _initMarkers();
     _listenToLocation();
     _drawItinerary();
@@ -40,133 +78,190 @@ class ActiveTripController extends GetxController {
   @override
   void onClose() {
     _locationSubscription?.cancel();
+    mapController?.dispose();
     super.onClose();
   }
 
-  /// Initialise les marqueurs (Client/Destination)
+  void onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    _fitRoute();
+  }
+
+  void recenterOnDriver() {
+    final position = driverPosition;
+    if (position != null) {
+      mapController?.animateCamera(CameraUpdate.newLatLngZoom(position, 16));
+    }
+  }
+
   void _initMarkers() {
-    markers.add(
+    if (tripData.isEmpty) return;
+    markers.assignAll({
       Marker(
         markerId: const MarkerId('pickup'),
-        position: LatLng(
-          double.parse(tripData['pickup_latitude'].toString()),
-          double.parse(tripData['pickup_longitude'].toString()),
-        ),
+        position: pickup,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         infoWindow: const InfoWindow(title: 'Départ'),
       ),
-    );
-    
-    markers.add(
       Marker(
         markerId: const MarkerId('destination'),
-        position: LatLng(
-          double.parse(tripData['dropoff_latitude'].toString()),
-          double.parse(tripData['dropoff_longitude'].toString()),
-        ),
+        position: destination,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow: const InfoWindow(title: 'Arrivée'),
       ),
-    );
-  }
-
-  /// Écoute la position en temps réel du chauffeur
-  void _listenToLocation() {
-    _locationSubscription = _locationService.latitude.listen((lat) {
-      final lng = _locationService.longitude.value;
-      _updateDriverMarker(lat, lng);
     });
   }
 
-  /// Met à jour la position de la voiture sur la carte
-  void _updateDriverMarker(double lat, double lng) {
+  void _listenToLocation() {
+    _locationSubscription = _locationService.latitude.listen((latitude) {
+      final longitude = _locationService.longitude.value;
+      if (latitude == 0 && longitude == 0) return;
+      _updateDriverMarker(latitude, longitude);
+
+      if (!_hasRequestedDriverRoute &&
+          currentStatus.value == DriverTripStatus.accepted) {
+        _hasRequestedDriverRoute = true;
+        _drawItinerary();
+      }
+    });
+  }
+
+  void _updateDriverMarker(double latitude, double longitude) {
     const markerId = MarkerId('driver');
-    
-    // Animation fluide vers la nouvelle position
-    markers.removeWhere((m) => m.markerId == markerId);
+    markers.removeWhere((marker) => marker.markerId == markerId);
     markers.add(
       Marker(
         markerId: markerId,
-        position: LatLng(lat, lng),
-        rotation: 0, // Idéalement calculer le cap (heading)
+        position: LatLng(latitude, longitude),
         anchor: const Offset(0.5, 0.5),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ),
     );
-    
-    // Suivre la voiture avec la caméra si nécessaire
-    // mapController?.animateCamera(CameraUpdate.newLatLng(LatLng(lat, lng)));
   }
 
-  /// Trace l'itinéraire selon le statut actuel
   Future<void> _drawItinerary() async {
-    polylines.clear();
-    
-    LatLng start;
-    LatLng end;
+    if (tripData.isEmpty) return;
+    final origin = currentStatus.value == DriverTripStatus.accepted
+        ? driverPosition
+        : pickup;
+    final target =
+        currentStatus.value == DriverTripStatus.accepted ? pickup : destination;
 
-    if (currentStatus.value == DriverTripStatus.accepted) {
-      // Du chauffeur vers le client
-      start = LatLng(_locationService.latitude.value, _locationService.longitude.value);
-      end = LatLng(
-        double.parse(tripData['pickup_latitude'].toString()),
-        double.parse(tripData['pickup_longitude'].toString()),
-      );
-    } else {
-      // Du client vers la destination
-      start = LatLng(
-        double.parse(tripData['pickup_latitude'].toString()),
-        double.parse(tripData['pickup_longitude'].toString()),
-      );
-      end = LatLng(
-        double.parse(tripData['dropoff_latitude'].toString()),
-        double.parse(tripData['dropoff_longitude'].toString()),
-      );
+    if (origin == null) {
+      _showFallbackRoute(pickup, target);
+      return;
     }
 
-    // Ici on devrait normalement appeler l'API Google Directions
-    // Pour cet exercice, on trace une ligne droite symbolique
-    polylines.add(
+    final requestId = ++_routeRequestId;
+    isRouteLoading.value = true;
+    try {
+      final route = await _routesService.route(
+        origin: origin,
+        destination: target,
+      );
+      if (requestId != _routeRequestId || isClosed) return;
+
+      routeDistanceMeters.value = route.distanceMeters;
+      routeDurationSeconds.value = route.durationSeconds;
+      polylines.assignAll({
+        Polyline(
+          polylineId: const PolylineId('route'),
+          points: route.points,
+          color: const Color(0xFF2E7D32),
+          width: 6,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          jointType: JointType.round,
+        ),
+      });
+      await _fitRoute();
+    } catch (error) {
+      if (requestId == _routeRequestId && !isClosed) {
+        routeDistanceMeters.value = 0;
+        routeDurationSeconds.value = 0;
+        _showFallbackRoute(origin, target);
+        debugPrint('Google route unavailable: $error');
+      }
+    } finally {
+      if (requestId == _routeRequestId && !isClosed) {
+        isRouteLoading.value = false;
+      }
+    }
+  }
+
+  void _showFallbackRoute(LatLng origin, LatLng target) {
+    polylines.assignAll({
       Polyline(
-        polylineId: const PolylineId('route'),
-        points: [start, end],
-        color: const Color(0xFF2E7D32),
-        width: 5,
+        polylineId: const PolylineId('route-fallback'),
+        points: [origin, target],
+        color: Colors.grey,
+        width: 4,
+        patterns: [PatternItem.dash(18), PatternItem.gap(10)],
+      ),
+    });
+    _fitRoute();
+  }
+
+  Future<void> _fitRoute() async {
+    final controller = mapController;
+    final points = polylines.expand((polyline) => polyline.points).toList();
+    if (controller == null || points.isEmpty) return;
+
+    var minLatitude = points.first.latitude;
+    var maxLatitude = points.first.latitude;
+    var minLongitude = points.first.longitude;
+    var maxLongitude = points.first.longitude;
+    for (final point in points.skip(1)) {
+      minLatitude = math.min(minLatitude, point.latitude);
+      maxLatitude = math.max(maxLatitude, point.latitude);
+      minLongitude = math.min(minLongitude, point.longitude);
+      maxLongitude = math.max(maxLongitude, point.longitude);
+    }
+
+    if (minLatitude == maxLatitude && minLongitude == maxLongitude) {
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(points.first, 16),
+      );
+      return;
+    }
+
+    await controller.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLatitude, minLongitude),
+          northeast: LatLng(maxLatitude, maxLongitude),
+        ),
+        72,
       ),
     );
   }
 
-  /// Transition de statut (Action du bouton en bas)
+  double _coordinate(String key) {
+    final value = double.tryParse('${tripData[key] ?? ''}');
+    if (value == null) throw FormatException('Coordonnée manquante: $key');
+    return value;
+  }
+
   Future<void> nextStep() async {
     final tripId = tripData['id'];
-    String endpoint = '';
-    
-    switch (currentStatus.value) {
-      case DriverTripStatus.accepted:
-        endpoint = '/trips/$tripId/arrived';
-        break;
-      case DriverTripStatus.arrived:
-        endpoint = '/trips/$tripId/pickup';
-        break;
-      case DriverTripStatus.pickedUp:
-        endpoint = '/trips/$tripId/complete';
-        break;
-      case DriverTripStatus.completed:
-        return;
-    }
+    final endpoint = switch (currentStatus.value) {
+      DriverTripStatus.accepted => '/trips/$tripId/arrived',
+      DriverTripStatus.arrived => '/trips/$tripId/pickup',
+      DriverTripStatus.pickedUp => '/trips/$tripId/complete',
+      DriverTripStatus.completed => null,
+    };
+    if (endpoint == null) return;
 
     try {
-      Get.showOverlay(
+      await Get.showOverlay<void>(
         asyncFunction: () async {
           final response = await ApiClient.instance.post(endpoint);
-          if (response['status'] == 'success') {
-            _advanceStatus();
-          }
+          if (response['status'] == 'success') _advanceStatus();
         },
         loadingWidget: const Center(child: CircularProgressIndicator()),
       );
-    } catch (e) {
-      Get.snackbar("Erreur", "Impossible de mettre à jour le statut.");
+    } catch (_) {
+      Get.snackbar('Erreur', 'Impossible de mettre à jour le statut.');
     }
   }
 
@@ -175,29 +270,25 @@ class ActiveTripController extends GetxController {
       currentStatus.value = DriverTripStatus.arrived;
     } else if (currentStatus.value == DriverTripStatus.arrived) {
       currentStatus.value = DriverTripStatus.pickedUp;
-      _drawItinerary(); // On trace maintenant vers la destination
+      _drawItinerary();
     } else if (currentStatus.value == DriverTripStatus.pickedUp) {
       currentStatus.value = DriverTripStatus.completed;
-      Get.offAllNamed('/driver/dashboard'); // Fin de course
-      Get.snackbar("Félicitations", "Course terminée avec succès !");
+      Get.offAllNamed('/driver/dashboard');
+      Get.snackbar('Félicitations', 'Course terminée avec succès !');
     }
   }
 
-  String get actionButtonText {
-    switch (currentStatus.value) {
-      case DriverTripStatus.accepted: return "JE SUIS ARRIVÉ";
-      case DriverTripStatus.arrived: return "CLIENT RÉCUPÉRÉ";
-      case DriverTripStatus.pickedUp: return "TERMINER LA COURSE";
-      case DriverTripStatus.completed: return "TERMINÉ";
-    }
-  }
+  String get actionButtonText => switch (currentStatus.value) {
+        DriverTripStatus.accepted => 'JE SUIS ARRIVÉ',
+        DriverTripStatus.arrived => 'CLIENT RÉCUPÉRÉ',
+        DriverTripStatus.pickedUp => 'TERMINER LA COURSE',
+        DriverTripStatus.completed => 'TERMINÉ',
+      };
 
-  String get instructionText {
-    switch (currentStatus.value) {
-      case DriverTripStatus.accepted: return "Allez chercher le client";
-      case DriverTripStatus.arrived: return "Le client vous attend";
-      case DriverTripStatus.pickedUp: return "En route vers la destination";
-      case DriverTripStatus.completed: return "Course terminée";
-    }
-  }
+  String get instructionText => switch (currentStatus.value) {
+        DriverTripStatus.accepted => 'Allez chercher le client',
+        DriverTripStatus.arrived => 'Le client vous attend',
+        DriverTripStatus.pickedUp => 'En route vers la destination',
+        DriverTripStatus.completed => 'Course terminée',
+      };
 }

@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-import '../../../../app/routes/app_routes.dart';
+import '../../../../core/location/background_location_service.dart';
 import '../../../../core/location/location_service.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/storage/app_storage.dart';
+import '../../trip_mgt/service/driver_socket_service.dart';
 import '../../../client/trip/model/place_model.dart';
 
 class DriverDashboardController extends GetxController {
@@ -73,7 +74,15 @@ class DriverDashboardController extends GetxController {
     isOnline.value = value;
     await AppStorage.updateUser({'is_online': value});
 
+    final locationService = Get.find<BackgroundLocationService>();
+    final socketService = Get.find<DriverSocketService>();
+
     if (value) {
+      await locationService.startLocationTracking(dataSaverEnabled: false);
+      final driverId = user.id;
+      if (driverId != null) {
+        await socketService.initSocketConnection(driverId.toString());
+      }
       _onlineStartedAt = DateTime.now();
       _onlineTimer?.cancel();
       _onlineTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -83,6 +92,8 @@ class DriverDashboardController extends GetxController {
         }
       });
     } else {
+      locationService.stopLocationTracking();
+      await socketService.disconnectSocket();
       _onlineTimer?.cancel();
       _onlineStartedAt = null;
     }

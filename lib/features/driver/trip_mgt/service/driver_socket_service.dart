@@ -1,27 +1,46 @@
+import 'dart:async';
 import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
-import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:nokiride/core/network/api_client.dart';
 import 'package:nokiride/core/storage/app_storage.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
+
 import '../presentation/widgets/trip_proposal_bottom_sheet.dart';
 
-/// Service de communication temps réel pour les chauffeurs.
-/// Gère la réception des courses via Pusher Channels (Laravel Reverb) et FCM.
+/// Point d'entrée unique du dispatch chauffeur (Reverb, FCM et reprise d'app).
 class DriverSocketService extends GetxService with WidgetsBindingObserver {
-  PusherChannelsFlutter pusher = PusherChannelsFlutter.getInstance();
+  final PusherChannelsFlutter pusher = PusherChannelsFlutter.getInstance();
+  final Set<String> _terminalTripIds = <String>{};
+
+  StreamSubscription<RemoteMessage>? _foregroundFcmSubscription;
+  StreamSubscription<RemoteMessage>? _openedAppFcmSubscription;
+  StreamSubscription<Map<String, dynamic>?>? _backgroundAckSubscription;
+  String? _channelName;
+  String? _activeTripId;
+  bool _socketInitialized = false;
 
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    _listenToServiceUpdates();
+    _listenToBackgroundService();
+    initFcmListeners();
   }
 
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
+    _foregroundFcmSubscription?.cancel();
+    _openedAppFcmSubscription?.cancel();
+    _backgroundAckSubscription?.cancel();
+    final channel = _channelName;
+    if (channel != null) {
+      pusher.unsubscribe(channelName: channel);
+    }
     pusher.disconnect();
     super.onClose();
   }
@@ -36,103 +55,138 @@ class DriverSocketService extends GetxService with WidgetsBindingObserver {
   Future<void> _performSyncCheck() async {
     try {
       final response = await ApiClient.instance.get('/driver/current-offers');
-      if (response['status'] == 'success' && response['data'] != null) {
-        final List offers = response['data'];
-        if (offers.isNotEmpty && !(Get.isBottomSheetOpen ?? false)) {
-          _handleNewTrip(offers.first);
-        }
+      final offers = response['data'];
+      if (response['status'] == 'success' &&
+          offers is List &&
+          offers.isNotEmpty) {
+        _handleNewTrip(Map<String, dynamic>.from(offers.first as Map));
       }
-    } catch (e) {
-      debugPrint("Sync Check Error: $e");
+    } catch (error) {
+      debugPrint('Dispatch sync error: $error');
     }
   }
 
-  void _listenToServiceUpdates() {
-    // ... existant
+  void _listenToBackgroundService() {
+    _backgroundAckSubscription = FlutterBackgroundService()
+        .on('dispatchStateChanged')
+        .listen((event) => debugPrint('Background dispatch ack: $event'));
   }
 
-  /// Initialise la connexion Pusher pour Laravel Reverb
+  void _notifyBackground(String tripId, String state) {
+    FlutterBackgroundService().invoke('dispatchCommand', {
+      'trip_id': tripId,
+      'state': state,
+    });
+  }
+
   Future<void> initSocketConnection(String driverId) async {
     final token = await AppStorage.token;
-    if (token == null) return;
+    if (token == null || token.isEmpty) return;
+
+    final wantedChannel = 'private-driver.status.$driverId';
+    if (_socketInitialized && _channelName == wantedChannel) return;
 
     try {
+      if (_channelName != null) {
+        await pusher.unsubscribe(channelName: _channelName!);
+        await pusher.disconnect();
+      }
+
       await pusher.init(
-        apiKey: "nokiride-key",
-        cluster: "mt1",
+        apiKey: 'nokiride-key',
+        cluster: 'mt1',
         useTLS: false,
-        onEvent: (PusherEvent event) {
-          _onPusherEvent(event);
-        },
-        onAuthorizer: (channelName, socketId, options) async {
-          final authResponse = await ApiClient.instance.post(
-            "/broadcasting/auth",
-            data: {
-              "socket_id": socketId,
-              "channel_name": channelName,
-            },
-          );
-          return authResponse;
-        },
+        onEvent: _onPusherEvent,
+        onAuthorizer: (channelName, socketId, options) =>
+            ApiClient.instance.post('/broadcasting/auth', data: {
+          'socket_id': socketId,
+          'channel_name': channelName,
+        }),
       );
-
-      // Si ton plugin ne permet pas de régler le host en Dart, 
-      // il faudra peut-être repasser sur pusher_client ou configurer le native.
-
-      await pusher.subscribe(channelName: "private-driver.status.$driverId");
       await pusher.connect();
-      
-      debugPrint('Pusher Connected: Subscribed to private-driver.status.$driverId');
-    } catch (e) {
-      debugPrint("Pusher Initialization Error: $e");
+      await pusher.subscribe(channelName: wantedChannel);
+      _channelName = wantedChannel;
+      _socketInitialized = true;
+      await _performSyncCheck();
+    } catch (error) {
+      _socketInitialized = false;
+      debugPrint('Pusher initialization error: $error');
     }
+  }
+
+  Future<void> disconnectSocket() async {
+    final channel = _channelName;
+    if (channel != null) await pusher.unsubscribe(channelName: channel);
+    await pusher.disconnect();
+    _channelName = null;
+    _socketInitialized = false;
   }
 
   void _onPusherEvent(PusherEvent event) {
     if (event.data == null) return;
-    final Map<String, dynamic> data = jsonDecode(event.data.toString());
+    final decoded = jsonDecode(event.data.toString());
+    if (decoded is! Map) return;
+    final data = Map<String, dynamic>.from(decoded);
 
-    if (event.eventName == 'TripRequested') {
+    if (event.eventName == 'TripRequested' ||
+        event.eventName == '.TripRequested') {
       _handleNewTrip(data);
-    } else if (event.eventName == 'TripCancelled') {
+    } else if (event.eventName == 'TripCancelled' ||
+        event.eventName == '.TripCancelled') {
       _handleTripCancelled(data);
     }
   }
 
-  void _handleNewTrip(Map<String, dynamic>? data) {
-    if (data == null) return;
-    Get.bottomSheet(
-      TripProposalBottomSheet(tripData: data),
+  void _handleNewTrip(Map<String, dynamic> data) {
+    final tripId = (data['trip_id'] ?? data['id'])?.toString();
+    if (tripId == null || tripId.isEmpty) return;
+    if (_terminalTripIds.contains(tripId) || _activeTripId == tripId) return;
+    if (_activeTripId != null || (Get.isBottomSheetOpen ?? false)) return;
+
+    _activeTripId = tripId;
+    _notifyBackground(tripId, 'presented');
+    Get.bottomSheet<void>(
+      TripProposalBottomSheet(
+        tripData: data,
+        onAccepted: (trip) => _resolveOffer(tripId, 'accepted'),
+        onRejected: () => _resolveOffer(tripId, 'rejected'),
+        onExpired: () => _resolveOffer(tripId, 'expired'),
+      ),
       isDismissible: false,
       enableDrag: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.5),
-    );
+    ).whenComplete(() {
+      if (_activeTripId == tripId) _activeTripId = null;
+    });
   }
 
-  void _handleTripCancelled(Map<String, dynamic>? data) {
-    if (Get.isBottomSheetOpen ?? false) {
-      Get.back();
+  void _resolveOffer(String tripId, String state) {
+    _terminalTripIds.add(tripId);
+    if (_activeTripId == tripId) _activeTripId = null;
+    _notifyBackground(tripId, state);
+  }
+
+  void _handleTripCancelled(Map<String, dynamic> data) {
+    final tripId = (data['trip_id'] ?? data['id'])?.toString();
+    if (tripId == null) return;
+    _resolveOffer(tripId, 'cancelled');
+    if (_activeTripId == null && (Get.isBottomSheetOpen ?? false)) {
+      Get.back<void>();
       Get.snackbar(
-        "Course annulée",
-        "La demande a été annulée par le passager ou a expiré.",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.orange.shade800,
-        colorText: Colors.white,
-        icon: const Icon(Icons.info_outline, color: Colors.white),
-        duration: const Duration(seconds: 4),
-      );
+          'Course annulée', 'Cette proposition n’est plus disponible.');
     }
   }
 
-  Future<void> initFcmListeners() async {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.data['type'] == 'NEW_TRIP') {}
+  void initFcmListeners() {
+    _foregroundFcmSubscription ??=
+        FirebaseMessaging.onMessage.listen((message) {
+      if (message.data['type'] == 'NEW_TRIP') _handleNewTrip(message.data);
     });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (message.data['type'] == 'NEW_TRIP') {}
+    _openedAppFcmSubscription ??=
+        FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      if (message.data['type'] == 'NEW_TRIP') _handleNewTrip(message.data);
     });
   }
 }
@@ -140,6 +194,9 @@ class DriverSocketService extends GetxService with WidgetsBindingObserver {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['type'] == 'NEW_TRIP') {
-    debugPrint("Background Trip Received: ${message.data['trip_id']}");
+    FlutterBackgroundService().invoke('dispatchCommand', {
+      'trip_id': message.data['trip_id'],
+      'state': 'received_in_background',
+    });
   }
 }

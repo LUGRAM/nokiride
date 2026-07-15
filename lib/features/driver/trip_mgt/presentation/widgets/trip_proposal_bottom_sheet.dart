@@ -6,14 +6,21 @@ import '../../../../../core/network/api_client.dart';
 
 class TripProposalBottomSheet extends StatefulWidget {
   final Map<String, dynamic> tripData;
+  final ValueChanged<Map<String, dynamic>> onAccepted;
+  final VoidCallback onRejected;
+  final VoidCallback onExpired;
 
   const TripProposalBottomSheet({
     super.key,
     required this.tripData,
+    required this.onAccepted,
+    required this.onRejected,
+    required this.onExpired,
   });
 
   @override
-  State<TripProposalBottomSheet> createState() => _TripProposalBottomSheetState();
+  State<TripProposalBottomSheet> createState() =>
+      _TripProposalBottomSheetState();
 }
 
 class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
@@ -23,15 +30,20 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
 
   String get tripId => widget.tripData['trip_id']?.toString() ?? '';
   String get pickup => widget.tripData['pickup_address'] ?? 'Position actuelle';
-  String get destination => widget.tripData['destination_address'] ?? 'Destination inconnue';
-  String get earnings => widget.tripData['estimated_earnings']?.toString() ?? '0';
-  String get distance => widget.tripData['distance_km']?.toString() ?? '0';
+  String get destination =>
+      widget.tripData['destination_address'] ?? 'Destination inconnue';
+  String get earnings =>
+      widget.tripData['estimated_earnings']?.toString() ?? '0';
+  String get distance =>
+      (widget.tripData['distance'] ?? widget.tripData['distance_km'])
+          ?.toString() ??
+      '0';
   int get timeout => widget.tripData['timeout_seconds'] ?? 15;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Vibration pour capter l'attention du chauffeur
     HapticFeedback.heavyImpact();
 
@@ -55,7 +67,9 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
 
   Future<void> _autoReject() async {
     try {
-      await ApiClient.instance.post('/trips/$tripId/reject', data: {'reason': 'timeout'});
+      await ApiClient.instance
+          .post('/trips/$tripId/reject', data: {'reason': 'timeout'});
+      widget.onExpired();
     } finally {
       if (Get.isBottomSheetOpen ?? false) Get.back();
     }
@@ -65,7 +79,9 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
     if (_isProcessing) return;
     setState(() => _isProcessing = true);
     try {
-      await ApiClient.instance.post('/trips/$tripId/reject', data: {'reason': 'manual_reject'});
+      await ApiClient.instance
+          .post('/trips/$tripId/reject', data: {'reason': 'manual_reject'});
+      widget.onRejected();
     } finally {
       if (mounted) Get.back();
     }
@@ -75,27 +91,30 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
     if (_isProcessing) return;
 
     setState(() => _isProcessing = true);
-    
+
     try {
       final response = await ApiClient.instance.post('/trips/$tripId/accept');
-      
+
       if (response['status'] == 'success') {
         if (mounted) {
-          Get.back(); // Ferme le BottomSheet
-          // Redirection vers la page du trajet actif avec les données reçues
-          Get.toNamed('/driver/active-trip', arguments: response['trip']);
+          final trip = Map<String, dynamic>.from(response['trip'] as Map);
+          widget.onAccepted(trip);
+          Get.back();
+          Get.toNamed('/driver/active-trip', arguments: trip);
         }
       } else {
-        _handleAcceptError(response['error'] ?? "Impossible d'accepter la course.");
+        _handleAcceptError(
+            response['error'] ?? "Impossible d'accepter la course.");
       }
     } catch (e) {
       // Gestion spécifique des erreurs HTTP (ex: 410 Gone de Laravel)
       if (e.toString().contains('410') || e.toString().contains('409')) {
-        _handleAcceptError("Désolé, un autre chauffeur a accepté cette course plus rapidement.");
+        _handleAcceptError(
+            "Désolé, un autre chauffeur a accepté cette course plus rapidement.");
       } else {
-        setState(() => _isProcessing = false); // Réactive les boutons pour erreur réseau
+        if (mounted) setState(() => _isProcessing = false);
         Get.snackbar(
-          "Erreur", 
+          "Erreur",
           "Problème de connexion. Veuillez réessayer.",
           backgroundColor: Colors.red.withOpacity(0.8),
           colorText: Colors.white,
@@ -107,9 +126,9 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
 
   void _handleAcceptError(String message) {
     if (!mounted) return;
-    
+
     setState(() => _isProcessing = false);
-    
+
     // Affichage d'un message d'erreur visuel
     Get.snackbar(
       "Course indisponible",
@@ -159,7 +178,7 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Timer & Titre
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -181,21 +200,25 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
                       builder: (context, child) => CircularProgressIndicator(
                         value: _progressController.value,
                         strokeWidth: 4,
-                        color: _progressController.value < 0.3 ? Colors.red : const Color(0xFF2E7D32),
-                        backgroundColor: const Color(0xFF2E7D32).withOpacity(0.1),
+                        color: _progressController.value < 0.3
+                            ? Colors.red
+                            : const Color(0xFF2E7D32),
+                        backgroundColor:
+                            const Color(0xFF2E7D32).withOpacity(0.1),
                       ),
                     ),
                     Text(
                       "${(timeout * _progressController.value).ceil()}",
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 13),
                     ),
                   ],
                 )
               ],
             ),
-            
+
             const SizedBox(height: 30),
-            
+
             // Gain estimé
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -223,12 +246,12 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
             ),
 
             const SizedBox(height: 24),
-            
+
             // Adresses
             _buildRouteTimeline(pickup, destination, isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Distance
             Row(
               children: [
@@ -236,16 +259,20 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
                 const SizedBox(width: 8),
                 Text(
                   "Distance : $distance km",
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Actions
             if (_isProcessing)
-              const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
+              const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
             else
               Row(
                 children: [
@@ -261,7 +288,8 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
                       ),
                       child: const Text(
                         "REFUSER",
-                        style: TextStyle(fontWeight: FontWeight.w800, color: Colors.grey),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800, color: Colors.grey),
                       ),
                     ),
                   ),
@@ -274,11 +302,13 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                       ),
                       child: const Text(
                         "ACCEPTER",
-                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900, fontSize: 16),
                       ),
                     ),
                   ),
@@ -295,12 +325,14 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
       children: [
         Row(
           children: [
-            const Icon(Icons.radio_button_checked, size: 20, color: Color(0xFF2E7D32)),
+            const Icon(Icons.radio_button_checked,
+                size: 20, color: Color(0xFF2E7D32)),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
                 from,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -322,7 +354,8 @@ class _TripProposalBottomSheetState extends State<TripProposalBottomSheet>
             Expanded(
               child: Text(
                 to,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
