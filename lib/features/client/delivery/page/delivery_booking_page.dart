@@ -22,6 +22,7 @@ class DeliveryBookingPage extends GetView<DeliveryController> {
             child: Obx(() => MiniMapWidget(
                   pickup: controller.pickup.value,
                   dropoff: controller.dropoff.value,
+                  routePoints: controller.routePoints.toList(growable: false),
                 )),
           ),
 

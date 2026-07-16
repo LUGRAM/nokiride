@@ -20,4 +20,15 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('retourne une liste vide pour une polyline vide', () {
+    expect(PolylineDecoder.decodePolyline(''), isEmpty);
+  });
+
+  test('rejette les caractères hors de l’alphabet Google', () {
+    expect(
+      () => PolylineDecoder.decodePolyline('!!'),
+      throwsFormatException,
+    );
+  });
 }

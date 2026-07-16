@@ -21,6 +21,7 @@ class DriverSocketService extends GetxService with WidgetsBindingObserver {
   StreamSubscription<Map<String, dynamic>?>? _backgroundAckSubscription;
   String? _channelName;
   String? _activeTripId;
+  String? _activeDeliveryId;
   bool _socketInitialized = false;
 
   @override
@@ -63,6 +64,23 @@ class DriverSocketService extends GetxService with WidgetsBindingObserver {
       }
     } catch (error) {
       debugPrint('Dispatch sync error: $error');
+    }
+    try {
+      final response =
+          await ApiClient.instance.get('/driver/current-deliveries');
+      final deliveries = response['data'];
+      if (deliveries is List && deliveries.isNotEmpty) {
+        _handleDeliveryAssigned(
+          Map<String, dynamic>.from(deliveries.first as Map),
+        );
+      } else {
+        FlutterBackgroundService().invoke('dispatchCommand', {
+          'tracking_type': 'delivery',
+          'state': 'clear_tracking',
+        });
+      }
+    } catch (error) {
+      debugPrint('Delivery sync error: $error');
     }
   }
 
@@ -134,7 +152,42 @@ class DriverSocketService extends GetxService with WidgetsBindingObserver {
     } else if (event.eventName == 'TripCancelled' ||
         event.eventName == '.TripCancelled') {
       _handleTripCancelled(data);
+    } else if (event.eventName == 'DeliveryAssigned' ||
+        event.eventName == '.DeliveryAssigned') {
+      _handleDeliveryAssigned(data);
+    } else if (event.eventName == 'DeliveryTrackingStopped' ||
+        event.eventName == '.DeliveryTrackingStopped') {
+      FlutterBackgroundService().invoke('dispatchCommand', {
+        'delivery_id': data['delivery_id']?.toString(),
+        'tracking_type': 'delivery',
+        'state': data['status']?.toString() ?? 'completed',
+      });
     }
+  }
+
+  void _handleDeliveryAssigned(Map<String, dynamic> data) {
+    final deliveryId = (data['delivery_id'] ?? data['id'])?.toString();
+    if (deliveryId == null) return;
+    FlutterBackgroundService().invoke('dispatchCommand', {
+      'delivery_id': deliveryId,
+      'tracking_type': 'delivery',
+      'state': 'accepted',
+    });
+    Get.snackbar(
+      'Nouvelle livraison',
+      'Livraison assignée : ${data['pickup_address'] ?? ''}',
+    );
+    if (_activeDeliveryId == deliveryId) return;
+    _activeDeliveryId = deliveryId;
+    final delivery = <String, dynamic>{
+      ...data,
+      'id': deliveryId,
+      'entity_type': 'delivery',
+      'dropoff_address': data['dropoff_address'] ?? data['destination_address'],
+    };
+    Get.toNamed('/driver/active-trip', arguments: delivery)?.whenComplete(() {
+      if (_activeDeliveryId == deliveryId) _activeDeliveryId = null;
+    });
   }
 
   void _handleNewTrip(Map<String, dynamic> data) {
@@ -156,7 +209,7 @@ class DriverSocketService extends GetxService with WidgetsBindingObserver {
       enableDrag: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
     ).whenComplete(() {
       if (_activeTripId == tripId) _activeTripId = null;
     });

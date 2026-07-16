@@ -213,7 +213,7 @@ class ProfilePage extends GetView<ProfileController> {
                       _buildTile(
                         icon: Icons.help_outline_rounded,
                         label: "Centre d'aide & FAQ",
-                        onTap: () {},
+                        onTap: () => Get.toNamed('/support/help'),
                         colorSlate: colorSlate,
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,
@@ -221,7 +221,7 @@ class ProfilePage extends GetView<ProfileController> {
                       _buildTile(
                         icon: Icons.chat_bubble_outline_rounded,
                         label: "Contacter le support",
-                        onTap: () {},
+                        onTap: () => Get.toNamed('/support/contact'),
                         colorSlate: colorSlate,
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,
@@ -235,7 +235,7 @@ class ProfilePage extends GetView<ProfileController> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            "En ligne",
+                            "Formulaire",
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -248,7 +248,7 @@ class ProfilePage extends GetView<ProfileController> {
                       _buildTile(
                         icon: Icons.description_outlined,
                         label: "Conditions Générales & CGU",
-                        onTap: () {},
+                        onTap: () => Get.toNamed('/support/legal'),
                         colorSlate: colorSlate,
                         colorTextPrimary: colorTextPrimary,
                         colorTextSecondary: colorTextSecondary,

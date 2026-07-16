@@ -21,6 +21,7 @@ class DeliveryTrackingPage extends GetView<DeliveryController> {
                   pickup: controller.pickup.value,
                   dropoff: controller.dropoff.value,
                   driverLocation: controller.courierLocation.value,
+                  routePoints: controller.routePoints.toList(growable: false),
                   showDriver: true,
                 )),
           ),
@@ -66,7 +67,7 @@ class _SosBtn extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-                color: AppColors.error.withOpacity(.40),
+                color: AppColors.error.withValues(alpha: .40),
                 blurRadius: 12,
                 offset: const Offset(0, 4))
           ],
@@ -103,7 +104,7 @@ class _CourierSheet extends GetView<DeliveryController> {
         border: Border(top: BorderSide(color: border)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(.12),
+              color: Colors.black.withValues(alpha: .12),
               blurRadius: 20,
               offset: const Offset(0, -6))
         ],
@@ -145,9 +146,9 @@ class _CourierSheet extends GetView<DeliveryController> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(.12),
+                  color: accent.withValues(alpha: .12),
                   shape: BoxShape.circle,
-                  border: Border.all(color: accent.withOpacity(.25)),
+                  border: Border.all(color: accent.withValues(alpha: .25)),
                 ),
                 child: Icon(Icons.person_rounded, color: accent, size: 26),
               ),

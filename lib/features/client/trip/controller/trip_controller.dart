@@ -3,13 +3,17 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/location/driver_tracking_service.dart';
 import '../../../../core/location/location_service.dart';
 import '../../../../core/location/place_provider.dart';
+import '../../../../core/location/trip_tracking_service.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/navigation/google_routes_service.dart';
+import '../../../../core/navigation/route_geometry.dart';
 import '../../../../core/network/services/trip_api_service.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../model/place_model.dart';
 import '../model/trip_model.dart';
 
@@ -22,10 +26,16 @@ const int _tarifMinimum = 800; // prix plancher
 enum TripStep { destination, selecting, matching, tracking }
 
 class TripController extends GetxController {
-  TripController(this._tripService, this._placeProvider);
+  TripController(
+    this._tripService,
+    this._placeProvider, {
+    GoogleRoutesService? routesService,
+  }) : _routesService = routesService ?? const GoogleRoutesService();
 
   final TripApiService _tripService;
   final PlaceProvider _placeProvider;
+  final GoogleRoutesService _routesService;
+  final TripTrackingService _trackingService = TripTrackingService();
 
   // ─── Flux UX ────────────────────────────────────────────────
   final Rx<TripStep> currentStep = TripStep.destination.obs;
@@ -44,6 +54,9 @@ class TripController extends GetxController {
   final Rx<PlaceModel?> dropoff = Rx<PlaceModel?>(null);
   final Rx<PlaceModel?> userLocation = Rx<PlaceModel?>(null);
   final Rx<PlaceModel?> driverLocation = Rx<PlaceModel?>(null);
+  final RxList<LatLng> routePoints = <LatLng>[].obs;
+  final RxBool isRouteLoading = false.obs;
+  final RxInt dynamicEtaSeconds = 0.obs;
 
   // ─── Recherche de lieu ──────────────────────────────────────
   final RxList<PlaceModel> searchResults = <PlaceModel>[].obs;
@@ -51,9 +64,12 @@ class TripController extends GetxController {
   final Rx<RxStatus> placeSearchStatus = RxStatus.empty().obs;
 
   // ─── Timer de simulation ────────────────────────────────────
-  Timer? _searchTimer;
-  StreamSubscription<PlaceModel>? _driverTrackingSub;
+  StreamSubscription<DriverTrackingUpdate>? _driverTrackingSub;
   Worker? _userLocationWorker;
+  Timer? _etaTimer;
+  DateTime? _lastRerouteAt;
+  bool _routeRefreshInFlight = false;
+  String _remoteTripStatus = 'searching';
 
   // ─── Getters ────────────────────────────────────────────────
   bool get canEstimate => pickup.value != null && dropoff.value != null;
@@ -61,6 +77,7 @@ class TripController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _restoreActiveTrip();
     _setCurrentPickup();
     userLocation.bindStream(LocationService.placeStream());
     _userLocationWorker = ever<PlaceModel?>(userLocation, (place) {
@@ -71,9 +88,50 @@ class TripController extends GetxController {
     });
   }
 
+  void _restoreActiveTrip() {
+    final stored = AppStorage.activeTrip;
+    if (stored == null) return;
+    final pickupData = stored['pickup'];
+    final dropoffData = stored['dropoff'];
+    if (pickupData is! Map || dropoffData is! Map) return;
+
+    final restoredStatus = _tripStatusFromApi('${stored['status'] ?? ''}');
+    final restoredPickup = PlaceModel.fromJson(
+      Map<String, dynamic>.from(pickupData),
+    );
+    final restoredDropoff = PlaceModel.fromJson(
+      Map<String, dynamic>.from(dropoffData),
+    );
+    pickup.value = restoredPickup;
+    dropoff.value = restoredDropoff;
+    currentTrip.value = TripModel(
+      id: '${stored['id']}',
+      pickup: restoredPickup,
+      dropoff: restoredDropoff,
+      distanceKm: double.tryParse('${stored['distance_km']}') ?? 0,
+      priceFCFA: int.tryParse('${stored['price_fcfa']}') ?? 0,
+      estimatedMinutes: int.tryParse('${stored['estimated_minutes']}') ?? 0,
+      status: restoredStatus,
+    );
+    _remoteTripStatus = '${stored['status'] ?? 'searching'}';
+    final savedRoute = stored['last_polyline'];
+    if (savedRoute is List) {
+      routePoints.assignAll(savedRoute.whereType<Map>().map((point) => LatLng(
+            double.parse('${point['latitude']}'),
+            double.parse('${point['longitude']}'),
+          )));
+    }
+    currentStep.value = restoredStatus == TripStatus.searching
+        ? TripStep.matching
+        : TripStep.tracking;
+    _startDriverTracking();
+    if (routePoints.isEmpty) unawaited(_loadRoute());
+  }
+
   Future<void> _setCurrentPickup() async {
+    if (currentTrip.value != null) return;
     final position = await LocationService.currentPosition();
-    if (position == null) return;
+    if (position == null || currentTrip.value != null) return;
     pickup.value = PlaceModel(
       name: 'Position actuelle',
       address: 'Votre position GPS',
@@ -201,16 +259,6 @@ class TripController extends GetxController {
 
     currentStep.value = TripStep.matching;
     status.value = TripStatus.searching;
-    final delay = 4 + Random().nextInt(4);
-    _searchTimer = Timer(Duration(seconds: delay), _assignDriver);
-  }
-
-  Future<void> _assignDriver() async {
-    status.value = TripStatus.assigned;
-    currentTrip.value =
-        currentTrip.value?.copyWith(status: TripStatus.assigned);
-    await _syncTripStatus('assigned');
-    currentStep.value = TripStep.tracking;
     _startDriverTracking();
   }
 
@@ -224,7 +272,6 @@ class TripController extends GetxController {
   }
 
   void cancelTrip() {
-    _searchTimer?.cancel();
     _reset();
     Get.offAllNamed(Routes.home);
   }
@@ -234,9 +281,12 @@ class TripController extends GetxController {
     pickup.value = userLocation.value;
     dropoff.value = null;
     driverLocation.value = null;
+    routePoints.clear();
     currentTrip.value = null;
     status.value = TripStatus.idle;
     _driverTrackingSub?.cancel();
+    _etaTimer?.cancel();
+    unawaited(AppStorage.clearActiveTrip());
   }
 
   String _generateId() =>
@@ -268,6 +318,10 @@ class TripController extends GetxController {
       final data = await _tripService.create({
         'pickup_address': trip.pickup.address,
         'dropoff_address': trip.dropoff.address,
+        'pickup_latitude': trip.pickup.lat,
+        'pickup_longitude': trip.pickup.lng,
+        'dropoff_latitude': trip.dropoff.lat,
+        'dropoff_longitude': trip.dropoff.lng,
         'distance_km': trip.distanceKm,
         'service_type':
             selectedServiceId.value == 'premium' ? 'premium' : 'eco',
@@ -290,6 +344,8 @@ class TripController extends GetxController {
         estimatedMinutes: trip.estimatedMinutes,
         status: TripStatus.searching,
       );
+      await _persistActiveTrip();
+      unawaited(_loadRoute());
       return true;
     } on ApiException catch (error) {
       Get.snackbar('Paiement impossible', error.message,
@@ -303,6 +359,29 @@ class TripController extends GetxController {
     }
   }
 
+  Future<void> _loadRoute() async {
+    final trip = currentTrip.value;
+    if (trip == null) return;
+
+    isRouteLoading.value = true;
+    try {
+      final route = await _routesService.route(
+        origin: LatLng(trip.pickup.lat, trip.pickup.lng),
+        destination: LatLng(trip.dropoff.lat, trip.dropoff.lng),
+      );
+      routePoints.assignAll(route.points);
+      dynamicEtaSeconds.value = route.durationSeconds;
+      currentTrip.value = currentTrip.value?.copyWith(
+        estimatedMinutes: max(1, (route.durationSeconds / 60).ceil()),
+      );
+      await _persistActiveTrip();
+    } catch (_) {
+      routePoints.clear();
+    } finally {
+      isRouteLoading.value = false;
+    }
+  }
+
   Future<void> _syncTripStatus(String apiStatus) async {
     final id = int.tryParse(currentTrip.value?.id ?? '');
     if (id == null) return;
@@ -312,7 +391,7 @@ class TripController extends GetxController {
       Get.snackbar('Synchronisation impossible', error.message,
           snackPosition: SnackPosition.BOTTOM);
     } catch (_) {
-      // La simulation locale continue même si le backend est indisponible.
+      // L'état local reste visible pendant une coupure temporaire.
     }
   }
 
@@ -320,20 +399,110 @@ class TripController extends GetxController {
     final trip = currentTrip.value;
     if (trip == null) return;
     _driverTrackingSub?.cancel();
-    _driverTrackingSub = DriverTrackingService.simulateRoute(
-      pickup: trip.pickup,
-      dropoff: trip.dropoff,
-      label: 'Chauffeur',
-    ).listen((position) {
-      driverLocation.value = position;
+    _driverTrackingSub = _trackingService.positions.listen((update) {
+      final isFirstPosition = driverLocation.value == null;
+      driverLocation.value = update.position;
+      _remoteTripStatus = update.tripStatus;
+      if (currentStep.value != TripStep.tracking) {
+        status.value = TripStatus.assigned;
+        currentTrip.value =
+            currentTrip.value?.copyWith(status: TripStatus.assigned);
+        currentStep.value = TripStep.tracking;
+      }
+      unawaited(_persistActiveTrip());
+      if (isFirstPosition) unawaited(_refreshDynamicEta());
+      _maybeRecalculateForDeviation(update.position);
     });
+    _trackingService.subscribe(trip.id).catchError((Object error) {
+      Get.snackbar(
+        'Suivi indisponible',
+        'Vérifiez votre connexion puis rouvrez le suivi de la course.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    });
+    _etaTimer?.cancel();
+    _etaTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _refreshDynamicEta(),
+    );
   }
 
   @override
   void onClose() {
-    _searchTimer?.cancel();
     _driverTrackingSub?.cancel();
+    _etaTimer?.cancel();
+    _trackingService.dispose();
     _userLocationWorker?.dispose();
     super.onClose();
+  }
+
+  Future<void> _refreshDynamicEta({bool redrawRoute = false}) async {
+    final driver = driverLocation.value;
+    final trip = currentTrip.value;
+    if (driver == null || trip == null || _routeRefreshInFlight) return;
+    _routeRefreshInFlight = true;
+    try {
+      final target =
+          _remoteTripStatus == 'in_progress' ? trip.dropoff : trip.pickup;
+      final route = await _routesService.route(
+        origin: LatLng(driver.lat, driver.lng),
+        destination: LatLng(target.lat, target.lng),
+      );
+      dynamicEtaSeconds.value = route.durationSeconds;
+      currentTrip.value = trip.copyWith(
+        estimatedMinutes: max(1, (route.durationSeconds / 60).ceil()),
+      );
+      if (redrawRoute) routePoints.assignAll(route.points);
+      await _persistActiveTrip();
+    } catch (_) {
+      // La dernière ETA fiable reste affichée hors connexion.
+    } finally {
+      _routeRefreshInFlight = false;
+    }
+  }
+
+  void _maybeRecalculateForDeviation(PlaceModel driver) {
+    if (_remoteTripStatus != 'in_progress' || routePoints.length < 2) return;
+    final last = _lastRerouteAt;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(minutes: 1)) {
+      return;
+    }
+    final distance = RouteGeometry.distanceToRouteMeters(
+      LatLng(driver.lat, driver.lng),
+      routePoints,
+    );
+    if (distance <= 100) return;
+    _lastRerouteAt = DateTime.now();
+    unawaited(_refreshDynamicEta(redrawRoute: true));
+  }
+
+  TripStatus _tripStatusFromApi(String value) => switch (value) {
+        'searching' => TripStatus.searching,
+        'accepted' || 'assigned' => TripStatus.assigned,
+        'in_progress' => TripStatus.inProgress,
+        'completed' => TripStatus.completed,
+        'cancelled' => TripStatus.cancelled,
+        _ => TripStatus.searching,
+      };
+
+  Future<void> _persistActiveTrip() async {
+    final trip = currentTrip.value;
+    if (trip == null) return;
+    await AppStorage.saveActiveTrip({
+      'id': trip.id,
+      'status': _remoteTripStatus,
+      'pickup': trip.pickup.toJson(),
+      'dropoff': trip.dropoff.toJson(),
+      'distance_km': trip.distanceKm,
+      'price_fcfa': trip.priceFCFA,
+      'estimated_minutes': trip.estimatedMinutes,
+      'last_polyline': routePoints
+          .map((point) => {
+                'latitude': point.latitude,
+                'longitude': point.longitude,
+              })
+          .toList(growable: false),
+    });
   }
 }

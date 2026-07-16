@@ -61,7 +61,12 @@ class DeliveryModel {
     this.status = DeliveryStatus.idle,
   });
 
-  DeliveryModel copyWith({String? id, DeliveryStatus? status}) => DeliveryModel(
+  DeliveryModel copyWith({
+    String? id,
+    DeliveryStatus? status,
+    int? estimatedMinutes,
+  }) =>
+      DeliveryModel(
         id: id ?? this.id,
         pickup: pickup,
         dropoff: dropoff,
@@ -70,7 +75,7 @@ class DeliveryModel {
         parcelNote: parcelNote,
         distanceKm: distanceKm,
         priceFCFA: priceFCFA,
-        estimatedMinutes: estimatedMinutes,
+        estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
         status: status ?? this.status,
       );
 

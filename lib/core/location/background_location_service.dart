@@ -77,6 +77,18 @@ class BackgroundLocationService extends GetxService {
     isServiceRunning.value = false;
   }
 
+  void updateActiveTripState(
+    String entityId,
+    String state, {
+    String trackingType = 'trip',
+  }) {
+    FlutterBackgroundService().invoke('dispatchCommand', {
+      trackingType == 'delivery' ? 'delivery_id' : 'trip_id': entityId,
+      'tracking_type': trackingType,
+      'state': state,
+    });
+  }
+
   void _listenToServiceUpdates() {
     _serviceUpdateSubscription?.cancel();
     _serviceUpdateSubscription =
@@ -99,11 +111,19 @@ class BackgroundLocationService extends GetxService {
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   await GetStorage.init();
+  final storage = GetStorage();
 
   bool dataSaver = false;
   StreamSubscription<Position>? positionStream;
-  List<Map<String, dynamic>> locationBuffer = [];
-  String? activeDispatchId;
+  final storedBuffer = storage.read<List<dynamic>>('gps_location_buffer');
+  List<Map<String, dynamic>> locationBuffer = storedBuffer
+          ?.whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList() ??
+      <Map<String, dynamic>>[];
+  String? activeEntityId = storage.read('gps_active_entity_id')?.toString();
+  String activeTrackingType =
+      storage.read('gps_tracking_type')?.toString() ?? 'trip';
 
   if (service is AndroidServiceInstance) {
     service
@@ -115,20 +135,51 @@ void onStart(ServiceInstance service) async {
   }
 
   late final StreamSubscription<Map<String, dynamic>?> dispatchSubscription;
-  dispatchSubscription = service.on('dispatchCommand').listen((event) {
+  dispatchSubscription = service.on('dispatchCommand').listen((event) async {
     final tripId = event?['trip_id']?.toString();
+    final deliveryId = event?['delivery_id']?.toString();
+    final entityId = deliveryId ?? tripId;
+    final trackingType = deliveryId != null
+        ? 'delivery'
+        : event?['tracking_type']?.toString() ?? 'trip';
     final state = event?['state']?.toString();
-    if (tripId == null || state == null) return;
+    if (state == 'clear_tracking' && activeTrackingType == trackingType) {
+      activeEntityId = null;
+      locationBuffer.clear();
+      await storage.remove('gps_active_entity_id');
+      await storage.remove('gps_tracking_type');
+      await storage.remove('gps_location_buffer');
+      return;
+    }
+    if (entityId == null || state == null) return;
 
-    activeDispatchId = state == 'presented' || state == 'received_in_background'
-        ? tripId
-        : activeDispatchId == tripId
-            ? null
-            : activeDispatchId;
+    if (state == 'accepted' || state == 'in_progress') {
+      if (activeEntityId != entityId || activeTrackingType != trackingType) {
+        locationBuffer.clear();
+        await storage.remove('gps_location_buffer');
+      }
+      activeEntityId = entityId;
+      activeTrackingType = trackingType;
+      await storage.write('gps_active_entity_id', entityId);
+      await storage.write('gps_tracking_type', trackingType);
+    } else if (state == 'rejected' ||
+        state == 'expired' ||
+        state == 'cancelled' ||
+        state == 'completed') {
+      if (activeEntityId == entityId && activeTrackingType == trackingType) {
+        activeEntityId = null;
+        locationBuffer.clear();
+        await storage.remove('gps_active_entity_id');
+        await storage.remove('gps_tracking_type');
+        await storage.remove('gps_location_buffer');
+      }
+    }
     service.invoke('dispatchStateChanged', {
       'trip_id': tripId,
+      'delivery_id': deliveryId,
       'state': state,
-      'active_trip_id': activeDispatchId,
+      'active_entity_id': activeEntityId,
+      'tracking_type': activeTrackingType,
     });
   });
 
@@ -146,11 +197,21 @@ void onStart(ServiceInstance service) async {
       dataSaver,
       (stream) => positionStream = stream,
       locationBuffer,
+      () => activeEntityId,
+      () => activeTrackingType,
+      storage,
     );
   });
 
   _setupLocationStream(
-      service, dataSaver, (stream) => positionStream = stream, locationBuffer);
+    service,
+    dataSaver,
+    (stream) => positionStream = stream,
+    locationBuffer,
+    () => activeEntityId,
+    () => activeTrackingType,
+    storage,
+  );
 }
 
 @pragma('vm:entry-point')
@@ -162,7 +223,10 @@ void _setupLocationStream(
     ServiceInstance service,
     bool dataSaver,
     Function(StreamSubscription<Position>) onStreamCreated,
-    List<Map<String, dynamic>> buffer) async {
+    List<Map<String, dynamic>> buffer,
+    String? Function() activeEntityId,
+    String Function() activeTrackingType,
+    GetStorage storage) async {
   final LocationSettings locationSettings = AndroidSettings(
     accuracy: LocationAccuracy.high,
     distanceFilter: dataSaver ? 15 : 5,
@@ -178,11 +242,14 @@ void _setupLocationStream(
       Geolocator.getPositionStream(locationSettings: locationSettings)
           .listen((Position position) async {
     final locationData = {
+      "position_id":
+          '${position.timestamp.microsecondsSinceEpoch}_${position.latitude}_${position.longitude}',
       "latitude": position.latitude,
       "longitude": position.longitude,
       "heading": position.heading,
       "speed": position.speed,
-      "timestamp": DateTime.now().toIso8601String(),
+      "accuracy": position.accuracy,
+      "recorded_at": position.timestamp.toUtc().toIso8601String(),
     };
 
     // 1. Update UI
@@ -191,21 +258,31 @@ void _setupLocationStream(
       "longitude": position.longitude,
     });
 
-    // 2. Add to buffer
+    final entityId = activeEntityId();
+    if (entityId == null) return;
+
+    // 2. Add to the active trip buffer.
     buffer.add(locationData);
-    if (buffer.length > 10) buffer.removeAt(0); // Keep memory safe
+    if (buffer.length > 50) buffer.removeAt(0);
+    await storage.write('gps_location_buffer', buffer);
 
     // 3. Try sending buffer
     try {
       final token = await AppStorage.token;
       if (token != null) {
-        final response =
-            await ApiClient.instance.post('/driver/update-location', data: {
-          "locations": buffer, // We send the whole buffer
-        });
+        final response = await ApiClient.instance.post(
+          '/driver/update-location',
+          retryable: true,
+          data: {
+            activeTrackingType() == 'delivery' ? 'delivery_id' : 'trip_id':
+                int.tryParse(entityId) ?? entityId,
+            "locations": List<Map<String, dynamic>>.from(buffer),
+          },
+        );
 
         if (response['status'] == 'success') {
-          buffer.clear(); // Success!
+          buffer.clear();
+          await storage.remove('gps_location_buffer');
         }
       }
     } catch (e) {

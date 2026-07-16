@@ -11,6 +11,16 @@ class AppStorage {
   static String? get lastActiveRole => _box.read('last_active_role');
   static String? get vehicleId =>
       user?['vehicle_id']?.toString() ?? user?['vehicleId']?.toString();
+  static Map<String, dynamic>? get activeTrip {
+    final value = _box.read('active_trip');
+    return value is Map ? Map<String, dynamic>.from(value) : null;
+  }
+
+  static Map<String, dynamic>? get activeDelivery {
+    final value = _box.read('active_delivery');
+    return value is Map ? Map<String, dynamic>.from(value) : null;
+  }
+
   static Map<String, dynamic>? get user {
     final value = _box.read('user');
     return value is Map ? Map<String, dynamic>.from(value) : null;
@@ -52,6 +62,28 @@ class AppStorage {
     await _box.write('last_active_role', role);
   }
 
+  static Future<void> saveActiveTrip(Map<String, dynamic> trip) async {
+    await _box.remove('active_delivery');
+    await _box.write('active_trip', trip);
+  }
+
+  static Future<void> mergeActiveTrip(Map<String, dynamic> fields) async {
+    await saveActiveTrip({...?activeTrip, ...fields});
+  }
+
+  static Future<void> clearActiveTrip() => _box.remove('active_trip');
+
+  static Future<void> saveActiveDelivery(Map<String, dynamic> delivery) async {
+    await _box.remove('active_trip');
+    await _box.write('active_delivery', delivery);
+  }
+
+  static Future<void> mergeActiveDelivery(Map<String, dynamic> fields) async {
+    await saveActiveDelivery({...?activeDelivery, ...fields});
+  }
+
+  static Future<void> clearActiveDelivery() => _box.remove('active_delivery');
+
   static Future<void> clearAuth() async {
     await _secureStorage.delete(key: 'auth_token');
     await _box.remove('user');
@@ -62,5 +94,7 @@ class AppStorage {
     await _box.remove('user_role');
     await _box.remove('vehicle_id');
     await _box.remove('last_active_role');
+    await clearActiveTrip();
+    await clearActiveDelivery();
   }
 }

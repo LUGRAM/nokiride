@@ -32,6 +32,9 @@ abstract class Routes {
   static const wallet = '/wallet';
 
   static const profile = '/profile';
+  static const helpCenter = '/support/help';
+  static const contactSupport = '/support/contact';
+  static const legalCenter = '/support/legal';
 
   static const notifications = '/notifications';
 }

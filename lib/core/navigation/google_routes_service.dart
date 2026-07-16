@@ -22,16 +22,20 @@ class GoogleRoutesService {
     required LatLng origin,
     required LatLng destination,
   }) async {
-    final response = await ApiClient.instance.post('/navigation/route', data: {
-      'origin': {
-        'latitude': origin.latitude,
-        'longitude': origin.longitude,
+    final response = await ApiClient.instance.post(
+      '/navigation/route',
+      retryable: true,
+      data: {
+        'origin': {
+          'latitude': origin.latitude,
+          'longitude': origin.longitude,
+        },
+        'destination': {
+          'latitude': destination.latitude,
+          'longitude': destination.longitude,
+        },
       },
-      'destination': {
-        'latitude': destination.latitude,
-        'longitude': destination.longitude,
-      },
-    });
+    );
 
     final data = Map<String, dynamic>.from(response['data'] as Map);
     final encoded = data['encoded_polyline']?.toString() ?? '';

@@ -21,6 +21,7 @@ class TripPage extends GetView<TripController> {
                 pickup: controller.pickup.value,
                 dropoff: controller.dropoff.value,
                 driverLocation: controller.driverLocation.value,
+                routePoints: controller.routePoints.toList(growable: false),
                 showDriver: controller.currentStep.value == TripStep.tracking,
               )),
 

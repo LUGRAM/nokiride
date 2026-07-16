@@ -13,6 +13,7 @@ class MiniMapWidget extends StatefulWidget {
     this.pickup,
     this.dropoff,
     this.driverLocation,
+    this.routePoints = const <LatLng>[],
     this.showDriver = false,
     this.showHeatmap = false,
   });
@@ -20,6 +21,7 @@ class MiniMapWidget extends StatefulWidget {
   final PlaceModel? pickup;
   final PlaceModel? dropoff;
   final PlaceModel? driverLocation;
+  final List<LatLng> routePoints;
   final bool showDriver;
   final bool showHeatmap;
 
@@ -33,6 +35,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
   late final Animation<double> _driverAnim;
   GoogleMapController? _mapController;
   LatLng? _currentLatLng;
+  LatLng? _driverFrom;
+  LatLng? _driverTo;
 
   static const LatLng _librevilleCenter = LatLng(0.3901, 9.4544);
 
@@ -41,8 +45,8 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
     super.initState();
     _driverCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 900),
+    );
     _driverAnim = Tween(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _driverCtrl, curve: Curves.easeInOut),
     );
@@ -144,23 +148,15 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
             ),
 
           // Marqueur coursier animé
-          if (widget.showDriver)
-            AnimatedBuilder(
-              animation: _driverAnim,
-              builder: (_, __) {
-                final t = _driverAnim.value;
-                final left = 80 + (200 * t);
-                final top = 160 + (120 * t);
-                return Positioned(
-                  left: left,
-                  top: top,
-                  child: _MapPin(
-                    color: AppColors.accent(context),
-                    icon: FontAwesomeIcons.motorcycle,
-                    size: 38,
-                  ),
-                );
-              },
+          if (widget.showDriver && widget.driverLocation != null)
+            Positioned(
+              left: 180,
+              top: 220,
+              child: _MapPin(
+                color: AppColors.accent(context),
+                icon: FontAwesomeIcons.motorcycle,
+                size: 38,
+              ),
             ),
 
           // Badge lieu départ
@@ -228,12 +224,14 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
         Marker(
           markerId: const MarkerId('other_1'),
           position: const LatLng(0.395, 9.460),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
         ),
         Marker(
           markerId: const MarkerId('other_2'),
           position: const LatLng(0.385, 9.445),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
         ),
       });
     }
@@ -242,21 +240,29 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
   }
 
   Set<Polyline> _polylines(BuildContext context) {
-    final pickup = widget.pickup;
-    final dropoff = widget.dropoff;
-    if (pickup == null || dropoff == null) return {};
+    final points = widget.routePoints.length >= 2
+        ? widget.routePoints
+        : _fallbackRoutePoints;
+    if (points.length < 2) return {};
 
     return {
       Polyline(
         polylineId: const PolylineId('route'),
-        points: [
-          LatLng(pickup.lat, pickup.lng),
-          LatLng(dropoff.lat, dropoff.lng),
-        ],
+        points: points,
         color: AppColors.accent(context),
         width: 5,
       ),
     };
+  }
+
+  List<LatLng> get _fallbackRoutePoints {
+    final pickup = widget.pickup;
+    final dropoff = widget.dropoff;
+    if (pickup == null || dropoff == null) return const <LatLng>[];
+    return <LatLng>[
+      LatLng(pickup.lat, pickup.lng),
+      LatLng(dropoff.lat, dropoff.lng),
+    ];
   }
 
   Set<Circle> _circles(BuildContext context) {
@@ -284,23 +290,21 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
   }
 
   LatLng get _cameraTarget {
-    if (widget.pickup != null)
+    if (widget.pickup != null) {
       return LatLng(widget.pickup!.lat, widget.pickup!.lng);
+    }
     if (_currentLatLng != null) return _currentLatLng!;
     return _librevilleCenter;
   }
 
   LatLng? get _driverLatLng {
-    final pickup = widget.pickup;
-    final dropoff = widget.dropoff;
-    final driver = widget.driverLocation;
-    if (driver != null) return LatLng(driver.lat, driver.lng);
-    if (pickup == null || dropoff == null) return null;
-
+    if (_driverTo == null) return null;
+    final from = _driverFrom ?? _driverTo!;
+    final to = _driverTo!;
     final t = _driverAnim.value;
     return LatLng(
-      pickup.lat + ((dropoff.lat - pickup.lat) * t),
-      pickup.lng + ((dropoff.lng - pickup.lng) * t),
+      from.latitude + ((to.latitude - from.latitude) * t),
+      from.longitude + ((to.longitude - from.longitude) * t),
     );
   }
 
@@ -322,16 +326,29 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
   }
 
   Future<void> _fitRoute() async {
-    final pickup = widget.pickup;
-    final dropoff = widget.dropoff;
-    if (pickup == null || dropoff == null) return;
+    final points = widget.routePoints.length >= 2
+        ? widget.routePoints
+        : _fallbackRoutePoints;
+    if (points.length < 2) return;
 
-    final south = pickup.lat < dropoff.lat ? pickup.lat : dropoff.lat;
-    final north = pickup.lat > dropoff.lat ? pickup.lat : dropoff.lat;
-    final west = pickup.lng < dropoff.lng ? pickup.lng : dropoff.lng;
-    final east = pickup.lng > dropoff.lng ? pickup.lng : dropoff.lng;
+    var south = points.first.latitude;
+    var north = points.first.latitude;
+    var west = points.first.longitude;
+    var east = points.first.longitude;
+    for (final point in points.skip(1)) {
+      if (point.latitude < south) south = point.latitude;
+      if (point.latitude > north) north = point.latitude;
+      if (point.longitude < west) west = point.longitude;
+      if (point.longitude > east) east = point.longitude;
+    }
 
     await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (south == north && west == east) {
+      await _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(points.first, 16),
+      );
+      return;
+    }
     await _mapController?.animateCamera(
       CameraUpdate.newLatLngBounds(
         LatLngBounds(
@@ -346,8 +363,15 @@ class _MiniMapWidgetState extends State<MiniMapWidget>
   @override
   void didUpdateWidget(covariant MiniMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final driver = widget.driverLocation;
+    if (driver != null && oldWidget.driverLocation != driver) {
+      _driverFrom = _driverLatLng ?? LatLng(driver.lat, driver.lng);
+      _driverTo = LatLng(driver.lat, driver.lng);
+      _driverCtrl.forward(from: 0);
+    }
     if (oldWidget.pickup != widget.pickup ||
-        oldWidget.dropoff != widget.dropoff) {
+        oldWidget.dropoff != widget.dropoff ||
+        !listEquals(oldWidget.routePoints, widget.routePoints)) {
       _fitRoute();
     }
   }
@@ -392,23 +416,21 @@ class _MapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final gridColor =
-        isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.03);
-    final roadColor =
-        isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.05);
+    final gridColor = isDark
+        ? Colors.white.withValues(alpha: 0.02)
+        : Colors.black.withValues(alpha: 0.03);
+    final roadColor = isDark
+        ? Colors.white.withValues(alpha: 0.04)
+        : Colors.black.withValues(alpha: 0.05);
 
     // Fond
     canvas.drawRect(Offset.zero & size, Paint()..color = bgColor);
 
     if (showHeatmap) {
       final hPaint = Paint()..style = PaintingStyle.fill;
-      canvas.drawCircle(
-          Offset(size.width * .4, size.height * .4),
-          60,
+      canvas.drawCircle(Offset(size.width * .4, size.height * .4), 60,
           hPaint..color = Colors.orange.withValues(alpha: 0.1));
-      canvas.drawCircle(
-          Offset(size.width * .7, size.height * .6),
-          80,
+      canvas.drawCircle(Offset(size.width * .7, size.height * .6), 80,
           hPaint..color = Colors.red.withValues(alpha: 0.1));
     }
 
@@ -478,8 +500,8 @@ class _MapPainter extends CustomPainter {
       ),
       Paint()
         ..color = dark
-            ? Colors.white.withOpacity(.02)
-            : Colors.black.withOpacity(.03),
+            ? Colors.white.withValues(alpha: .02)
+            : Colors.black.withValues(alpha: .03),
     );
   }
 

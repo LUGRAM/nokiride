@@ -21,6 +21,7 @@ import '../../features/onboarding/bindings/onboarding_binding.dart';
 import '../../features/onboarding/pages/onboarding_page.dart';
 import '../../features/client/profile/bindings/profile_binding.dart';
 import '../../features/client/profile/page/client_profile_page.dart';
+import '../../features/client/profile/page/support_legal_pages.dart';
 import '../../features/splash/pages/splash_page.dart';
 import '../../features/client/trip/bindings/trip_binding.dart';
 import '../../features/client/trip/page/trip_estimate_page.dart';
@@ -158,6 +159,10 @@ class AppPages {
     GetPage(
         name: Routes.profile,
         page: () => const ClientProfilePage(),
-        binding: ProfileBinding())
+        binding: ProfileBinding()),
+    GetPage(name: Routes.helpCenter, page: () => const HelpCenterPage()),
+    GetPage(
+        name: Routes.contactSupport, page: () => const ContactSupportPage()),
+    GetPage(name: Routes.legalCenter, page: () => const LegalCenterPage())
   ];
 }

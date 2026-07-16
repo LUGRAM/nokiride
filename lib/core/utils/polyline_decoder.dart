@@ -43,6 +43,9 @@ class PolylineDecoder {
         throw const FormatException('Polyline Google invalide.');
       }
       byte = encoded.codeUnitAt(index++) - 63;
+      if (byte < 0 || byte > 63) {
+        throw const FormatException('Polyline Google invalide.');
+      }
       result |= (byte & 0x1f) << shift;
       shift += 5;
     } while (byte >= 0x20);

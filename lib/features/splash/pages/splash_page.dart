@@ -7,6 +7,8 @@ import '../../../app/theme/app_colors.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/services/auth_api_service.dart';
+import '../../../core/network/services/trip_api_service.dart';
+import '../../../core/network/services/delivery_api_service.dart';
 import '../../../core/storage/app_storage.dart';
 
 class SplashPage extends StatefulWidget {
@@ -44,6 +46,8 @@ class _SplashPageState extends State<SplashPage>
         await AppStorage.saveUser(
           Map<String, dynamic>.from(data['user'] as Map),
         );
+        await _resyncActiveTrip();
+        await _resyncActiveDelivery();
         Get.offAllNamed(_routeForStoredUser());
       } on ApiException catch (e) {
         if (e.message.contains('401') ||
@@ -64,9 +68,59 @@ class _SplashPageState extends State<SplashPage>
 
   String _routeForStoredUser() {
     final user = UserModel.fromJson(AppStorage.user ?? {});
-    return user.role == UserRole.driver && AppStorage.lastActiveRole == 'driver'
-        ? Routes.driverDashboard
-        : Routes.clientHome;
+    if (user.role == UserRole.driver && AppStorage.lastActiveRole == 'driver') {
+      return Routes.driverDashboard;
+    }
+    final active = AppStorage.activeTrip;
+    if (active != null &&
+        const {'searching', 'accepted', 'assigned', 'in_progress'}
+            .contains(active['status'])) {
+      return Routes.trip;
+    }
+    final delivery = AppStorage.activeDelivery;
+    if (delivery != null) {
+      final status = delivery['status']?.toString();
+      if (status == 'assigned' || status == 'in_progress') {
+        return Routes.deliveryTracking;
+      }
+      if (status == 'searching') return Routes.deliverySearching;
+    }
+    return Routes.clientHome;
+  }
+
+  Future<void> _resyncActiveDelivery() async {
+    final stored = AppStorage.activeDelivery;
+    final id = int.tryParse('${stored?['id'] ?? ''}');
+    if (id == null) return;
+    try {
+      final remote = await DeliveryApiService().show(id);
+      final status = remote['status']?.toString();
+      if (status == 'delivered' || status == 'cancelled') {
+        await AppStorage.clearActiveDelivery();
+      } else {
+        await AppStorage.mergeActiveDelivery(remote);
+      }
+    } catch (_) {
+      // La copie locale permet de reprendre la livraison hors connexion.
+    }
+  }
+
+  Future<void> _resyncActiveTrip() async {
+    final stored = AppStorage.activeTrip;
+    final id = int.tryParse('${stored?['id'] ?? ''}');
+    if (id == null) return;
+
+    try {
+      final remote = await TripApiService().show(id);
+      final status = remote['status']?.toString();
+      if (status == 'completed' || status == 'cancelled') {
+        await AppStorage.clearActiveTrip();
+      } else {
+        await AppStorage.mergeActiveTrip(remote);
+      }
+    } catch (_) {
+      // La copie locale permet de continuer en mode dégradé.
+    }
   }
 
   @override

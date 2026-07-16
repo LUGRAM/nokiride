@@ -63,6 +63,8 @@ class ActiveTripController extends GetxController {
       ? '${tripData['dropoff_address'] ?? ''}'
       : '${tripData['pickup_address'] ?? ''}';
 
+  bool get isDelivery => tripData['entity_type'] == 'delivery';
+
   @override
   void onInit() {
     super.onInit();
@@ -244,19 +246,31 @@ class ActiveTripController extends GetxController {
 
   Future<void> nextStep() async {
     final tripId = tripData['id'];
-    final endpoint = switch (currentStatus.value) {
-      DriverTripStatus.accepted => '/trips/$tripId/arrived',
-      DriverTripStatus.arrived => '/trips/$tripId/pickup',
-      DriverTripStatus.pickedUp => '/trips/$tripId/complete',
-      DriverTripStatus.completed => null,
+    if (currentStatus.value == DriverTripStatus.accepted) {
+      _advanceStatus();
+      return;
+    }
+    final apiStatus = switch (currentStatus.value) {
+      DriverTripStatus.arrived => 'in_progress',
+      DriverTripStatus.pickedUp => isDelivery ? 'delivered' : 'completed',
+      DriverTripStatus.accepted || DriverTripStatus.completed => null,
     };
-    if (endpoint == null) return;
+    if (apiStatus == null) return;
 
     try {
       await Get.showOverlay<void>(
         asyncFunction: () async {
-          final response = await ApiClient.instance.post(endpoint);
-          if (response['status'] == 'success') _advanceStatus();
+          final resource = isDelivery ? 'deliveries' : 'trips';
+          await ApiClient.instance.patch(
+            '/$resource/$tripId/status',
+            data: {'status': apiStatus},
+          );
+          _locationService.updateActiveTripState(
+            '$tripId',
+            apiStatus,
+            trackingType: isDelivery ? 'delivery' : 'trip',
+          );
+          _advanceStatus();
         },
         loadingWidget: const Center(child: CircularProgressIndicator()),
       );
@@ -280,14 +294,18 @@ class ActiveTripController extends GetxController {
 
   String get actionButtonText => switch (currentStatus.value) {
         DriverTripStatus.accepted => 'JE SUIS ARRIVÉ',
-        DriverTripStatus.arrived => 'CLIENT RÉCUPÉRÉ',
-        DriverTripStatus.pickedUp => 'TERMINER LA COURSE',
+        DriverTripStatus.arrived =>
+          isDelivery ? 'COLIS RÉCUPÉRÉ' : 'CLIENT RÉCUPÉRÉ',
+        DriverTripStatus.pickedUp =>
+          isDelivery ? 'LIVRAISON EFFECTUÉE' : 'TERMINER LA COURSE',
         DriverTripStatus.completed => 'TERMINÉ',
       };
 
   String get instructionText => switch (currentStatus.value) {
-        DriverTripStatus.accepted => 'Allez chercher le client',
-        DriverTripStatus.arrived => 'Le client vous attend',
+        DriverTripStatus.accepted =>
+          isDelivery ? 'Allez récupérer le colis' : 'Allez chercher le client',
+        DriverTripStatus.arrived =>
+          isDelivery ? 'Le colis vous attend' : 'Le client vous attend',
         DriverTripStatus.pickedUp => 'En route vers la destination',
         DriverTripStatus.completed => 'Course terminée',
       };

@@ -33,4 +33,8 @@ class TripApiService {
   Future<Map<String, dynamic>> updateStatus(int id, String status) async =>
       Map<String, dynamic>.from((await _client.patch('/trips/$id/status',
           data: {'status': status}))['data'] as Map);
+
+  Future<Map<String, dynamic>> show(int id) async => Map<String, dynamic>.from(
+        (await _client.get('/trips/$id'))['data'] as Map,
+      );
 }

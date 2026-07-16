@@ -3,13 +3,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/location/driver_tracking_service.dart';
+import '../../../../core/location/delivery_tracking_service.dart';
 import '../../../../core/location/location_service.dart';
 import '../../../../core/location/place_provider.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/services/delivery_api_service.dart';
+import '../../../../core/navigation/google_routes_service.dart';
+import '../../../../core/navigation/route_geometry.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../../trip/model/place_model.dart';
 import '../model/delivery_model.dart';
 
@@ -20,10 +24,16 @@ const double _vitesse = 22.0;
 const int _minimum = 1000;
 
 class DeliveryController extends GetxController {
-  DeliveryController(this._deliveryService, this._placeProvider);
+  DeliveryController(
+    this._deliveryService,
+    this._placeProvider, {
+    GoogleRoutesService? routesService,
+  }) : _routesService = routesService ?? const GoogleRoutesService();
 
   final DeliveryApiService _deliveryService;
   final PlaceProvider _placeProvider;
+  final GoogleRoutesService _routesService;
+  final DeliveryTrackingService _trackingService = DeliveryTrackingService();
 
   // ─── État ────────────────────────────────────────────────────
   final Rx<DeliveryModel?> currentDelivery = Rx<DeliveryModel?>(null);
@@ -38,6 +48,8 @@ class DeliveryController extends GetxController {
   final Rx<PlaceModel?> dropoff = Rx<PlaceModel?>(null);
   final Rx<PlaceModel?> userLocation = Rx<PlaceModel?>(null);
   final Rx<PlaceModel?> courierLocation = Rx<PlaceModel?>(null);
+  final RxList<LatLng> routePoints = <LatLng>[].obs;
+  final RxInt dynamicEtaSeconds = 0.obs;
   final Rx<ParcelSize> parcelSize = ParcelSize.medium.obs;
   final RxString recipientName = ''.obs;
   final RxString recipientPhone = ''.obs;
@@ -48,13 +60,17 @@ class DeliveryController extends GetxController {
   final RxBool isSearching = false.obs;
   final Rx<RxStatus> placeSearchStatus = RxStatus.empty().obs;
 
-  Timer? _searchTimer;
-  StreamSubscription<PlaceModel>? _courierTrackingSub;
+  StreamSubscription<DeliveryTrackingUpdate>? _courierTrackingSub;
   Worker? _userLocationWorker;
+  Timer? _etaTimer;
+  DateTime? _lastRerouteAt;
+  bool _routeRefreshInFlight = false;
+  String _remoteDeliveryStatus = 'searching';
 
   @override
   void onInit() {
     super.onInit();
+    _restoreActiveDelivery();
     _setCurrentPickup();
     userLocation.bindStream(LocationService.placeStream());
     _userLocationWorker = ever<PlaceModel?>(userLocation, (place) {
@@ -66,8 +82,9 @@ class DeliveryController extends GetxController {
   }
 
   Future<void> _setCurrentPickup() async {
+    if (currentDelivery.value != null) return;
     final position = await LocationService.currentPosition();
-    if (position == null) return;
+    if (position == null || currentDelivery.value != null) return;
     pickup.value = PlaceModel(
       name: 'Position actuelle',
       address: 'Votre position GPS',
@@ -170,9 +187,7 @@ class DeliveryController extends GetxController {
         currentDelivery.value!.copyWith(status: DeliveryStatus.searching);
     status.value = DeliveryStatus.searching;
     Get.toNamed(Routes.deliverySearching);
-
-    final delay = 4 + Random().nextInt(4);
-    _searchTimer = Timer(Duration(seconds: delay), _assignCourier);
+    _startCourierTracking();
   }
 
   Future<void> _assignCourier() async {
@@ -180,7 +195,8 @@ class DeliveryController extends GetxController {
     currentDelivery.value =
         currentDelivery.value!.copyWith(status: DeliveryStatus.assigned);
     status.value = DeliveryStatus.assigned;
-    await _syncDeliveryStatus('assigned');
+    _remoteDeliveryStatus = 'assigned';
+    await _persistActiveDelivery();
     _startCourierTracking();
     Get.offNamed(Routes.deliveryTracking);
   }
@@ -195,7 +211,6 @@ class DeliveryController extends GetxController {
   }
 
   void cancelDelivery() {
-    _searchTimer?.cancel();
     currentDelivery.value =
         currentDelivery.value?.copyWith(status: DeliveryStatus.cancelled);
     _reset();
@@ -214,6 +229,9 @@ class DeliveryController extends GetxController {
       currentDelivery.value = null;
       status.value = DeliveryStatus.idle;
       _courierTrackingSub?.cancel();
+      _etaTimer?.cancel();
+      routePoints.clear();
+      unawaited(AppStorage.clearActiveDelivery());
     });
   }
 
@@ -253,6 +271,10 @@ class DeliveryController extends GetxController {
       final data = await _deliveryService.create({
         'pickup_address': delivery.pickup.address,
         'dropoff_address': delivery.dropoff.address,
+        'pickup_latitude': delivery.pickup.lat,
+        'pickup_longitude': delivery.pickup.lng,
+        'dropoff_latitude': delivery.dropoff.lat,
+        'dropoff_longitude': delivery.dropoff.lng,
         'recipient_name': delivery.recipient.name,
         'recipient_phone': _normalizeGabonPhone(delivery.recipient.phone),
         'parcel_size': delivery.parcelSize.name,
@@ -272,6 +294,9 @@ class DeliveryController extends GetxController {
         id: '${data['id'] ?? delivery.id}',
         status: DeliveryStatus.searching,
       );
+      _remoteDeliveryStatus = '${data['status'] ?? 'searching'}';
+      await _persistActiveDelivery();
+      unawaited(_loadRoute());
       return true;
     } on ApiException catch (error) {
       Get.snackbar('Paiement impossible', error.message,
@@ -316,6 +341,8 @@ class DeliveryController extends GetxController {
     if (id == null) return;
     try {
       await _deliveryService.updateStatus(id, apiStatus);
+      _remoteDeliveryStatus = apiStatus;
+      await _persistActiveDelivery();
     } on ApiException catch (error) {
       Get.snackbar('Synchronisation impossible', error.message,
           snackPosition: SnackPosition.BOTTOM);
@@ -328,20 +355,176 @@ class DeliveryController extends GetxController {
     final delivery = currentDelivery.value;
     if (delivery == null) return;
     _courierTrackingSub?.cancel();
-    _courierTrackingSub = DriverTrackingService.simulateRoute(
-      pickup: delivery.pickup,
-      dropoff: delivery.dropoff,
-      label: 'Coursier',
-    ).listen((position) {
-      courierLocation.value = position;
+    _courierTrackingSub = _trackingService.updates.listen((update) {
+      final isFirstPosition = courierLocation.value == null;
+      courierLocation.value = update.position;
+      _remoteDeliveryStatus = update.deliveryStatus;
+      if (status.value == DeliveryStatus.searching) {
+        unawaited(_assignCourier());
+      }
+      if (isFirstPosition) unawaited(_refreshDynamicEta());
+      _maybeRecalculateForDeviation(update.position);
+      unawaited(_persistActiveDelivery());
     });
+    _trackingService.subscribe(delivery.id).catchError((Object error) {
+      Get.snackbar(
+        'Suivi indisponible',
+        'Vérifiez votre connexion puis rouvrez le suivi de la livraison.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    });
+    _etaTimer?.cancel();
+    _etaTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _refreshDynamicEta(),
+    );
   }
 
   @override
   void onClose() {
-    _searchTimer?.cancel();
     _courierTrackingSub?.cancel();
+    _etaTimer?.cancel();
+    _trackingService.dispose();
     _userLocationWorker?.dispose();
     super.onClose();
+  }
+
+  Future<void> _loadRoute() async {
+    final delivery = currentDelivery.value;
+    if (delivery == null) return;
+    try {
+      final route = await _routesService.route(
+        origin: LatLng(delivery.pickup.lat, delivery.pickup.lng),
+        destination: LatLng(delivery.dropoff.lat, delivery.dropoff.lng),
+      );
+      routePoints.assignAll(route.points);
+      dynamicEtaSeconds.value = route.durationSeconds;
+      currentDelivery.value = delivery.copyWith(
+        estimatedMinutes: max(1, (route.durationSeconds / 60).ceil()),
+      );
+      await _persistActiveDelivery();
+    } catch (_) {
+      routePoints.clear();
+    }
+  }
+
+  Future<void> _refreshDynamicEta({bool redrawRoute = false}) async {
+    final courier = courierLocation.value;
+    final delivery = currentDelivery.value;
+    if (courier == null || delivery == null || _routeRefreshInFlight) return;
+    _routeRefreshInFlight = true;
+    try {
+      final target = _remoteDeliveryStatus == 'in_progress'
+          ? delivery.dropoff
+          : delivery.pickup;
+      final route = await _routesService.route(
+        origin: LatLng(courier.lat, courier.lng),
+        destination: LatLng(target.lat, target.lng),
+      );
+      dynamicEtaSeconds.value = route.durationSeconds;
+      currentDelivery.value = delivery.copyWith(
+        estimatedMinutes: max(1, (route.durationSeconds / 60).ceil()),
+      );
+      if (redrawRoute) routePoints.assignAll(route.points);
+      await _persistActiveDelivery();
+    } catch (_) {
+      // Conserver la dernière ETA connue pendant la coupure.
+    } finally {
+      _routeRefreshInFlight = false;
+    }
+  }
+
+  void _maybeRecalculateForDeviation(PlaceModel courier) {
+    if (_remoteDeliveryStatus != 'in_progress' || routePoints.length < 2) {
+      return;
+    }
+    final last = _lastRerouteAt;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(minutes: 1)) {
+      return;
+    }
+    final deviation = RouteGeometry.distanceToRouteMeters(
+      LatLng(courier.lat, courier.lng),
+      routePoints,
+    );
+    if (deviation <= 100) return;
+    _lastRerouteAt = DateTime.now();
+    unawaited(_refreshDynamicEta(redrawRoute: true));
+  }
+
+  void _restoreActiveDelivery() {
+    final stored = AppStorage.activeDelivery;
+    final pickupData = stored?['pickup'];
+    final dropoffData = stored?['dropoff'];
+    if (stored == null || pickupData is! Map || dropoffData is! Map) return;
+    final restoredPickup =
+        PlaceModel.fromJson(Map<String, dynamic>.from(pickupData));
+    final restoredDropoff =
+        PlaceModel.fromJson(Map<String, dynamic>.from(dropoffData));
+    pickup.value = restoredPickup;
+    dropoff.value = restoredDropoff;
+    final restoredStatus = _deliveryStatusFromApi('${stored['status']}');
+    currentDelivery.value = DeliveryModel(
+      id: '${stored['id']}',
+      pickup: restoredPickup,
+      dropoff: restoredDropoff,
+      recipient: RecipientModel(
+        name: '${stored['recipient_name'] ?? ''}',
+        phone: '${stored['recipient_phone'] ?? ''}',
+      ),
+      parcelSize: ParcelSize.values.firstWhere(
+        (value) => value.name == stored['parcel_size'],
+        orElse: () => ParcelSize.medium,
+      ),
+      parcelNote: stored['parcel_note']?.toString(),
+      distanceKm: double.tryParse('${stored['distance_km']}') ?? 0,
+      priceFCFA: int.tryParse('${stored['price_fcfa']}') ?? 0,
+      estimatedMinutes: int.tryParse('${stored['estimated_minutes']}') ?? 0,
+      status: restoredStatus,
+    );
+    status.value = restoredStatus;
+    _remoteDeliveryStatus = '${stored['status'] ?? 'searching'}';
+    final savedRoute = stored['last_polyline'];
+    if (savedRoute is List) {
+      routePoints.assignAll(savedRoute.whereType<Map>().map((point) => LatLng(
+            double.parse('${point['latitude']}'),
+            double.parse('${point['longitude']}'),
+          )));
+    }
+    _startCourierTracking();
+    if (routePoints.isEmpty) unawaited(_loadRoute());
+  }
+
+  DeliveryStatus _deliveryStatusFromApi(String value) => switch (value) {
+        'searching' => DeliveryStatus.searching,
+        'assigned' => DeliveryStatus.assigned,
+        'in_progress' => DeliveryStatus.inProgress,
+        'delivered' => DeliveryStatus.delivered,
+        'cancelled' => DeliveryStatus.cancelled,
+        _ => DeliveryStatus.searching,
+      };
+
+  Future<void> _persistActiveDelivery() async {
+    final delivery = currentDelivery.value;
+    if (delivery == null) return;
+    await AppStorage.saveActiveDelivery({
+      'id': delivery.id,
+      'status': _remoteDeliveryStatus,
+      'pickup': delivery.pickup.toJson(),
+      'dropoff': delivery.dropoff.toJson(),
+      'recipient_name': delivery.recipient.name,
+      'recipient_phone': delivery.recipient.phone,
+      'parcel_size': delivery.parcelSize.name,
+      'parcel_note': delivery.parcelNote,
+      'distance_km': delivery.distanceKm,
+      'price_fcfa': delivery.priceFCFA,
+      'estimated_minutes': delivery.estimatedMinutes,
+      'last_polyline': routePoints
+          .map((point) => {
+                'latitude': point.latitude,
+                'longitude': point.longitude,
+              })
+          .toList(growable: false),
+    });
   }
 }

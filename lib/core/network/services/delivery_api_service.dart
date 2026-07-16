@@ -35,4 +35,8 @@ class DeliveryApiService {
   Future<Map<String, dynamic>> updateStatus(int id, String status) async =>
       Map<String, dynamic>.from((await _client.patch('/deliveries/$id/status',
           data: {'status': status}))['data'] as Map);
+
+  Future<Map<String, dynamic>> show(int id) async => Map<String, dynamic>.from(
+        (await _client.get('/deliveries/$id'))['data'] as Map,
+      );
 }

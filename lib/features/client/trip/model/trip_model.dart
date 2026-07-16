@@ -29,13 +29,18 @@ class TripModel {
     this.status = TripStatus.idle,
   });
 
-  TripModel copyWith({String? id, TripStatus? status}) => TripModel(
+  TripModel copyWith({
+    String? id,
+    TripStatus? status,
+    int? estimatedMinutes,
+  }) =>
+      TripModel(
         id: id ?? this.id,
         pickup: pickup,
         dropoff: dropoff,
         distanceKm: distanceKm,
         priceFCFA: priceFCFA,
-        estimatedMinutes: estimatedMinutes,
+        estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
         status: status ?? this.status,
       );
 
